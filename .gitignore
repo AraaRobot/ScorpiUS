@@ -1,4 +1,5 @@
 .vscode/
+.obsidian/
 
 # colcon build artifacts
 clankus_ws/build/
