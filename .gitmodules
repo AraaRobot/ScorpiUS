@@ -1,0 +1,3 @@
+[submodule "ScorpiUS-elec"]
+	path = ScorpiUS-elec
+	url = https://github.com/AraaRobot/ScorpiUS-elec.git
