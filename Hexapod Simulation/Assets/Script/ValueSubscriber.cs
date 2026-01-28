@@ -1,16 +1,26 @@
 using UnityEngine;
+using Unity.Robotics.ROSTCPConnector;
+using RosMessageTypes.Std;
+
 
 public class ValueSubscriber : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    ROSConnection ros;
+    private float receivedValue;
+
     void Start()
     {
-        
+        ros = ROSConnection.GetOrCreateInstance();
+        ros.Subscribe<Float32Msg>("my_value", Callback);
     }
 
-    // Update is called once per frame
-    void Update()
+    void Callback(Float32Msg msg)
     {
-        
+        receivedValue = msg.data;
+    }
+
+    public float GetReceivedValue()
+    {
+        return receivedValue;
     }
 }
