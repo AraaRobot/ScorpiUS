@@ -5,8 +5,8 @@
 
 class GuiNode : public rclcpp::Node
 {
-    public:
-        GuiNode();
+  public:
+    GuiNode();
 };
 
-#endif // SCORPIUS_GUI_HPP
+#endif  // SCORPIUS_GUI_HPP

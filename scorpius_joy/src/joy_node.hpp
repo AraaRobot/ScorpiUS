@@ -5,8 +5,8 @@
 
 class JoyNode : public rclcpp::Node
 {
-    public:
-        JoyNode();
+  public:
+    JoyNode();
 };
 
-#endif // SCORPIUS_JOY_HPP
+#endif  // SCORPIUS_JOY_HPP

@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-MediaNode::MediaNode() : Node("MediaNode")
+MediaNode::MediaNode():
+    Node("MediaNode")
 {
-    
 }

@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-CommNode::CommNode() : Node("CommNode")
+CommNode::CommNode():
+    Node("CommNode")
 {
-    
 }

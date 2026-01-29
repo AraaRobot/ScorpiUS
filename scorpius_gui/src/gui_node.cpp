@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-GuiNode::GuiNode() : Node("GuiNode")
+GuiNode::GuiNode():
+    Node("GuiNode")
 {
-    
 }

@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-JoyNode::JoyNode() : Node("JoyNode")
+JoyNode::JoyNode():
+    Node("JoyNode")
 {
-    
 }
