@@ -7,11 +7,11 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
 
-    node_sim = Node(
-        package="rover_sim",
-        namespace="/rover/sim",
-        executable="sim",
-        name="sim"
+    node_comm = Node(
+        package="scorpius_gui",
+        namespace="/scorpius/gui",
+        executable="comm",
+        name="comm"
     )
-    ld.add_action(node_sim)
+    ld.add_action(node_comm)
     return ld

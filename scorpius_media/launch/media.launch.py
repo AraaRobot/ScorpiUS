@@ -8,8 +8,8 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     node_media = Node(
-        package="rover_media",
-        namespace="/rover/media",
+        package="scorpius_media",
+        namespace="/scorpius/media",
         executable="media",
         name="media"
     )
