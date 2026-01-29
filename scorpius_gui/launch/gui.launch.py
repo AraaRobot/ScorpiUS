@@ -10,8 +10,8 @@ def generate_launch_description():
     node_comm = Node(
         package="scorpius_gui",
         namespace="/scorpius/gui",
-        executable="comm",
-        name="comm"
+        executable="gui",
+        name="gui"
     )
     ld.add_action(node_comm)
     return ld

@@ -5,7 +5,8 @@
 
 class MediaNode : public rclcpp::Node
 {
-    MediaNode();
+    public:
+        MediaNode();
 };
 
 #endif // SCORPIUS_Media_HPP
