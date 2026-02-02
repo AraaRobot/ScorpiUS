@@ -7,11 +7,11 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
 
-    node_teleop = Node(
-        package="rover_teleop",
-        namespace="/rover/teleop",
+    node_media = Node(
+        package="scorpius_teleop",
+        namespace="/scorpius/teleop",
         executable="teleop",
         name="teleop"
     )
-    ld.add_action(node_teleop)
+    ld.add_action(node_media)
     return ld

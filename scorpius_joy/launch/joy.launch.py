@@ -8,8 +8,8 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     node_joy = Node(
-        package="rover_joy",
-        namespace="/rover/joy",
+        package="scorpius_joy",
+        namespace="/scorpius/joy",
         executable="joy",
         name="joy"
     )

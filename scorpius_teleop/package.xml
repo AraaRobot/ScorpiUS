@@ -3,16 +3,18 @@
 <package format="3">
   <name>scorpius_teleop</name>
   <version>0.0.0</version>
-  <description>Handles the teleoperations of the robot</description>
+  <description>Package for teleoperations of ScorpiUS</description>
   <maintainer email="anibal.arango@usherbrooke.ca">anibal</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <depend>scorpius_main</depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>

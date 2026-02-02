@@ -8,8 +8,8 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     node_comm = Node(
-        package="rover_comm",
-        namespace="/rover/comm",
+        package="scorpius_comm",
+        namespace="/scorpius/comm",
         executable="comm",
         name="comm"
     )
