@@ -8,6 +8,7 @@ public class CameraScript : MonoBehaviour
     [SerializeField] private float maxX = 10f;
     [SerializeField] private float maxY = 10f;
     [SerializeField] private float moveSpeed = 1f;
+    [SerializeField] private float moveSpeedMultiplier = 2f;
     [SerializeField] private float zoomSpeed = 1f;
     [SerializeField] private float minFOV = 1f;
     [SerializeField] private float maxFOV = 1f;
@@ -23,21 +24,25 @@ public class CameraScript : MonoBehaviour
     void Update()
     {
         // Move camera position
+        float speed = moveSpeed;
+        if (Input.GetKey(KeyCode.LeftShift)) {
+            speed *= moveSpeedMultiplier;
+        }
         if (Input.GetKey(KeyCode.W))
         {
-            transform.position += moveSpeed * Time.deltaTime * Vector3.forward;
+            transform.position += speed * Time.deltaTime * Vector3.forward;
         }
         if (Input.GetKey(KeyCode.D))
         {
-            transform.position += moveSpeed * Time.deltaTime * Vector3.right;
+            transform.position += speed * Time.deltaTime * Vector3.right;
         }
         if (Input.GetKey(KeyCode.S))
         {
-            transform.position += moveSpeed * Time.deltaTime * Vector3.back;
+            transform.position += speed * Time.deltaTime * Vector3.back;
         }
         if (Input.GetKey(KeyCode.A))
         {
-            transform.position += moveSpeed * Time.deltaTime * Vector3.left;
+            transform.position += speed * Time.deltaTime * Vector3.left;
         }
 
         // Clamp position
