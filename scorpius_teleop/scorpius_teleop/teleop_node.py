@@ -19,7 +19,7 @@ class Vector2:
         return Vector2(self.x / mag , self.y / mag)
     
     def get_angle(self) -> float:
-        return math.atan2(self.y, self.x)
+        return math.degrees(math.atan2(self.y, self.x))
     
     @staticmethod
     def angle_between(fromVector, toVector) -> float:
@@ -28,7 +28,7 @@ class Vector2:
         if not isinstance(toVector, Vector2):
             raise TypeError(fromVector + " not a Vector2.")
         dot = fromVector.x * toVector.x + fromVector.y * toVector.y
-        return math.acos(dot / (fromVector.get_magnitude() * toVector.get_magnitude()))
+        return math.degrees(math.acos(dot / (fromVector.get_magnitude() * toVector.get_magnitude())))
     
 class Vector12:
     def __init__(self, vA:float=0, hA:float=0, vB:float=0, hB:float=0, vC:float=0, hC:float=0, 
@@ -80,36 +80,70 @@ class Vector12:
 class TeleopNode(Node):
     def __init__(self):
         super().__init__('teleop')
+
         # publisher/subscriber
         self.publisher_angles = self.create_publisher(servo_angles, '/scorpius/teleop', 10)
         self.subscriber_input = self.create_subscription(inputs, '/scorpius/joy', self.subscriber_callback)
+
         # callbacks
         logic_period = 0.5  # seconds
         self.timer_logic = self.create_timer(logic_period, self.logic_callback)
+
         # subscribe members
         self.speed = 0 # speed, between 0 (min) and 1 (max)
         self.input_vector = Vector2()
         self.step = 0 # step of the hexapod in mm
+
         # publish members
-        self.angles = Vector12() # leg A is 
+        self.angles = Vector12() # leg A is left from head, rest goes counterclockwise
         self.last_angles = Vector12()
+
         # parameter members
-        self.leg_length = 0 # leg reach
+        self.leg_reach = 100 # leg reach, mm
+        self.front_angle = 90 # front degrees in witch the hexapod goes directly in the wanted direction
+        self.input_dead_zone = 0.2 # minimum magnitude of the input vector
+        self.movement_state = 0 # 0 -> idle, 1 -> forward, 2 -> backward, 3 -> turn right, 4 -> turn left
+
+        # limits
         self.MAX_ANGLE = 45 # maximum servo angle
         self.MIN_ANGLE = -45 # minimum servo angle
+        self.MAX_STEP = 0 # mm, TODO
+        self.MIN_STEP = 5 # mm
 
     def subscriber_callback(self, msg):
         # read msg
         data = msg
+
+        # update input vector
         self.input_vector.x = data.x
         self.input_vector.y = data.y
-        self.speed = data.speed
-        self.step = data.step
+
+        # update speed
+        if data.speed != self.speed:
+            if data.speed > 1:
+                self.speed = 1
+            elif data.speed < 0:
+                self.speed = 0
+            else:
+                self.speed = data.speed
+
+        # update step
+        if self.step != data.step:
+            if data.step > self.MAX_STEP:
+                self.step = self.MAX_STEP
+            elif data.step < self.MIN_STEP:
+                self.step = self.MIN_STEP
+            else:
+                self.step = data.step
+
         # debug
         self.get_logger().info(f"Received : {data.x} {data.y} {data.speed} {data.pas}")
         
     def logic_callback(self):
-        # calculations
+        # update movement method
+        self.update_movement_state()
+
+        # angles calculations
         self.angles_calculations()
 
         # publish calculations
@@ -119,6 +153,7 @@ class TeleopNode(Node):
         # send msg
         msg = self.angles.to_servo_angles()
         self.publisher_.publish(msg)
+
         # debug
         self.get_logger().info(
             f"\n================ Publishing ================\n"
@@ -133,10 +168,38 @@ class TeleopNode(Node):
         )
     
     def angles_calculations(self):
-        # 
+        # find movement state
         self.angles = self.last_angles
+
+        # calculate angles
+        # TODO
+
         # update last angles
         self.last_angles = self.angles
+
+    def update_movement_state(self):
+        # get normalized input
+        normalized_input_vector = self.input_vector.normalized()
+
+        # check dead zone
+        if (normalized_input_vector.get_magnitude() < self.input_dead_zone):
+            normalized_input_vector.x = normalized_input_vector.y = 0
+
+        # find movement state
+        if normalized_input_vector.x == normalized_input_vector.y == 0:
+            self.movement_state = 0
+        else:
+            angle = normalized_input_vector.get_angle() - 90   
+            if math.abs(angle) <= self.front_angle / 2:
+                self.movement_state = 1 # forward
+            elif math.abs(angle) >= 180 - self.front_angle / 2:
+                self.movement_state = 2 # backward
+            elif angle < -self.front_angle / 2:
+                self.movement_state = 3 # turn right
+            elif angle > self.front_angle / 2:
+                self.movement_state = 4 # turn left
+            else:
+                raise ValueError("Movement state not found.")
 
 
 def main(args=None):
