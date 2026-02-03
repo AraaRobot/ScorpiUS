@@ -1,5 +1,7 @@
 #include "comm_node.hpp"
 
+// NEED PACKAGE ON UBUNTU 24.04 --> TRANSITION NEEDED BEFORE MAKING THIS NODE
+
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);

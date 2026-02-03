@@ -7,6 +7,7 @@ class CommNode : public rclcpp::Node
 {
   public:
     CommNode();
+
 };
 
 #endif  // SCORPIUS_COMM_HPP
