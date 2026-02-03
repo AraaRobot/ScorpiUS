@@ -1,0 +1,12 @@
+float32 vertA
+float32 vertB
+float32 vertC
+float32 vertD
+float32 vertE
+float32 vertF
+float32 horizA
+float32 horizB
+float32 horizC
+float32 horizD
+float32 horizE
+float32 horizF
