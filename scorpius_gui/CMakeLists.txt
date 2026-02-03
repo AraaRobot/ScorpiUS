@@ -27,7 +27,8 @@ endif()
 add_executable(gui  src/gui.cpp 
                     src/gui_node.cpp
                     src/gui_window.cpp
-                    ui/main_window.ui)
+                    ui/main_window.ui
+                    ui/DebugWidget.ui)
 
 ament_target_dependencies(gui
                           rclcpp)
