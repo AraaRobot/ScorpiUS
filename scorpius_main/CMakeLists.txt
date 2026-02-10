@@ -16,6 +16,7 @@ find_package(rclcpp REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Teleop.msg"
+  "msg/JoyFormat.msg"
 )
 
 install(

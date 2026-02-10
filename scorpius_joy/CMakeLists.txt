@@ -12,11 +12,16 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(joy REQUIRED)
+find_package(scorpius_main REQUIRED)
 
-add_executable(joy src/joy_node.cpp)
+add_executable(joy_formator src/joy_formator.cpp)
 
-ament_target_dependencies(joy
-                          rclcpp)
+ament_target_dependencies(joy_formator
+                          rclcpp
+                          sensor_msgs
+                          scorpius_main
+                          joy)
 
 install(
   DIRECTORY launch
@@ -24,6 +29,6 @@ install(
 )
 
 install(TARGETS 
-            joy
+            joy_formator
             DESTINATION lib/${PROJECT_NAME}/)
 ament_package()
