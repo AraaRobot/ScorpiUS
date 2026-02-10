@@ -32,6 +32,7 @@ add_executable(gui  src/gui.cpp
                     src/gui_node.cpp
                     src/gui_window.cpp
                     src/debug_widget/debug_widget.cpp
+                    src/debug_widget/debug_widget_manager.cpp
                     ui/main_window.ui
                     ui/DebugWidget.ui)
 
