@@ -26,7 +26,6 @@ int guiMain(int argc, char* argv[])
     QApplication::setApplicationName("ScorpiUS GUI");
 
     GuiWindow window;
-    window.addTab(new QLabel("Placeholder tab"), "Main");
     window.resize(900, 600);
     window.show();
 

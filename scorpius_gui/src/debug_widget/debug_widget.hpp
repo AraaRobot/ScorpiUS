@@ -2,6 +2,7 @@
 #define DEBUG_WIDGET
 
 #include <QWidget>
+#include "ui_DebugWidget.h"
 
 
 class DebugWidget : public QWidget
@@ -12,6 +13,7 @@ class DebugWidget : public QWidget
     DebugWidget(QWidget* parent_);
 
   private:
+  Ui::DebugWidget _ui;
 };
 
 #endif  // define DEBUG_WIDGET

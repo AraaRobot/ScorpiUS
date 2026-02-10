@@ -11,6 +11,10 @@ endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS
+  ${CMAKE_CURRENT_SOURCE_DIR}/ui
+)
+
 set(CMAKE_AUTORCC ON)
 
 # find dependencies
@@ -27,6 +31,7 @@ endif()
 add_executable(gui  src/gui.cpp 
                     src/gui_node.cpp
                     src/gui_window.cpp
+                    src/debug_widget/debug_widget.cpp
                     ui/main_window.ui
                     ui/DebugWidget.ui)
 

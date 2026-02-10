@@ -6,6 +6,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "debug_widget/debug_widget.hpp"
+
 class GuiWindow : public QMainWindow
 {
     Q_OBJECT
@@ -18,6 +20,7 @@ class GuiWindow : public QMainWindow
     QWidget* _central{nullptr};
     QVBoxLayout* _layout{nullptr};
     QTabWidget* _tabs{nullptr};
+    DebugWidget* _debugWidget;
 };
 
 #endif  // define GUI_WINDOW_HPP

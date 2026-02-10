@@ -1,0 +1,7 @@
+#ifndef DEBUG_WIDGET_MANAGER
+#define DEBUG_WIDGET_MANAGER
+
+
+
+
+#endif // DEBUG_WIDGET_MANAGER

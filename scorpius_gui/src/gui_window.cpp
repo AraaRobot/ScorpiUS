@@ -6,6 +6,7 @@ GuiWindow::GuiWindow(QWidget* parent_):
     _central = new QWidget(this);
     _layout = new QVBoxLayout(_central);
     _tabs = new QTabWidget(_central);
+    _debugWidget = new DebugWidget(_tabs);
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
@@ -13,6 +14,7 @@ GuiWindow::GuiWindow(QWidget* parent_):
 
     _central->setLayout(_layout);
     setCentralWidget(_central);
+    this->addTab(_debugWidget, "Debug");
 }
 
 int GuiWindow::addTab(QWidget* page, const QString& label)
