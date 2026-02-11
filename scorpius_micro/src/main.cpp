@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
+#include "comm.h"
+
 // PCA9685 default address: 0x40
 Adafruit_PWMServoDriver board1 = Adafruit_PWMServoDriver(0x40);
 #define SERVOMIN  102    // this is the 'minimum' pulse length count (out of 4096)
