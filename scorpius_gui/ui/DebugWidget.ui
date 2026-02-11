@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">border: 2px solid black;
+border-radius: 5px;</string>
+  </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
@@ -46,7 +50,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcd_horizontal"/>
+       <widget class="QLabel" name="angle_horizontal">
+        <property name="text">
+         <string>0 deg</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -60,7 +71,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcd_vertical"/>
+       <widget class="QLabel" name="angle_vertical">
+        <property name="text">
+         <string>0 deg</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -77,7 +95,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcd_x"/>
+       <widget class="QLabel" name="value_x">
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_y">
@@ -90,7 +115,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcd_y"/>
+       <widget class="QLabel" name="value_x_2">
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_z">
@@ -103,7 +135,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcd_z"/>
+       <widget class="QLabel" name="value_x_3">
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

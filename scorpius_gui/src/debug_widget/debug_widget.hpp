@@ -9,8 +9,8 @@ class DebugWidget : public QWidget
     Q_OBJECT
 
   public:
-    DebugWidget(QWidget* parent_, size_t number_);
-    void setPatteNumber(size_t number_);
+    DebugWidget(QWidget* parent_, char id_);
+    void setPatteNumber(char id_);
     void setAngleHorizontal(float angle_);
     void setAngleVertical(float angle_);
 

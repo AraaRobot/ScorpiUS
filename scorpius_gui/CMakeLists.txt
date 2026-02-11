@@ -20,6 +20,7 @@ set(CMAKE_AUTORCC ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(scorpius_main REQUIRED)
 find_package(Qt6 COMPONENTS Widgets QUIET)
 if(Qt6_FOUND)
   set(QT_WIDGETS_LIB Qt6::Widgets)
@@ -36,7 +37,8 @@ add_executable(gui  src/gui.cpp
                     ui/DebugWidget.ui)
 
 ament_target_dependencies(gui
-                          rclcpp)
+                          rclcpp
+                          scorpius_main)
 
 target_include_directories(gui PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
