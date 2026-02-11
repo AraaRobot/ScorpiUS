@@ -19,4 +19,27 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
     }
 
     setLayout(_grid);
+
+    _sub_teleop = _node->create_subscription<scorpius_main::msg::ServoAngles>("/scorpius/teleop",
+                                                                              10,
+                                                                              [this](const scorpius_main::msg::ServoAngles msg_)
+                                                                              {
+                                                                                  this->CB_subTeleop(msg_);
+                                                                              });
+}
+
+void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_)
+{
+    emit _debugWidgets[letterToIndex('A')]->setAngleHorizontalSignal(msg_.horiz_a);
+    emit _debugWidgets[letterToIndex('A')]->setAngleVerticalSignal(msg_.vert_a);
+    emit _debugWidgets[letterToIndex('B')]->setAngleHorizontalSignal(msg_.horiz_b);
+    emit _debugWidgets[letterToIndex('B')]->setAngleVerticalSignal(msg_.vert_b);
+    emit _debugWidgets[letterToIndex('C')]->setAngleHorizontalSignal(msg_.horiz_c);
+    emit _debugWidgets[letterToIndex('C')]->setAngleVerticalSignal(msg_.vert_c);
+    emit _debugWidgets[letterToIndex('D')]->setAngleHorizontalSignal(msg_.horiz_d);
+    emit _debugWidgets[letterToIndex('D')]->setAngleVerticalSignal(msg_.vert_d);
+    emit _debugWidgets[letterToIndex('E')]->setAngleHorizontalSignal(msg_.horiz_e);
+    emit _debugWidgets[letterToIndex('E')]->setAngleVerticalSignal(msg_.vert_e);
+    emit _debugWidgets[letterToIndex('F')]->setAngleHorizontalSignal(msg_.horiz_f);
+    emit _debugWidgets[letterToIndex('F')]->setAngleVerticalSignal(msg_.vert_f);
 }
