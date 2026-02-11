@@ -4,11 +4,11 @@
   <name>scorpius_gui</name>
   <version>0.0.0</version>
   <description>Handles ROS and QT communication for GUI</description>
-  <maintainer email="anibal.arango@usherbrooke.ca">anibal</maintainer>
+  <maintainer email="charles-eloi.lafond@usherbrooke.ca">charles-eloi</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  <depend>scorpius_main</depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
