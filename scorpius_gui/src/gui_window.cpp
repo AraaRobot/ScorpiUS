@@ -1,12 +1,12 @@
 #include "gui_window.hpp"
 
-GuiWindow::GuiWindow(QWidget* parent_):
+GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     QMainWindow(parent_)
 {
     _central = new QWidget(this);
     _layout = new QVBoxLayout(_central);
     _tabs = new QTabWidget(_central);
-    _debugWidgetManager = new DebugWidgetManager(_tabs);
+    _debugWidgetManager = new DebugWidgetManager(node_, _tabs);
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);

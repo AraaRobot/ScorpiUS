@@ -28,8 +28,7 @@ else()
   set(QT_WIDGETS_LIB Qt5::Widgets)
 endif()
 
-add_executable(gui  src/gui.cpp 
-                    src/gui_node.cpp
+add_executable(gui  src/gui.cpp
                     src/gui_window.cpp
                     src/debug_widget/debug_widget.cpp
                     src/debug_widget/debug_widget_manager.cpp

@@ -1,7 +1,8 @@
 #include "debug_widget_manager.hpp"
 
-DebugWidgetManager::DebugWidgetManager(QWidget* parent = nullptr):
-    QWidget(parent)
+DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr): QWidget(parent),
+    _node(node_)
+    
 {
     _grid = new QGridLayout(this);
     _grid->setContentsMargins(0, 0, 0, 0);
@@ -11,8 +12,8 @@ DebugWidgetManager::DebugWidgetManager(QWidget* parent = nullptr):
     {
         for (int c = 0; c < COLS; ++c)
         {
-            auto* widget = new DebugWidget(this);
-            _grid->addWidget(widget, r, c);
+            _debugWidgets[r * COLS + c] = std::make_unique<DebugWidget>(this, r * COLS + c + 1);
+            _grid->addWidget(_debugWidgets[r * COLS + c].get(), r, c);
         }
     }
 

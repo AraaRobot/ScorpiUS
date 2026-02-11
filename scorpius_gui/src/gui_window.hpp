@@ -5,6 +5,7 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <rclcpp/rclcpp.hpp>
 
 #include "debug_widget/debug_widget_manager.hpp"
 
@@ -12,7 +13,7 @@ class GuiWindow : public QMainWindow
 {
     Q_OBJECT
   public:
-    explicit GuiWindow(QWidget* parent = nullptr);
+    explicit GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
 
     int addTab(QWidget* page, const QString& label);
 
