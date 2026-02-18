@@ -81,6 +81,7 @@ class HexapodAngles:
             raise TypeError(target + " not a HexapodAngles.")
         if ratio < 0 or ratio > 1:
             raise ValueError("Ratio must be between 0 and 1.")
+        # TODO: add square interpolation to vertical angles for more natural movement
         self.legA.vAngle += math.min((target.legA.vAngle - start.legA.vAngle) * ratio, self.legA.vAngle - start.legA.vAngle)
         self.legA.hAngle += math.min((target.legA.hAngle - start.legA.hAngle) * ratio, self.legA.hAngle - start.legA.hAngle)
         self.legB.vAngle += math.min((target.legB.vAngle - start.legB.vAngle) * ratio, self.legB.vAngle - start.legB.vAngle)
@@ -121,8 +122,8 @@ class TeleopNode(Node):
         # logic members
         self.start_angles = HexapodAngles() # start angles for the legs, used for smooth movement
         self.target_angles = HexapodAngles() # target angles for the legs, used for smooth movement  
-        self.forward_angle = 0 # angle of the forward direction, degrees
-        self.backward_angle = 0 # angle of the backward direction, degrees 
+        self.front_angle_offset = 30 # angle of the forward direction, degrees
+        self.rear_angle_offset = -30 # angle of the backward direction, degrees 
         self.position_count = 60 # amount of positions in one whole movement
         self.leg_reach = 100 # leg reach, mm
         self.front_angle = 90 # front degrees in witch the hexapod goes directly in the wanted direction
@@ -202,10 +203,12 @@ class TeleopNode(Node):
         # update target angles based on movement state
         if self.angles == self.target_angles:
             # update angles
-            self.start_angles = self.angles
+            self.start_angles = self.target_angles
 
-            # match state
+            # match new state and update target angles TODO
             state = (self.movement_state, self.position_state)
+            half_angle_step = math.asin(self.step / (2 * self.leg_reach)) * 180 / math.pi # angle step for horizontal angles, degrees
+            target_angle = self.input_vector.get_angle() - 90 # target angle for horizontal angles, degrees
             match state:
                 case (0, _): # to idle
                     self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
@@ -236,7 +239,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # left neutral, 1
                     self.position_state = 1
                 case (1, 1): # forward, left neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # right down, 2
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       target_angle + half_angle_step - self.front_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle - half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle + half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle + half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle + half_angle_step - self.front_angle_offset) # right down, 2
                     self.position_state = 2
                 case (1, 2): # forward, right down
                     self.target_angles = HexapodAngles(self.VERT_UP_ANGLE, 
@@ -253,7 +267,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # right neutral, 3   
                     self.position_state = 3
                 case (1, 3): # forward, right neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # left down, 4
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       target_angle - half_angle_step - self.front_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle + half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle - half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle - half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle - half_angle_step - self.front_angle_offset) # left down, 4
                     self.position_state = 4
                 case (1, 4): # forward, left down
                     self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
@@ -270,7 +295,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # left neutral, 1
                     self.position_state = 1
                 case (2, 1): # backward, left neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # left down, 4
+                    self.target_angles = self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       target_angle - half_angle_step - self.front_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle + half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle - half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle - half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle - half_angle_step - self.front_angle_offset) # left down, 4
                     self.position_state = 4
                 case (2, 2): # backward, right down
                     self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
@@ -287,7 +323,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # left neutral, 1
                     self.position_state = 1
                 case (2, 3): # backward, right neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # right down, 2
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       target_angle + half_angle_step - self.front_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle - half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle + half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle + half_angle_step - self.rear_angle_offset, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       target_angle - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       target_angle + half_angle_step - self.front_angle_offset) # right down, 2
                     self.position_state = 2
                 case (2, 4): # backward, left down
                     self.target_angles = HexapodAngles(self.VERT_UP_ANGLE, 
@@ -304,7 +351,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # right neutral, 3  
                     self.position_state = 3
                 case (3, 1): # turn right, left neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # right down, 2
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step) # right down, 2
                     self.position_state = 2
                 case (3, 2): # turn right, right down
                     self.target_angles = HexapodAngles(self.VERT_UP_ANGLE, 
@@ -321,7 +379,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # right neutral, 3  
                     self.position_state = 3
                 case (3, 3): # turn right, right neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # left down, 4
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step) # left down, 4
                     self.position_state = 4
                 case (3, 4): # turn right, left down
                     self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
@@ -338,7 +407,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # left neutral, 1
                     self.position_state = 1
                 case (4, 1): # turn left, left neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # left down, 4
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE + half_angle_step) # left down, 4
                     self.position_state = 4
                 case (4, 2): # turn left, right down
                     self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
@@ -355,7 +435,18 @@ class TeleopNode(Node):
                                                        self.HORIZ_NEUTRAL_ANGLE) # left neutral, 1
                     self.position_state = 1
                 case (4, 3): # turn left, right neutral
-                    self.target_angles = HexapodAngles(90, 0, 90, 0, 90, 0, 90, 0, 90, 0, 90, 0) # right down, 2
+                    self.target_angles = HexapodAngles(self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_DOWN_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
+                                                       self.VERT_UP_ANGLE, 
+                                                       self.HORIZ_NEUTRAL_ANGLE - half_angle_step) # right down, 2
                     self.position_state = 2
                 case (4, 4): # turn left, left down
                     self.target_angles = HexapodAngles(self.VERT_UP_ANGLE, 
@@ -374,7 +465,7 @@ class TeleopNode(Node):
                 case _:
                     raise ValueError("Next movement not found.")
         
-        # calculate next angles based on target angles
+        # interpolate angles towards target angles
         self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
 
     def update_movement_state(self):
