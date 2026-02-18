@@ -16,7 +16,17 @@ class CommNode(Node):
             ServoAngles, '/scorpius/teleop', self.CB_teleop, 10)
         self.subscription  # prevent unused variable warning
 
-        self.ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+        try:
+            self.ser = serial.Serial(
+                '/dev/ttyACM0', 115200, timeout=1)
+            self.get_logger().info(
+                f"Opened serial /dev/ttyACM0 115200")
+        except (serial.SerialException, FileNotFoundError) as e:
+            self.get_logger().error(
+                f"Could not open serial port /dev/ttyACM0: {e}")
+            return
+
+        self.ser = None
         self.ser.reset_input_buffer()
 
     def destroy_node(self):
@@ -25,9 +35,12 @@ class CommNode(Node):
         super().destroy_node()
 
     def CB_teleop(self, msg):
+        if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
+            self.get_logger().warning("Serial not open — dropping teleop message")
+            return
         try:
             self.ser.write(self.build_packet(msg))
-        except serial.SerialException as e:
+        except Exception as e:
             self.get_logger().error(str(e))
 
     def angle_to_uint8(self, angle):
