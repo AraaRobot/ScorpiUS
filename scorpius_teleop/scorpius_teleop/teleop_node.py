@@ -81,18 +81,24 @@ class HexapodAngles:
             raise TypeError(target + " not a HexapodAngles.")
         if ratio < 0 or ratio > 1:
             raise ValueError("Ratio must be between 0 and 1.")
-        # TODO: add square interpolation to vertical angles for more natural movement
-        self.legA.vAngle += math.min((target.legA.vAngle - start.legA.vAngle) * ratio, self.legA.vAngle - start.legA.vAngle)
+
+        def next_angle(start_angle, target_angle, current_angle, exponent: float = 2):
+            k = math.max(target_angle, start_angle, key=abs)
+            h = 1/ratio * (target_angle != 0)
+            last_ratio = math.pow(math.copysign(k, (current_angle - k) / (ratio * math.abs(target_angle - start_angle))), 1/exponent) + h * ratio
+            return math.copysign(k, math.abs(target_angle - start_angle) * math.pow(ratio, exponent) * math.pow(last_ratio + ratio - h, exponent)) + k
+        
+        self.legA.vAngle += math.min(next_angle(start.legA.vAngle, target.legA.vAngle, self.legA.vAngle) - self.legA.vAngle, self.legA.vAngle - start.legA.vAngle)
         self.legA.hAngle += math.min((target.legA.hAngle - start.legA.hAngle) * ratio, self.legA.hAngle - start.legA.hAngle)
-        self.legB.vAngle += math.min((target.legB.vAngle - start.legB.vAngle) * ratio, self.legB.vAngle - start.legB.vAngle)
+        self.legB.vAngle += math.min(next_angle(start.legB.vAngle, target.legB.vAngle, self.legB.vAngle) - self.legB.vAngle, self.legB.vAngle - start.legB.vAngle)
         self.legB.hAngle += math.min((target.legB.hAngle - start.legB.hAngle) * ratio, self.legB.hAngle - start.legB.hAngle)
-        self.legC.vAngle += math.min((target.legC.vAngle - start.legC.vAngle) * ratio, self.legC.vAngle - start.legC.vAngle)
+        self.legC.vAngle += math.min(next_angle(start.legC.vAngle, target.legC.vAngle, self.legC.vAngle) - self.legC.vAngle, self.legC.vAngle - start.legC.vAngle)
         self.legC.hAngle += math.min((target.legC.hAngle - start.legC.hAngle) * ratio, self.legC.hAngle - start.legC.hAngle)
-        self.legD.vAngle += math.min((target.legD.vAngle - start.legD.vAngle) * ratio, self.legD.vAngle - start.legD.vAngle)
+        self.legD.vAngle += math.min(next_angle(start.legD.vAngle, target.legD.vAngle, self.legD.vAngle) - self.legD.vAngle, self.legD.vAngle - start.legD.vAngle)
         self.legD.hAngle += math.min((target.legD.hAngle - start.legD.hAngle) * ratio, self.legD.hAngle - start.legD.hAngle)
-        self.legE.vAngle += math.min((target.legE.vAngle - start.legE.vAngle) * ratio, self.legE.vAngle - start.legE.vAngle)
+        self.legE.vAngle += math.min(next_angle(start.legE.vAngle, target.legE.vAngle, self.legE.vAngle) - self.legE.vAngle, self.legE.vAngle - start.legE.vAngle)
         self.legE.hAngle += math.min((target.legE.hAngle - start.legE.hAngle) * ratio, self.legE.hAngle - start.legE.hAngle)
-        self.legF.vAngle += math.min((target.legF.vAngle - start.legF.vAngle) * ratio, self.legF.vAngle - start.legF.vAngle)
+        self.legF.vAngle += math.min(next_angle(start.legF.vAngle, target.legF.vAngle, self.legF.vAngle) - self.legF.vAngle, self.legF.vAngle - start.legF.vAngle)
         self.legF.hAngle += math.min((target.legF.hAngle - start.legF.hAngle) * ratio, self.legF.hAngle - start.legF.hAngle)
 
     def __eq__(self, other):
@@ -130,10 +136,11 @@ class TeleopNode(Node):
         self.input_dead_zone = 0.2 # minimum magnitude of the input vector
         self.movement_state = 0 # 0 -> idle, 1 -> forward, 2 -> backward, 3 -> turn right, 4 -> turn left
         self.position_state = 0 # 0 -> neutral, 1 -> left neutral, 2 -> right down, 3 -> right neutral, 4 -> left down
+        self.last_interpolation_time = self.get_clock().now() # time of the last interpolation, used for smooth movement
 
         # limits
-        self.MAX_SPEED = 180 # maximum speed in degrees / second
-        self.MIN_SPEED = 40 # minimum speed in degrees / second
+        self.MAX_SPEED = self.position_count / 1 # maximum speed in position / second
+        self.MIN_SPEED = self.position_count / 10 # minimum speed in position / second
         self.MAX_ABS_HORIZ_ANGLE = 45 # maximum absolute horizontal servo angle
         self.MAZ_VERT_ANGLE = 90 # maximum vertical servo angle
         self.MIN_VERT_ANGLE = 0 # minimum vertical servo angle
@@ -205,7 +212,7 @@ class TeleopNode(Node):
             # update angles
             self.start_angles = self.target_angles
 
-            # match new state and update target angles TODO
+            # match new state and update target angles
             state = (self.movement_state, self.position_state)
             half_angle_step = math.asin(self.step / (2 * self.leg_reach)) * 180 / math.pi # angle step for horizontal angles, degrees
             target_angle = self.input_vector.get_angle() - 90 # target angle for horizontal angles, degrees
@@ -465,8 +472,10 @@ class TeleopNode(Node):
                 case _:
                     raise ValueError("Next movement not found.")
         
-        # interpolate angles towards target angles
-        self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
+        # interpolate angles towards target angles based on speed
+        if self.get_clock().now() - self.last_interpolation_time >= rclpy.duration.Duration(seconds=1/self.speed):
+            self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
+            self.last_interpolation_time = self.get_clock().now()
 
     def update_movement_state(self):
         # get normalized input
