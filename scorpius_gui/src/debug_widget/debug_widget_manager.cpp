@@ -1,6 +1,6 @@
 #include "debug_widget_manager.hpp"
 
-DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr):
+DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent):
     QWidget(parent),
     _node(node_)
 
@@ -22,7 +22,7 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
 
     _sub_teleop = _node->create_subscription<scorpius_main::msg::ServoAngles>("/scorpius/teleop",
                                                                               10,
-                                                                              [this](const scorpius_main::msg::ServoAngles msg_)
+                                                                              [this](const scorpius_main::msg::ServoAngles& msg_)
                                                                               {
                                                                                   this->CB_subTeleop(msg_);
                                                                               });

@@ -4,13 +4,13 @@ DebugWidget::DebugWidget(QWidget* parent_, char id_):
     QWidget(parent_)
 {
     _ui.setupUi(this);
-    this->setPatteNumber(id_);
+    this->setPawNumber(id_);
 
     connect(this, &DebugWidget::setAngleHorizontalSignal, this, &DebugWidget::setAngleHorizontalSlot);
     connect(this, &DebugWidget::setAngleVerticalSignal, this, &DebugWidget::setAngleVerticalSlot);
 }
 
-void DebugWidget::setPatteNumber(char id_)
+void DebugWidget::setPawNumber(char id_)
 {
     _ui.PatteNumber->setText(QStringLiteral("Patte ") + QString(id_));
 }

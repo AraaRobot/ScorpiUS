@@ -1,7 +1,8 @@
+#include <thread>
+
 #include <QApplication>
 #include <QLabel>
 #include <QWidget>
-
 #include <QProcess>
 #include "gui_window.hpp"
 #include <rclcpp/rclcpp.hpp>
@@ -18,6 +19,9 @@ int main(int argc, char* argv[])
     std::jthread rosThread(rosThreadFunction, node);
 
     int ret = guiMain(argc, argv, node);
+
+    rclcpp::shutdown();
+
     return ret;
 }
 

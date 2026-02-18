@@ -18,7 +18,7 @@ class DebugWidget : public QWidget
 
   public:
     DebugWidget(QWidget* parent_, char id_);
-    void setPatteNumber(char id_);
+    void setPawNumber(char id_);
 
   private:
     Ui::DebugWidget _ui;
