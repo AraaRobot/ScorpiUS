@@ -1,6 +1,6 @@
 /* We use a custom packet made with uint8 with this format
 HEAD 0xAA
-Data_lenght
+Data_length
 Data ...
 Checksum
 TAIL 0xBB
