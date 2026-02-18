@@ -17,7 +17,6 @@ find_package(rclcpp REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Inputs.msg"
   "msg/ServoAngles.msg"
-  "msg/ServoAngles.msg"
 )
 
 install(
