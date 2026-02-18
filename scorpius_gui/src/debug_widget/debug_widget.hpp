@@ -8,6 +8,10 @@ class DebugWidget : public QWidget
 {
     Q_OBJECT
 
+  public:
+    DebugWidget(QWidget* parent_, char id_);
+    void setPawNumber(char id_);
+
   signals:
     void setAngleHorizontalSignal(float angle_);
     void setAngleVerticalSignal(float angle_);
@@ -15,10 +19,6 @@ class DebugWidget : public QWidget
   private slots:
     void setAngleHorizontalSlot(float angle_);
     void setAngleVerticalSlot(float angle_);
-
-  public:
-    DebugWidget(QWidget* parent_, char id_);
-    void setPawNumber(char id_);
 
   private:
     Ui::DebugWidget _ui;
