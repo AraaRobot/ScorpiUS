@@ -49,7 +49,7 @@ void comm_process()
                 len = b;
                 if (len == 0 || len > COMM_EXPECTED_LEN)
                 {
-                    commSerial->print("Invalid packet lenght: ");
+                    commSerial->print("Invalid packet length: ");
                     commSerial->print(len);
                     state = WAIT_HEAD;
                 }
@@ -73,6 +73,7 @@ void comm_process()
                 break;
 
             case READ_CHECKSUM:
+            {
                 uint8_t expected = (uint8_t)(checksum & 0xFF);
                 if (b == expected)
                 {
@@ -88,7 +89,7 @@ void comm_process()
                     state = WAIT_HEAD;
                 }
                 break;
-
+            }
             case READ_TAIL:
                 if (b == 0xBB)
                 {
