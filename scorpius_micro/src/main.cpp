@@ -36,6 +36,8 @@ void setup()
         c = Serial.read();
     }
     Serial.println("Starting code");
+
+    comm_init(Serial);
 }
 
 void loop() 
@@ -81,6 +83,10 @@ void loop()
     //         board1.setPWM(0, 0, angleToPulse(angle));
     //     }
     // }
+
+    comm_process();
+    sAngles angles;
+    comm_consume(angles);
 }
 
 int angleToPulse(int ang) //gets the angle in degree and returns the pulse width

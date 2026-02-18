@@ -8,11 +8,11 @@ TAIL 0xBB
 
 #include "comm.h"
 
-#define COMM_MAX_SERVO 16
+#define COMM_EXPECTED_LEN 12
 
 static HardwareSerial* commSerial = &Serial;
 static int len = 0;
-static uint8_t dataBuf[COMM_MAX_SERVO];
+static uint8_t dataBuf[COMM_EXPECTED_LEN];
 static uint8_t dataPos = 0;
 static int checksum = 0;
 static bool packetReady = false;
@@ -47,17 +47,15 @@ void comm_process()
 
             case READ_LEN:
                 len = b;
-                if (len == 0)
+                if (len == 0 || len > COMM_EXPECTED_LEN)
                 {
-                    state = READ_CHECKSUM;
-                }
-                else if (len <= COMM_MAX_SERVO)
-                {
-                    state = READ_DATA;
+                    commSerial->print("Invalid packet lenght: ");
+                    commSerial->print(len);
+                    state = WAIT_HEAD;
                 }
                 else
                 {
-                    state = WAIT_HEAD;
+                    state = READ_DATA;
                 }
 
                 break;
@@ -94,19 +92,63 @@ void comm_process()
             case READ_TAIL:
                 if (b == 0xBB)
                 {
-                    packetReady = true;
+                    if (!packetReady)
+                    {
+                        packetReady = true;
+                    }
+                    else
+                    {
+                        commSerial->print("Dropped a packet");
+                    }
                 }
-                else
-                {
-                    state = WAIT_HEAD;
-                }
+
+                state = WAIT_HEAD;
+                dataPos = 0;
+                checksum = 0;
                 break;
 
             default:
                 state = WAIT_HEAD;
+                dataPos = 0;
+                checksum = 0;
                 break;
         }
     }
+}
+
+void comm_consume(sAngles& angles_)
+{
+    if (!packetReady)
+    {
+        return;
+    }
+
+    if (len != COMM_EXPECTED_LEN)
+    {
+        commSerial->print("comm_consume: bad len=");
+        commSerial->println(len);
+        packetReady = false;
+        state = WAIT_HEAD;
+        return;
+    }
+
+    size_t index = 0;
+    angles_.vert_a = (int8_t)dataBuf[index++];
+    angles_.vert_b = (int8_t)dataBuf[index++];
+    angles_.vert_c = (int8_t)dataBuf[index++];
+    angles_.vert_d = (int8_t)dataBuf[index++];
+    angles_.vert_e = (int8_t)dataBuf[index++];
+    angles_.vert_f = (int8_t)dataBuf[index++];
+    angles_.hori_a = (int8_t)dataBuf[index++];
+    angles_.hori_b = (int8_t)dataBuf[index++];
+    angles_.hori_c = (int8_t)dataBuf[index++];
+    angles_.hori_d = (int8_t)dataBuf[index++];
+    angles_.hori_e = (int8_t)dataBuf[index++];
+    angles_.hori_f = (int8_t)dataBuf[index++];
+
+    packetReady = false;
+    state = WAIT_HEAD;
+    len = 0;
 }
 
 void comm_init(HardwareSerial& serial)
