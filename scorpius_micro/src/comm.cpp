@@ -11,11 +11,13 @@ TAIL 0xBB
 #define COMM_EXPECTED_LEN 12
 
 static HardwareSerial* commSerial = &Serial;
-static int len = 0;
+static volatile int len = 0;
 static uint8_t dataBuf[COMM_EXPECTED_LEN];
+static uint8_t packet[COMM_EXPECTED_LEN];
 static uint8_t dataPos = 0;
 static int checksum = 0;
-static bool packetReady = false;
+static volatile bool packetReady = false;
+static volatile int packetLen = 0;
 
 enum eParserState
 {
@@ -93,19 +95,19 @@ void comm_process()
             case READ_TAIL:
                 if (b == 0xBB)
                 {
-                    if (!packetReady)
-                    {
-                        packetReady = true;
-                    }
-                    else
+                    if (packetReady)
                     {
                         commSerial->print("Dropped a packet");
                     }
+                    memcpy(packet, dataBuf, size_t(len));
+                    packetLen = len;
+                    packetReady = true;
                 }
 
                 state = WAIT_HEAD;
                 dataPos = 0;
                 checksum = 0;
+                len = 0;
                 break;
 
             default:
@@ -124,7 +126,7 @@ void comm_consume(sAngles& angles_)
         return;
     }
 
-    if (len != COMM_EXPECTED_LEN)
+    if (packetLen != COMM_EXPECTED_LEN) // Can be change to a switch case if there a more message types in the future
     {
         commSerial->print("comm_consume: bad len=");
         commSerial->println(len);
@@ -134,18 +136,18 @@ void comm_consume(sAngles& angles_)
     }
 
     size_t index = 0;
-    angles_.vert_a = (int8_t)dataBuf[index++];
-    angles_.vert_b = (int8_t)dataBuf[index++];
-    angles_.vert_c = (int8_t)dataBuf[index++];
-    angles_.vert_d = (int8_t)dataBuf[index++];
-    angles_.vert_e = (int8_t)dataBuf[index++];
-    angles_.vert_f = (int8_t)dataBuf[index++];
-    angles_.hori_a = (int8_t)dataBuf[index++];
-    angles_.hori_b = (int8_t)dataBuf[index++];
-    angles_.hori_c = (int8_t)dataBuf[index++];
-    angles_.hori_d = (int8_t)dataBuf[index++];
-    angles_.hori_e = (int8_t)dataBuf[index++];
-    angles_.hori_f = (int8_t)dataBuf[index++];
+    angles_.vert_a = (int8_t)packet[index++];
+    angles_.vert_b = (int8_t)packet[index++];
+    angles_.vert_c = (int8_t)packet[index++];
+    angles_.vert_d = (int8_t)packet[index++];
+    angles_.vert_e = (int8_t)packet[index++];
+    angles_.vert_f = (int8_t)packet[index++];
+    angles_.hori_a = (int8_t)packet[index++];
+    angles_.hori_b = (int8_t)packet[index++];
+    angles_.hori_c = (int8_t)packet[index++];
+    angles_.hori_d = (int8_t)packet[index++];
+    angles_.hori_e = (int8_t)packet[index++];
+    angles_.hori_f = (int8_t)packet[index++];
 
     packetReady = false;
     state = WAIT_HEAD;

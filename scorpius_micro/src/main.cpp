@@ -27,21 +27,13 @@ void setup()
     
     board1.setPWMFreq(50);
     delay(200);
-    
-    Serial.println("Waiting for start...");
-    char c = Serial.read();
-    while (c != 's')
-    {
-        delay(200);
-        c = Serial.read();
-    }
-    Serial.println("Starting code");
 
     comm_init(Serial);
 }
 
 void loop() 
 { 
+    /*
     for (int angle = 0; angle <= 180; angle += 2)
     {
         for (int servo = 0; servo < 2; servo++)
@@ -60,7 +52,7 @@ void loop()
             board1.setPWM(servo, 0, angleToPulse(angle));
         }
         delay(100);
-    }
+    }*/
 
     // char c = Serial.read();
     // static int angle = 0;
@@ -92,9 +84,9 @@ void loop()
 int angleToPulse(int ang) //gets the angle in degree and returns the pulse width
 {  
     int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX);  // map angle of 0 to 180 to Servo min and Servo max 
-    Serial.print("Angle: ");
-    Serial.print(ang);
-    Serial.print("\tpulse: ");
-    Serial.println(pulse);
+    //Serial.print("Angle: ");
+    //Serial.print(ang);
+    //Serial.print("\tpulse: ");
+    //Serial.println(pulse);
     return pulse;
 }
