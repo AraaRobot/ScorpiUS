@@ -3,13 +3,12 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #include "comm.h"
+#include "control.h"
 
 // PCA9685 default address: 0x40
-Adafruit_PWMServoDriver board1 = Adafruit_PWMServoDriver(0x40);
-#define SERVOMIN  102    // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  522    // this is the 'maximum' pulse length count (out of 4096)
+Adafruit_PWMServoDriver driverModule = Adafruit_PWMServoDriver(0x40);
 
-int angleToPulse(int ang);
+void demo();
 
 void setup()
 {
@@ -22,71 +21,95 @@ void setup()
     delay(100);
     
     Serial.println("Initializing PCA9685...");
-    board1.begin();
-    delay(100);
     
-    board1.setPWMFreq(50);
-    delay(200);
-
-    comm_init(Serial);
+    controlInit();
+    // comm_init(Serial);
+    
+    Serial.println("Waiting for start...");
+    char c = Serial.read();
+    while (c != 's')
+    {
+        c = Serial.read();
+        delay(100);
+    }
 }
 
 void loop() 
-{ 
-    /*
-    for (int angle = 0; angle <= 180; angle += 2)
+{
+    static int angle = 0;
+    static int servo = 0;
+    Serial.print("Current servo: ");Serial.print(servo);
+    Serial.print(" Current angle: ");Serial.println(angle);
+    char c = Serial.read();
+
+    if (c == 'e')
     {
-        for (int servo = 0; servo < 2; servo++)
+        demo();
+    }
+    else if (c == 'w')
+    {
+        if (angle < 90) angle += 5;
+        servoGoTo(static_cast<eServo>(servo), angle);
+    }
+    else if (c == 's')
+    {
+        if (angle > -90) angle -= 5;
+        servoGoTo(static_cast<eServo>(servo), angle);
+    }
+    else if (c == 'a')
+    {
+        if (servo > 0) servo--;
+    }
+    else if (c == 'd')
+    {
+        if (servo < 15) servo++;
+    }
+    else if (c == 'z')
+    {
+        for (uint8_t sm = 0; sm < 15U; sm++)
         {
-            // Serial.print("Servo: "); Serial.print(servo\t);
-            board1.setPWM(servo, 0, angleToPulse(angle));
+            servoGoTo(static_cast<eServo>(sm), 0);
         }
-        delay(100);
     }
 
-    for (int angle = 180; angle >= 0; angle -= 2)
-    {
-        for (int servo = 0; servo < 2; servo++)
-        {
-            // Serial.print("Servo: "); Serial.print(servo\t);
-            board1.setPWM(servo, 0, angleToPulse(angle));
-        }
-        delay(100);
-    }*/
-
-    // char c = Serial.read();
-    // static int angle = 0;
-
-    // if (c == 'f')
-    // {
-    //     if (angle < 180)
-    //     {
-    //         Serial.println("Forward:");
-    //         angle += 10;
-    //         board1.setPWM(0, 0, angleToPulse(angle));
-    //     }
-    // }
-    // else if (c == 'b')
-    // {
-    //     if (angle > 0)
-    //     {
-    //         Serial.println("Backward:");
-    //         angle -= 10;
-    //         board1.setPWM(0, 0, angleToPulse(angle));
-    //     }
-    // }
-
-    comm_process();
-    sAngles angles;
-    comm_consume(angles);
+    // comm_process();
+    // sAngles angles;
+    // comm_consume(angles);
 }
 
-int angleToPulse(int ang) //gets the angle in degree and returns the pulse width
-{  
-    int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX);  // map angle of 0 to 180 to Servo min and Servo max 
-    //Serial.print("Angle: ");
-    //Serial.print(ang);
-    //Serial.print("\tpulse: ");
-    //Serial.println(pulse);
-    return pulse;
+void demo()
+{
+    int angle0 = 0;
+    int angle1 = 0;
+    servoGoTo(eServo::A_0, angle0);
+    servoGoTo(eServo::A_1, angle1);
+    delay(1000);
+
+    while (true)
+    {
+        if (angle0 < -90) break;
+        if (angle1 > -45) angle1 -= 5;
+        angle0 -= 5;
+
+        servoGoTo(eServo::A_0, angle0);
+        servoGoTo(eServo::A_1, angle1);
+        delay(50);
+    }
+
+    while (angle1 < 45)
+    {
+        angle1 += 5;
+        servoGoTo(eServo::A_1, angle1);
+        delay(50);
+    }
+
+    while (true)
+    {
+        if (angle0 < 0) angle0 += 5;
+        if (angle1 > 0) angle1 -= 5;
+        if (angle0 == 0 && angle1 == 0) break;
+        servoGoTo(eServo::A_0, angle0);
+        servoGoTo(eServo::A_1, angle1);
+        delay(50);
+    }
 }
