@@ -5,6 +5,7 @@
 #include "sensor_msgs/msg/joy.hpp"
 #include "scorpius_main/msg/joy_format.hpp"
 #include <cstdint>
+#include <rclcpp/logger.hpp>
 
 class JoyFormator : public rclcpp::Node
 {
@@ -14,6 +15,7 @@ class JoyFormator : public rclcpp::Node
   private:
     void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
     void joyPublisher_CB();
+    int getJoyValue(eKeybinding key);
 
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
     rclcpp::Publisher<scorpius_main::msg::JoyFormat>::SharedPtr _pub_joyFormat;

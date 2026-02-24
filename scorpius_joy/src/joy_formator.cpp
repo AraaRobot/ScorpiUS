@@ -36,6 +36,11 @@ JoyFormator::JoyFormator():
 
 void JoyFormator::joySubscriber_CB(const sensor_msgs::msg::Joy& msg_)
 {
+    RCLCPP_INFO(this->get_logger(), "Here");
+    for (auto button : msg_.buttons)
+    {
+        RCLCPP_INFO(this->get_logger(), std::to_string(button).c_str());
+    }
     this->_lastMsg = msg_;
 }
 
@@ -47,4 +52,20 @@ void JoyFormator::joyPublisher_CB(void)
     msg.x = 1;
     msg.y = 1;
     _pub_joyFormat->publish(msg);
+}
+
+int JoyFormator::getJoyValue(eKeybinding key) 
+{
+    switch (key)
+    {
+        case eKeybinding::a:
+        case eKeybinding::b:
+        case eKeybinding::x:
+        case eKeybinding::y:
+        case eKeybinding::r1:
+        case eKeybinding::r2:
+        case eKeybinding::l1:
+        case eKeybinding::l2:
+            return this->_lastMsg.buttons[1];
+    }
 }
