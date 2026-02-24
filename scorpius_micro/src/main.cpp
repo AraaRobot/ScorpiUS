@@ -32,6 +32,7 @@ void setup()
         c = Serial.read();
         delay(100);
     }
+    Serial.println("Starting code...");
 }
 
 void loop() 
@@ -44,16 +45,34 @@ void loop()
 
     if (c == 'e')
     {
-        demo();
+        while (c != 'q')
+        {
+            demo();
+            c = Serial.read();
+        }
     }
     else if (c == 'w')
     {
-        if (angle < 90) angle += 5;
+        if (servo % 2 == 0)
+        {
+            if (angle < 30) angle += 5;
+        }
+        else if (servo % 2 == 1)
+        {
+            if (angle < 45) angle += 5;
+        }
         servoGoTo(static_cast<eServo>(servo), angle);
     }
     else if (c == 's')
     {
-        if (angle > -90) angle -= 5;
+        if (servo % 2 == 0)
+        {
+            if (angle > -90) angle -= 5;
+        }
+        else if (servo % 2 == 1)
+        {
+            if (angle > -45) angle -= 5;
+        }
         servoGoTo(static_cast<eServo>(servo), angle);
     }
     else if (c == 'a')
@@ -83,12 +102,12 @@ void demo()
     int angle1 = 0;
     servoGoTo(eServo::A_0, angle0);
     servoGoTo(eServo::A_1, angle1);
-    delay(1000);
+    delay(500);
 
     while (true)
     {
-        if (angle0 < -90) break;
-        if (angle1 > -45) angle1 -= 5;
+        if (angle0 <= -90) break;
+        if (angle1 > -45) angle1 -= 2;
         angle0 -= 5;
 
         servoGoTo(eServo::A_0, angle0);
@@ -103,13 +122,22 @@ void demo()
         delay(50);
     }
 
+
     while (true)
     {
-        if (angle0 < 0) angle0 += 5;
-        if (angle1 > 0) angle1 -= 5;
-        if (angle0 == 0 && angle1 == 0) break;
+        if (angle0 < 0)
+        {
+            angle0 += 5;
+            if (angle0 > 0) angle0 = 0;
+        }
+        if (angle1 > 0)
+        {
+            angle1 -= 2;
+            if (angle1 < 0) angle1 = 0;
+        }
         servoGoTo(eServo::A_0, angle0);
         servoGoTo(eServo::A_1, angle1);
         delay(50);
+        if (angle0 == 0 && angle1 == 0) break;
     }
 }
