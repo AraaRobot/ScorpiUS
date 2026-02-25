@@ -88,6 +88,7 @@ void loop()
         for (uint8_t sm = 0; sm < 15U; sm++)
         {
             servoGoTo(static_cast<eServo>(sm), 0);
+            angle = 0;
         }
     }
 
