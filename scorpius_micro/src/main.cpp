@@ -5,26 +5,22 @@
 #include "comm.h"
 #include "control.h"
 
-// PCA9685 default address: 0x40
-Adafruit_PWMServoDriver driverModule = Adafruit_PWMServoDriver(0x40);
-
-void demo();
+void testLegJoints();
 
 void setup()
 {
-
     Serial.begin(115200);
     delay(100);  // Give serial time to initialize
-    
+
     Wire.begin();
     Wire.setClock(100000);
     delay(100);
-    
+
     Serial.println("Initializing PCA9685...");
-    
+
     controlInit();
     // comm_init(Serial);
-    
+
     Serial.println("Waiting for start...");
     char c = Serial.read();
     while (c != 's')
@@ -35,19 +31,21 @@ void setup()
     Serial.println("Starting code...");
 }
 
-void loop() 
+void loop()
 {
     static int angle = 0;
     static int servo = 0;
-    Serial.print("Current servo: ");Serial.print(servo);
-    Serial.print(" Current angle: ");Serial.println(angle);
+    Serial.print("Current servo: ");
+    Serial.print(servo);
+    Serial.print(" Current angle: ");
+    Serial.println(angle);
     char c = Serial.read();
 
     if (c == 'e')
     {
         while (c != 'q')
         {
-            demo();
+            testLegJoints();
             c = Serial.read();
         }
     }
@@ -55,11 +53,13 @@ void loop()
     {
         if (servo % 2 == 0)
         {
-            if (angle < 30) angle += 5;
+            if (angle < 30)
+                angle += 5;
         }
         else if (servo % 2 == 1)
         {
-            if (angle < 45) angle += 5;
+            if (angle < 45)
+                angle += 5;
         }
         servoGoTo(static_cast<eServo>(servo), angle);
     }
@@ -67,25 +67,29 @@ void loop()
     {
         if (servo % 2 == 0)
         {
-            if (angle > -90) angle -= 5;
+            if (angle > -90)
+                angle -= 5;
         }
         else if (servo % 2 == 1)
         {
-            if (angle > -45) angle -= 5;
+            if (angle > -45)
+                angle -= 5;
         }
         servoGoTo(static_cast<eServo>(servo), angle);
     }
     else if (c == 'a')
     {
-        if (servo > 0) servo--;
+        if (servo > 0)
+            servo--;
     }
     else if (c == 'd')
     {
-        if (servo < 15) servo++;
+        if (servo < 11)
+            servo++;
     }
     else if (c == 'z')
     {
-        for (uint8_t sm = 0; sm < 15U; sm++)
+        for (uint8_t sm = 0; sm < 12U; sm++)
         {
             servoGoTo(static_cast<eServo>(sm), 0);
             angle = 0;
@@ -97,7 +101,7 @@ void loop()
     // comm_consume(angles);
 }
 
-void demo()
+void testLegJoints()
 {
     int angle0 = 0;
     int angle1 = 0;
@@ -107,8 +111,10 @@ void demo()
 
     while (true)
     {
-        if (angle0 <= -90) break;
-        if (angle1 > -45) angle1 -= 2;
+        if (angle0 <= -90)
+            break;
+        if (angle1 > -45)
+            angle1 -= 2;
         angle0 -= 5;
 
         servoGoTo(eServo::A_0, angle0);
@@ -123,22 +129,24 @@ void demo()
         delay(50);
     }
 
-
     while (true)
     {
         if (angle0 < 0)
         {
             angle0 += 5;
-            if (angle0 > 0) angle0 = 0;
+            if (angle0 > 0)
+                angle0 = 0;
         }
         if (angle1 > 0)
         {
             angle1 -= 2;
-            if (angle1 < 0) angle1 = 0;
+            if (angle1 < 0)
+                angle1 = 0;
         }
         servoGoTo(eServo::A_0, angle0);
         servoGoTo(eServo::A_1, angle1);
         delay(50);
-        if (angle0 == 0 && angle1 == 0) break;
+        if (angle0 == 0 && angle1 == 0)
+            break;
     }
 }

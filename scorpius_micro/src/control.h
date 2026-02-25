@@ -3,11 +3,17 @@
 
 #include <Arduino.h>
 
-#define SERVOMIN  102    // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  522    // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMIN 102  // this is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX 522  // this is the 'maximum' pulse length count (out of 4096)
 
-enum class eServo : uint8_t {
+#define NUMBER_OF_SERVOS 12  // Number of servos currently used
+#define MAX_ANGLE_VERTICAL 90
+#define MIN_ANGLE_VERTICAL -90
+#define MAX_ANGLE_HORIZONTAL 45
+#define MIN_ANGLE_HORIZONTAL -45
 
+enum class eServo : uint8_t
+{
     A_0 = 0,
     A_1,
     B_0,
@@ -25,4 +31,4 @@ enum class eServo : uint8_t {
 void controlInit();
 void servoGoTo(eServo servoId, int angle);
 
-#endif // CONTROL_H
+#endif  // CONTROL_H
