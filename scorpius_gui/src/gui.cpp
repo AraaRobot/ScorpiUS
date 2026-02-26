@@ -7,12 +7,22 @@
 #include "gui_window.hpp"
 #include <rclcpp/rclcpp.hpp>
 
+static QApplication* g_app = nullptr;
+
+void handle_sigint(int)
+{
+    if (g_app)
+    {
+        g_app->quit();
+    }
+}
 
 int rosThreadFunction(std::shared_ptr<rclcpp::Node> node_);
 int guiMain(int argc, char* argv[], std::shared_ptr<rclcpp::Node> node_);
 
 int main(int argc, char* argv[])
 {
+    signal(SIGINT, handle_sigint);
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>("Scorpius_gui");
 
@@ -28,6 +38,7 @@ int main(int argc, char* argv[])
 int guiMain(int argc, char* argv[], std::shared_ptr<rclcpp::Node> node_)
 {
     QApplication app(argc, argv);
+    g_app = &app;
     QApplication::setApplicationName("ScorpiUS GUI");
 
     GuiWindow window(node_);
