@@ -29,15 +29,17 @@ else()
   set(QT_WIDGETS_LIB Qt5::Widgets)
 endif()
 
-add_executable(gui  src/gui.cpp
-                    src/gui_window.cpp
-                    src/debug_widget/debug_widget.cpp
-                    src/debug_widget/debug_widget_manager.cpp
-                    ui/DebugWidget.ui)
+add_executable(gui src/gui.cpp
+  src/gui_window.cpp
+  src/debug_widget/debug_widget.cpp
+  src/debug_widget/debug_widget_manager.cpp
+  src/QControllerWidget/QControllerWidget.cpp
+  ui/DebugWidget.ui
+  resources.qrc)
 
 ament_target_dependencies(gui
-                          rclcpp
-                          scorpius_main)
+  rclcpp
+  scorpius_main)
 
 target_include_directories(gui PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -45,14 +47,14 @@ target_include_directories(gui PRIVATE
 
 target_link_libraries(gui
   ${QT_WIDGETS_LIB}
-)                
+)
 
 install(
   DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(TARGETS 
-            gui
-            DESTINATION lib/${PROJECT_NAME}/)
+install(TARGETS
+  gui
+  DESTINATION lib/${PROJECT_NAME}/)
 ament_package()
