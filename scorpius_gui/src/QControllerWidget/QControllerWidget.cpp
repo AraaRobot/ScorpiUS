@@ -1,22 +1,31 @@
 #include "QControllerWidget.hpp"
 
-QControllerWidget::QControllerWidget(QWidget* parent_) : QWidget(parent_)
+QControllerWidget::QControllerWidget(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
+    QWidget(parent_), _node(node_)
 {
-    _baseSVG.load(":/images/Dualshock_4_Layout.svg");
-    this->update();
+    bool loadOk = _svgRenderer.load(QString(":/images/images/Dualshock_4_Layout.svg"));
+    if(!loadOk)
+    {
+        RCLCPP_ERROR(_node->get_logger(), "SVG was not loaded");
+    }
 }
 
 void QControllerWidget::paintEvent(QPaintEvent*)
+{
+    if (_svgRenderer.isValid())
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
         p.setRenderHint(QPainter::SmoothPixmapTransform);
 
-        QPixmap scaled = _baseSVG.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // draw the SVG to fit the widget while keeping aspect ratio
+        QRect targetRect = rect();
+        QSize svgSize = _svgRenderer.defaultSize();
+        svgSize.scale(targetRect.size(), Qt::KeepAspectRatio);
 
-        QPoint topLeft((width() - scaled.width()) / 2, (height() - scaled.height()) / 2);
+        QPoint topLeft((width() - svgSize.width()) / 2, (height() - svgSize.height()) / 2);
+        QRect drawRect(topLeft, svgSize);
 
-        QRect imageRect(topLeft, scaled.size());
-
-        p.drawPixmap(imageRect, scaled);
+        _svgRenderer.render(&p, drawRect);
     }
+}

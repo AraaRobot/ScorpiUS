@@ -7,7 +7,8 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _layout = new QVBoxLayout(_central);
     _tabs = new QTabWidget(_central);
     _debugWidgetManager = new DebugWidgetManager(node_, _tabs);
-    _controllerWidget = new QControllerWidget(_tabs);
+    _controllerWidget = new QControllerWidget(node_, _tabs);
+    _controllerWidget->update();
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
