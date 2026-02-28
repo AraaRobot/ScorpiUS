@@ -42,4 +42,22 @@ void QControllerWidget::paintEvent(QPaintEvent*)
 
         p.drawEllipse(QPoint(x, y), radius, radius);
     }
+
+    for (const DButton& d : dButtons)
+    {
+        if (!d.pressed && false)
+        {
+            continue;
+        }
+
+        QPolygonF poly;
+        for (size_t i = 0; i < 5; ++i)
+        {
+            int x = drawRect.left() + d.posNorm[i].x() * drawRect.width();
+            int y = drawRect.top() + d.posNorm[i].y() * drawRect.height();
+            poly << QPointF(x, y);
+        }
+
+        p.drawPolygon(poly);
+    }
 }

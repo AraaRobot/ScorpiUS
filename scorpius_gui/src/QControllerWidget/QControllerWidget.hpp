@@ -14,6 +14,13 @@ struct Button
     bool pressed;     // state from ROS2
 };
 
+struct DButton
+{
+    QString name;
+    std::array<QPointF, 5> posNorm;
+    bool pressed;
+};
+
 class QControllerWidget : public QWidget
 {
     Q_OBJECT
@@ -29,6 +36,9 @@ class QControllerWidget : public QWidget
                                       {"circle", QPointF(0.8547, 0.3128), false},
                                       {"square", QPointF(0.7205, 0.3128), false},
                                       {"triangle", QPointF(0.7875, 0.2139), false}}};
+
+    std::array<DButton, 1> dButtons
+        = {{{"up", {{QPointF(0.1, 0.1), QPointF(0.1, 0.2), QPointF(0.15, 0.25), QPointF(0.2, 0.2), QPointF(0.2, 0.1)}}, false}}};
 
     QSvgRenderer _svgRenderer;
     std::shared_ptr<rclcpp::Node> _node;
