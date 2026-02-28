@@ -43,6 +43,12 @@ void QControllerWidget::paintEvent(QPaintEvent*)
         p.drawEllipse(QPoint(x, y), radius, radius);
     }
 
+    QPen pen1 = p.pen();
+    QPen pen2 = pen1;
+    pen2.setCapStyle(Qt::RoundCap);
+    pen2.setJoinStyle(Qt::RoundJoin);
+    p.setPen(pen2);
+
     for (const DButton& d : dButtons)
     {
         if (!d.pressed && false)
@@ -51,6 +57,7 @@ void QControllerWidget::paintEvent(QPaintEvent*)
         }
 
         QPolygonF poly;
+
         for (size_t i = 0; i < 5; ++i)
         {
             int x = drawRect.left() + d.posNorm[i].x() * drawRect.width();
@@ -60,4 +67,5 @@ void QControllerWidget::paintEvent(QPaintEvent*)
 
         p.drawPolygon(poly);
     }
+    p.setPen(pen1);
 }

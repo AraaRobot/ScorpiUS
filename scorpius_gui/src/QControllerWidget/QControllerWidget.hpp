@@ -38,7 +38,7 @@ class QControllerWidget : public QWidget
                                       {"triangle", QPointF(0.7875, 0.2139), false}}};
 
     std::array<DButton, 1> dButtons
-        = {{{"up", {{QPointF(0.1, 0.1), QPointF(0.1, 0.2), QPointF(0.15, 0.25), QPointF(0.2, 0.2), QPointF(0.2, 0.1)}}, false}}};
+        = {{{"up", {{QPointF(0.19, 0.205), QPointF(0.19, 0.26), QPointF(0.215, 0.293), QPointF(0.24, 0.26), QPointF(0.24, 0.205)}}, false}}};
 
     QSvgRenderer _svgRenderer;
     std::shared_ptr<rclcpp::Node> _node;
