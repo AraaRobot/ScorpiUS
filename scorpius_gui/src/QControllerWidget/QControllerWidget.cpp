@@ -94,11 +94,10 @@ void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
 }
 void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 {
-    
     int radius = drawRect_.width() * JOYSTICK_RADIUS_PERCENT;
     for (const Joystick& j : _joysticks)
     {
-        p_.setBrush(QColor(255,255,255,255));
+        p_.setBrush(QColor(255, 255, 255, 255));
         p_.setPen(Qt::black);
         int x = drawRect_.left() + j.center.x() * drawRect_.width();
         int y = drawRect_.top() + j.center.y() * drawRect_.height();
@@ -106,6 +105,22 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 
         p_.setBrush(Qt::NoBrush);
         p_.setPen(Qt::red);
-        p_.drawEllipse(QPointF(x, y), radius*JOYSTICK_DEADZONE_PERCENT, radius*JOYSTICK_DEADZONE_PERCENT);
+        p_.drawEllipse(QPointF(x, y), radius * JOYSTICK_DEADZONE_PERCENT, radius * JOYSTICK_DEADZONE_PERCENT);
+        
+        p_.setPen(QPen(Qt::darkGreen, 2));
+        float line1x1 = x + j.xPos * radius + drawRect_.width() * 0.003;
+        float line1x2 = x + j.xPos * radius - drawRect_.width() * 0.003;
+        float line1y1 = y + j.yPos * radius;
+        float line1y2 = y + j.yPos * radius;
+        QLine Line1 = QLine(line1x1, line1y1, line1x2, line1y2);
+
+        float line2x1 = x + j.xPos * radius;
+        float line2x2 = x + j.xPos * radius;
+        float line2y1 = y + j.yPos * radius + drawRect_.width() * 0.003;
+        float line2y2 = y + j.yPos * radius - drawRect_.width() * 0.003;
+        QLine Line2 = QLine(line2x1, line2y1, line2x2, line2y2);
+
+        p_.drawLine(Line1);
+        p_.drawLine(Line2);
     }
 }
