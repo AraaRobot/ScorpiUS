@@ -42,9 +42,9 @@ void QControllerWidget::paintEvent(QPaintEvent*)
     p.setPen(pen1);
     p.setBrush(Qt::NoBrush);
 
-    this->paintRLButtons(p, drawRect);
-    
     this->paintJoystick(p, drawRect);
+
+    this->paintRLButtons(p, drawRect);
 }
 
 void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
@@ -87,5 +87,25 @@ void QControllerWidget::paintDirectionButtons(QPainter& p_, QRect& drawRect_)
     }
 }
 
-void paintRLButtons(QPainter& p_, QRect& drawRect_) {}
-void paintJoystick(QPainter& p_, QRect& drawRect_) {}
+void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
+{
+    (void)p_;
+    (void)drawRect_;
+}
+void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
+{
+    
+    int radius = drawRect_.width() * JOYSTICK_RADIUS_PERCENT;
+    for (const Joystick& j : _joysticks)
+    {
+        p_.setBrush(QColor(255,255,255,255));
+        p_.setPen(Qt::black);
+        int x = drawRect_.left() + j.center.x() * drawRect_.width();
+        int y = drawRect_.top() + j.center.y() * drawRect_.height();
+        p_.drawEllipse(QPointF(x, y), radius, radius);
+
+        p_.setBrush(Qt::NoBrush);
+        p_.setPen(Qt::red);
+        p_.drawEllipse(QPointF(x, y), radius*JOYSTICK_DEADZONE_PERCENT, radius*JOYSTICK_DEADZONE_PERCENT);
+    }
+}

@@ -21,12 +21,22 @@ struct DButton
     bool pressed;
 };
 
+struct Joystick
+{
+  QString name;
+  QPointF center;
+  float xPos;
+  float yPos;
+};
+
 class QControllerWidget : public QWidget
 {
     Q_OBJECT
 
   private:
     static constexpr double BUTTON_RADIUS_PERCENT = 0.03;  // in percents of total image width
+    static constexpr double JOYSTICK_RADIUS_PERCENT = 0.06;
+    static constexpr double JOYSTICK_DEADZONE_PERCENT = 0.25;
 
   public:
     QControllerWidget(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_ = nullptr);
@@ -41,7 +51,7 @@ class QControllerWidget : public QWidget
     void paintJoystick(QPainter& p_, QRect& drawRect_);
 
     std::array<Button, 4> _buttons = {{{"cross", QPointF(0.7875, 0.413), false},
-                                       {"circle", QPointF(0.8547, 0.3128), false},
+                                       {"circle", QPointF(0.8537, 0.3128), false},
                                        {"square", QPointF(0.7205, 0.3128), false},
                                        {"triangle", QPointF(0.7875, 0.2139), false}}};
 
@@ -58,6 +68,8 @@ class QControllerWidget : public QWidget
             {"right",
              {{QPointF(0.287, 0.279), QPointF(0.247, 0.279), QPointF(0.227, 0.31), QPointF(0.247, 0.347), QPointF(0.287, 0.347)}},
              false}}};
+
+    std::array<Joystick, 2> _joysticks = {{{"left", QPointF(0.354, .501), 0.0f, 0.0f}, {"right", QPointF(0.649, .501), 0.0f, 0.0f}}};
 
     QSvgRenderer _svgRenderer;
     std::shared_ptr<rclcpp::Node> _node;
