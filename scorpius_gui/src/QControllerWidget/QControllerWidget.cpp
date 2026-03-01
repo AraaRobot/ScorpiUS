@@ -89,8 +89,29 @@ void QControllerWidget::paintDirectionButtons(QPainter& p_, QRect& drawRect_)
 
 void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
 {
-    (void)p_;
-    (void)drawRect_;
+    QFont font;
+    int pointSize = std::clamp(int(drawRect_.height()*0.02), 6, 24);
+    font.setPointSize(pointSize);
+    p_.setFont(font);
+    p_.setPen(QPen(Qt::black, 1));
+    p_.setBrush(QBrush(QColor(173, 216, 230, 167)));
+
+    for (const Button& b : _backButtons)
+    {
+        if (!b.pressed && false)
+        {
+            continue;
+        }
+
+        // convert normalized pos to actual coordinates
+        int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
+        int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
+        int length = drawRect_.width() * 0.05;
+        int height = drawRect_.width() * 0.03;  // 3% of SVG width
+        QRect button = QRect(x, y, length, height);
+        p_.drawRect(button);
+        p_.drawText(button, Qt::AlignCenter, QString(b.name));
+    }
 }
 void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 {
@@ -106,7 +127,7 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
         p_.setBrush(Qt::NoBrush);
         p_.setPen(Qt::red);
         p_.drawEllipse(QPointF(x, y), radius * JOYSTICK_DEADZONE_PERCENT, radius * JOYSTICK_DEADZONE_PERCENT);
-        
+
         p_.setPen(QPen(Qt::darkGreen, 2));
         float line1x1 = x + j.xPos * radius + drawRect_.width() * 0.003;
         float line1x2 = x + j.xPos * radius - drawRect_.width() * 0.003;

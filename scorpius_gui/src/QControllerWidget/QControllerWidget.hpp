@@ -23,10 +23,10 @@ struct DButton
 
 struct Joystick
 {
-  QString name;
-  QPointF center;
-  float xPos;
-  float yPos;
+    QString name;
+    QPointF center;
+    float xPos;
+    float yPos;
 };
 
 class QControllerWidget : public QWidget
@@ -69,8 +69,13 @@ class QControllerWidget : public QWidget
              {{QPointF(0.287, 0.279), QPointF(0.247, 0.279), QPointF(0.227, 0.31), QPointF(0.247, 0.347), QPointF(0.287, 0.347)}},
              false}}};
 
-    std::array<Joystick, 2> _joysticks = {{{"left", QPointF(0.354, .501), 0.0f, 0.0f}, {"right", QPointF(0.649, .501), 0.0f, 0.0f}}};
+    std::array<Joystick, 2> _joysticks
+        = {{{"left", QPointF(0.354, .501), 0.0f, 0.0f}, {"right", QPointF(0.649, .501), 0.0f, 0.0f}}};
 
+    std::array<Button, 4> _backButtons = {{{"L1", QPointF(0.01, 0.1), false},
+                                           {"L2", QPointF(0.01, 0.19), false},
+                                           {"R1", QPointF(0.94, 0.1), false},
+                                           {"R2", QPointF(0.94, 0.19), false}}};
     QSvgRenderer _svgRenderer;
     std::shared_ptr<rclcpp::Node> _node;
 };
