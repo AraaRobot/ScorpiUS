@@ -28,20 +28,8 @@ void QControllerWidget::paintEvent(QPaintEvent*)
     _svgRenderer.render(&p, drawRect);
 
     p.setBrush(QBrush(QColor(173, 216, 230, 167)));
-    for (const Button& b : buttons)
-    {
-        if (!b.pressed && false)
-        {
-            continue;
-        }
 
-        // convert normalized pos to actual coordinates
-        int x = drawRect.left() + b.posNorm.x() * drawRect.width();
-        int y = drawRect.top() + b.posNorm.y() * drawRect.height();
-        int radius = drawRect.width() * 0.03;  // 3% of SVG width
-
-        p.drawEllipse(QPoint(x, y), radius, radius);
-    }
+    this->paintButtons(p, drawRect);
 
     QPen pen1 = p.pen();
     QPen pen2 = pen1;
@@ -49,7 +37,37 @@ void QControllerWidget::paintEvent(QPaintEvent*)
     pen2.setJoinStyle(Qt::RoundJoin);
     p.setPen(pen2);
 
-    for (const DButton& d : dButtons)
+    this->paintDirectionButtons(p, drawRect);
+
+    p.setPen(pen1);
+    p.setBrush(Qt::NoBrush);
+
+    this->paintRLButtons(p, drawRect);
+    
+    this->paintJoystick(p, drawRect);
+}
+
+void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
+{
+    for (const Button& b : _buttons)
+    {
+        if (!b.pressed && false)
+        {
+            continue;
+        }
+
+        // convert normalized pos to actual coordinates
+        int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
+        int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
+        int radius = drawRect_.width() * BUTTON_RADIUS_PERCENT;  // 3% of SVG width
+
+        p_.drawEllipse(QPoint(x, y), radius, radius);
+    }
+}
+
+void QControllerWidget::paintDirectionButtons(QPainter& p_, QRect& drawRect_)
+{
+    for (const DButton& d : _dButtons)
     {
         if (!d.pressed && false)
         {
@@ -60,12 +78,14 @@ void QControllerWidget::paintEvent(QPaintEvent*)
 
         for (size_t i = 0; i < 5; ++i)
         {
-            int x = drawRect.left() + d.posNorm[i].x() * drawRect.width();
-            int y = drawRect.top() + d.posNorm[i].y() * drawRect.height();
+            int x = drawRect_.left() + d.posNorm[i].x() * drawRect_.width();
+            int y = drawRect_.top() + d.posNorm[i].y() * drawRect_.height();
             poly << QPointF(x, y);
         }
 
-        p.drawPolygon(poly);
+        p_.drawPolygon(poly);
     }
-    p.setPen(pen1);
 }
+
+void paintRLButtons(QPainter& p_, QRect& drawRect_) {}
+void paintJoystick(QPainter& p_, QRect& drawRect_) {}
