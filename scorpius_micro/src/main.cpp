@@ -6,6 +6,7 @@
 #include "control.h"
 
 void testLegJoints();
+void executeDebug();
 
 void setup()
 {
@@ -19,19 +20,67 @@ void setup()
     Serial.println("Initializing PCA9685...");
 
     controlInit();
-    // comm_init(Serial);
-
-    Serial.println("Waiting for start...");
-    char c = Serial.read();
-    while (c != 's')
-    {
-        c = Serial.read();
-        delay(100);
-    }
-    Serial.println("Starting code...");
+    comm_init(Serial);
 }
 
 void loop()
+{
+    comm_process();
+    sAngles angles;
+    comm_consume(angles);
+}
+
+void testLegJoints()
+{
+    int angle0 = 0;
+    int angle1 = 0;
+    servoGoTo(eServo::VERT_A, angle0);
+    servoGoTo(eServo::HORIZ_A, angle1);
+    delay(500);
+
+    while (true)
+    {
+        if (angle0 <= -90)
+            break;
+        if (angle1 > -45)
+            angle1 -= 2;
+        angle0 -= 5;
+
+        servoGoTo(eServo::VERT_A, angle0);
+        servoGoTo(eServo::HORIZ_A, angle1);
+        delay(50);
+    }
+
+    while (angle1 < 45)
+    {
+        angle1 += 5;
+        servoGoTo(eServo::HORIZ_A, angle1);
+        delay(50);
+    }
+
+    while (true)
+    {
+        if (angle0 < 0)
+        {
+            angle0 += 5;
+            if (angle0 > 0)
+                angle0 = 0;
+        }
+        if (angle1 > 0)
+        {
+            angle1 -= 2;
+            if (angle1 < 0)
+                angle1 = 0;
+        }
+        servoGoTo(eServo::VERT_A, angle0);
+        servoGoTo(eServo::HORIZ_A, angle1);
+        delay(50);
+        if (angle0 == 0 && angle1 == 0)
+            break;
+    }
+}
+
+void executeDebug()
 {
     static int angle = 0;
     static int servo = 0;
@@ -94,59 +143,5 @@ void loop()
             servoGoTo(static_cast<eServo>(sm), 0);
             angle = 0;
         }
-    }
-
-    // comm_process();
-    // sAngles angles;
-    // comm_consume(angles);
-}
-
-void testLegJoints()
-{
-    int angle0 = 0;
-    int angle1 = 0;
-    servoGoTo(eServo::A_0, angle0);
-    servoGoTo(eServo::A_1, angle1);
-    delay(500);
-
-    while (true)
-    {
-        if (angle0 <= -90)
-            break;
-        if (angle1 > -45)
-            angle1 -= 2;
-        angle0 -= 5;
-
-        servoGoTo(eServo::A_0, angle0);
-        servoGoTo(eServo::A_1, angle1);
-        delay(50);
-    }
-
-    while (angle1 < 45)
-    {
-        angle1 += 5;
-        servoGoTo(eServo::A_1, angle1);
-        delay(50);
-    }
-
-    while (true)
-    {
-        if (angle0 < 0)
-        {
-            angle0 += 5;
-            if (angle0 > 0)
-                angle0 = 0;
-        }
-        if (angle1 > 0)
-        {
-            angle1 -= 2;
-            if (angle1 < 0)
-                angle1 = 0;
-        }
-        servoGoTo(eServo::A_0, angle0);
-        servoGoTo(eServo::A_1, angle1);
-        delay(50);
-        if (angle0 == 0 && angle1 == 0)
-            break;
     }
 }

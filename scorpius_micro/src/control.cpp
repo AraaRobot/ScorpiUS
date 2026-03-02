@@ -30,21 +30,31 @@ void servoGoTo(eServo servoId, int angle)
 
     switch (servoId)
     {
-        case eServo::A_0:
-        case eServo::B_0:
-        case eServo::C_0:
-        case eServo::D_0:
-        case eServo::E_0:
-        case eServo::F_0:
+        case eServo::VERT_A:
+            [[fallthrough]];
+        case eServo::VERT_B:
+            [[fallthrough]];
+        case eServo::VERT_C:
+            [[fallthrough]];
+        case eServo::VERT_D:
+            [[fallthrough]];
+        case eServo::VERT_E:
+            [[fallthrough]];
+        case eServo::VERT_F:
             desiredAngle = constrain(angle, MIN_ANGLE_VERTICAL, MAX_ANGLE_VERTICAL);
             driverModule.setPWM(static_cast<uint8_t>(servoId), 0, angleToPulse(desiredAngle));
             break;
-        case eServo::A_1:
-        case eServo::B_1:
-        case eServo::C_1:
-        case eServo::D_1:
-        case eServo::E_1:
-        case eServo::F_1:
+        case eServo::HORIZ_A:
+            [[fallthrough]];
+        case eServo::HORIZ_B:
+            [[fallthrough]];
+        case eServo::HORIZ_C:
+            [[fallthrough]];
+        case eServo::HORIZ_D:
+            [[fallthrough]];
+        case eServo::HORIZ_E:
+            [[fallthrough]];
+        case eServo::HORIZ_F:
             desiredAngle = constrain(angle, MIN_ANGLE_HORIZONTAL, MAX_ANGLE_HORIZONTAL);
             driverModule.setPWM(static_cast<uint8_t>(servoId), 0, angleToPulse(desiredAngle));
             break;
