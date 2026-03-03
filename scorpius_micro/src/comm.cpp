@@ -126,7 +126,7 @@ void comm_consume(sAngles& angles_)
         return;
     }
 
-    if (packetLen != COMM_EXPECTED_LEN) // Can be change to a switch case if there a more message types in the future
+    if (packetLen != COMM_EXPECTED_LEN)  // Can be change to a switch case if there a more message types in the future
     {
         commSerial->print("comm_consume: bad len=");
         commSerial->println(len);
