@@ -178,8 +178,8 @@ void JoyFormator::setControllerType(std::string controllerName_, scorpius_main::
 {
     bool success = this->setControllerType(controllerName_);
     response_.success = success;
-    response_.response = success ? "Successfully changed controller type to " + controllerName_
-                                           : "Unrecognized controller type. Default to DS5";
+    response_.response
+        = success ? "Successfully changed controller type to " + controllerName_ : "Unrecognized controller type. Default to DS5";
 }
 
 void JoyFormator::getControllerType(scorpius_main::srv::JoyConfig::Response& response_)

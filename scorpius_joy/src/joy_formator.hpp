@@ -46,11 +46,11 @@ struct sControllerConfig
 
     sControllerConfig()
     {
-      for (int i = 0; i < std::to_underlying(eKeybinding::eKeybinding_END); i++)
-      {
-        buttons[i] = -1;
-        axes[i] = -1;
-      }
+        for (int i = 0; i < std::to_underlying(eKeybinding::eKeybinding_END); i++)
+        {
+            buttons[i] = -1;
+            axes[i] = -1;
+        }
     }
 
     // Point this pointer to a function for a controller which needs
@@ -61,10 +61,10 @@ struct sControllerConfig
 
 class JoyFormator : public rclcpp::Node
 {
-  static constexpr const char* DEFAULT_CONTROLLER = "DS5";
-  static constexpr const char* TOPIC_SUBSCRIBER_NAME = "raw/joy";  // Relative: remapping works
-  static constexpr const char* TOPIC_PUBLISHER_NAME = "/scorpius/joy";  // Absolute: no namespace prefix
-  static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";  // Absolute: no namespace prefix
+    static constexpr const char* DEFAULT_CONTROLLER = "DS5";
+    static constexpr const char* TOPIC_SUBSCRIBER_NAME = "raw/joy";       // Relative: remapping works
+    static constexpr const char* TOPIC_PUBLISHER_NAME = "/scorpius/joy";  // Absolute: no namespace prefix
+    static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";   // Absolute: no namespace prefix
 
   public:
     JoyFormator();
@@ -78,7 +78,7 @@ class JoyFormator : public rclcpp::Node
     void getControllerType(scorpius_main::srv::JoyConfig::Response& response_);
     void setDeadzone(float deadzone_, scorpius_main::srv::JoyConfig::Response& response_);
     void getDeadzone(scorpius_main::srv::JoyConfig::Response& response_);
-    
+
     template<typename T>
     T getJoyValue(eKeybinding key_);
     float applyJoystickDeadzone(eKeybinding joystick_);
