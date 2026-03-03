@@ -68,6 +68,9 @@ void JoyFormator::joyPublisher_CB(void)
     msg.joy_data[scorpius_main::msg::Joy::OPTS] = this->getJoyValue<bool>(eKeybinding::opts);
     msg.joy_data[scorpius_main::msg::Joy::HOME] = this->getJoyValue<bool>(eKeybinding::home);
 
+    msg.joy_data[scorpius_main::msg::Joy::L2] = this->getTriggerValues(eKeybinding::l2);
+    msg.joy_data[scorpius_main::msg::Joy::R2] = this->getTriggerValues(eKeybinding::r2);
+
     float crossTemp = this->getJoyValue<float>(eKeybinding::cross_vert);
     msg.joy_data[scorpius_main::msg::Joy::CROSS_UP] = (crossTemp > 0.0f) ? 1.0f : 0.0f;
     msg.joy_data[scorpius_main::msg::Joy::CROSS_DOWN] = (crossTemp < 0.0f) ? 1.0f : 0.0f;
@@ -85,23 +88,23 @@ void JoyFormator::joyPublisher_CB(void)
 }
 
 template<typename T>
-T JoyFormator::getJoyValue(eKeybinding key)
+T JoyFormator::getJoyValue(eKeybinding key_)
 {
-    if (_currentConfig.buttons[std::to_underlying(key)] != -1)
+    if (_currentConfig.buttons[std::to_underlying(key_)] != -1)
     {
-        return static_cast<T>(_currentMsg.buttons[_currentConfig.buttons[std::to_underlying(key)]]);
+        return static_cast<T>(_currentMsg.buttons[_currentConfig.buttons[std::to_underlying(key_)]]);
     }
-    else if (_currentConfig.axes[std::to_underlying(key)] != -1)
+    else if (_currentConfig.axes[std::to_underlying(key_)] != -1)
     {
-        return static_cast<T>(_currentMsg.axes[_currentConfig.axes[std::to_underlying(key)]]);
+        return static_cast<T>(_currentMsg.axes[_currentConfig.axes[std::to_underlying(key_)]]);
     }
 
     return static_cast<T>(0.0f);
 }
 
-void JoyFormator::setControllerType(std::string controllerName)
+void JoyFormator::setControllerType(std::string controllerName_)
 {
-    if (controllerName == "DS5")  // DualSense 5 controller
+    if (controllerName_ == "DS5")  // DualSense 5 controller
     {
         _currentConfig.buttons[std::to_underlying(eKeybinding::a)] = 0;
         _currentConfig.buttons[std::to_underlying(eKeybinding::b)] = 1;
@@ -131,9 +134,9 @@ void JoyFormator::setControllerType(std::string controllerName)
     // else {} // Add more configurations here...
 }
 
-float JoyFormator::applyJoystickDeadzone(eKeybinding joystick)
+float JoyFormator::applyJoystickDeadzone(eKeybinding joystick_)
 {
-    float joyValue = this->getJoyValue<float>(joystick);
+    float joyValue = this->getJoyValue<float>(joystick_);
     float sign = (joyValue >= 0.0f) ? 1.0f : -1.0f;
     float absValue = std::abs(joyValue);
 
@@ -147,4 +150,17 @@ float JoyFormator::applyJoystickDeadzone(eKeybinding joystick)
     absValue = std::min(1.0f, absValue);  // Clamp to 1.0
 
     return sign * absValue;
+}
+
+float JoyFormator::getTriggerValues(eKeybinding trigger_)
+{
+    // Normal trigger values are from 1 (released) to -1 (pressed)
+    float trigValue = this->getJoyValue<float>(trigger_);
+    float trigMax = this->_currentConfig.trigger_range_max;
+    float trigMin = this->_currentConfig.trigger_range_min;
+    //(x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    // Remap from [-1, 1] to [0, 1]
+    trigValue = (trigValue - 1.0f) * (trigMax - trigMin) / (-2.0f) + trigMin;
+
+    return std::clamp(trigValue, 0.0f, 1.0f);
 }

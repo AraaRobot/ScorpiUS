@@ -66,11 +66,14 @@ class JoyFormator : public rclcpp::Node
   private:
     void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
     void joyPublisher_CB();
-    void setControllerType(std::string controllerName);
+
+    void setControllerType(std::string controllerName_);
+    void setDeadzone(float deadzone_);
     
     template<typename T>
-    T getJoyValue(eKeybinding key);
-    float applyJoystickDeadzone(eKeybinding joystick);
+    T getJoyValue(eKeybinding key_);
+    float applyJoystickDeadzone(eKeybinding joystick_);
+    float getTriggerValues(eKeybinding trigger_);
 
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
     rclcpp::Publisher<scorpius_main::msg::Joy>::SharedPtr _pub_joyFormat;
