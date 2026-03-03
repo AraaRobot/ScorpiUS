@@ -4,6 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "sensor_msgs/msg/joy.hpp"
 #include "scorpius_main/msg/joy.hpp"
+#include "scorpius_main/srv/joy_config.hpp"
 #include <cstdint>
 #include <array>
 #include <rclcpp/logger.hpp>
@@ -34,6 +35,7 @@ enum class eKeybinding : uint8_t
 
 struct sControllerConfig
 {
+    std::string controllerType = "";
     int8_t buttons[std::to_underlying(eKeybinding::eKeybinding_END)] = {-1};
     int8_t axes[std::to_underlying(eKeybinding::eKeybinding_END)] = {-1};
 
@@ -60,6 +62,10 @@ struct sControllerConfig
 class JoyFormator : public rclcpp::Node
 {
   static constexpr const char* DEFAULT_CONTROLLER = "DS5";
+  static constexpr const char* TOPIC_SUBSCRIBER_NAME = "raw/joy";  // Relative: remapping works
+  static constexpr const char* TOPIC_PUBLISHER_NAME = "/scorpius/joy";  // Absolute: no namespace prefix
+  static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";  // Absolute: no namespace prefix
+
   public:
     JoyFormator();
 
@@ -67,8 +73,11 @@ class JoyFormator : public rclcpp::Node
     void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
     void joyPublisher_CB();
 
-    void setControllerType(std::string controllerName_);
-    void setDeadzone(float deadzone_);
+    bool setControllerType(std::string controllerName_);
+    void setControllerType(std::string controllerName_, scorpius_main::srv::JoyConfig::Response& response_);
+    void getControllerType(scorpius_main::srv::JoyConfig::Response& response_);
+    void setDeadzone(float deadzone_, scorpius_main::srv::JoyConfig::Response& response_);
+    void getDeadzone(scorpius_main::srv::JoyConfig::Response& response_);
     
     template<typename T>
     T getJoyValue(eKeybinding key_);
@@ -78,6 +87,7 @@ class JoyFormator : public rclcpp::Node
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
     rclcpp::Publisher<scorpius_main::msg::Joy>::SharedPtr _pub_joyFormat;
     rclcpp::TimerBase::SharedPtr _timer_pub;
+    rclcpp::Service<scorpius_main::srv::JoyConfig>::SharedPtr _srv_config;
 
     sensor_msgs::msg::Joy _currentMsg;
     sensor_msgs::msg::Joy _lastMsg;

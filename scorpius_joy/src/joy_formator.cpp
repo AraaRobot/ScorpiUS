@@ -19,20 +19,52 @@ JoyFormator::JoyFormator():
     Node("JoyFormator")
 {
     this->setControllerType(DEFAULT_CONTROLLER);
-    _sub_joy = this->create_subscription<sensor_msgs::msg::Joy>("raw/joy",
+    _sub_joy = this->create_subscription<sensor_msgs::msg::Joy>(TOPIC_SUBSCRIBER_NAME,
                                                                 10,
                                                                 [this](const sensor_msgs::msg::Joy msg_)
                                                                 {
                                                                     this->joySubscriber_CB(msg_);
                                                                 });
 
-    _pub_joyFormat = this->create_publisher<scorpius_main::msg::Joy>("/scorpius/joy", 10);
+    _pub_joyFormat = this->create_publisher<scorpius_main::msg::Joy>(TOPIC_PUBLISHER_NAME, 10);
 
     _timer_pub = this->create_wall_timer(std::chrono::milliseconds(static_cast<size_t>(1000 / PUB_FREQ)),
                                          [this](void)
                                          {
                                              this->joyPublisher_CB();
                                          });
+
+    _srv_config = this->create_service<scorpius_main::srv::JoyConfig>(
+        SERVICE_NAME,
+        [this](const std::shared_ptr<scorpius_main::srv::JoyConfig::Request> request_,
+               std::shared_ptr<scorpius_main::srv::JoyConfig::Response> response_)
+        {
+            if (!request_ || !response_)
+            {
+                RCLCPP_ERROR(this->get_logger(), "NULL request or response received.");
+                return;
+            }
+
+            switch (request_->command)
+            {
+                case scorpius_main::srv::JoyConfig::Request::SET_DEADZONE:
+                    this->setDeadzone(request_->deadzone, *response_);
+                    break;
+                case scorpius_main::srv::JoyConfig::Request::GET_DEADZONE:
+                    this->getDeadzone(*response_);
+                    break;
+                case scorpius_main::srv::JoyConfig::Request::SET_TYPE:
+                    this->setControllerType(request_->type, *response_);
+                    break;
+                case scorpius_main::srv::JoyConfig::Request::GET_TYPE:
+                    this->getControllerType(*response_);
+                    break;
+                default:
+                    response_->success = false;
+                    response_->response = "Unrecognized command for JoyConfig service";
+                    break;
+            }
+        });
 }
 
 void JoyFormator::joySubscriber_CB(const sensor_msgs::msg::Joy& msg_)
@@ -102,10 +134,11 @@ T JoyFormator::getJoyValue(eKeybinding key_)
     return static_cast<T>(0.0f);
 }
 
-void JoyFormator::setControllerType(std::string controllerName_)
+bool JoyFormator::setControllerType(std::string controllerName_)
 {
     if (controllerName_ == "DS5")  // DualSense 5 controller
     {
+        _currentConfig.controllerType = "DS5";
         _currentConfig.buttons[std::to_underlying(eKeybinding::a)] = 0;
         _currentConfig.buttons[std::to_underlying(eKeybinding::b)] = 1;
         _currentConfig.buttons[std::to_underlying(eKeybinding::y)] = 2;
@@ -130,8 +163,46 @@ void JoyFormator::setControllerType(std::string controllerName_)
         _currentConfig.joystick_dead_zone = 0.075f;
         _currentConfig.trigger_range_min = 0.0f;
         _currentConfig.trigger_range_max = 1.0f;
+
+        RCLCPP_INFO(this->get_logger(), "Controller type now set to DS5");
+        return true;
     }
-    // else {} // Add more configurations here...
+    // else if {} // Add more configurations here...
+
+    RCLCPP_ERROR(this->get_logger(), "Unrecognized controller type. Default to DS5");
+    this->setControllerType("DS5");
+    return false;
+}
+
+void JoyFormator::setControllerType(std::string controllerName_, scorpius_main::srv::JoyConfig::Response& response_)
+{
+    bool success = this->setControllerType(controllerName_);
+    response_.success = success;
+    response_.response = success ? "Successfully changed controller type to " + controllerName_
+                                           : "Unrecognized controller type. Default to DS5";
+}
+
+void JoyFormator::getControllerType(scorpius_main::srv::JoyConfig::Response& response_)
+{
+    response_.success = true;
+    response_.response = this->_currentConfig.controllerType;
+}
+
+void JoyFormator::setDeadzone(float deadzone_, scorpius_main::srv::JoyConfig::Response& response_)
+{
+    float deadzone = std::clamp(deadzone_, 0.0f, 1.0f);
+    this->_currentConfig.joystick_dead_zone = deadzone;
+
+    response_.success = true;
+    std::string msg = "Deadzone now set to " + std::to_string(deadzone);
+    response_.response = msg;
+    RCLCPP_INFO(this->get_logger(), msg.c_str());
+}
+
+void JoyFormator::getDeadzone(scorpius_main::srv::JoyConfig::Response& response_)
+{
+    response_.success = true;
+    response_.deadzone = this->_currentConfig.joystick_dead_zone;
 }
 
 float JoyFormator::applyJoystickDeadzone(eKeybinding joystick_)
