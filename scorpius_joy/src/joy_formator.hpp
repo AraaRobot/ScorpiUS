@@ -3,26 +3,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include "sensor_msgs/msg/joy.hpp"
-#include "scorpius_main/msg/joy_format.hpp"
+#include "scorpius_main/msg/joy.hpp"
 #include <cstdint>
 #include <rclcpp/logger.hpp>
-
-class JoyFormator : public rclcpp::Node
-{
-  public:
-    JoyFormator();
-
-  private:
-    void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
-    void joyPublisher_CB();
-    int getJoyValue(eKeybinding key);
-
-    rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
-    rclcpp::Publisher<scorpius_main::msg::JoyFormat>::SharedPtr _pub_joyFormat;
-    rclcpp::TimerBase::SharedPtr _timer_pub;
-
-    sensor_msgs::msg::Joy _lastMsg;
-};
 
 enum class eKeybinding : uint8_t
 {
@@ -32,19 +15,19 @@ enum class eKeybinding : uint8_t
     y,
     l1,
     r1,
-    joystick_left_push,
-    joystick_right_push,
-    ext0,
-    ext1,
-    ext2,
-    joystick_left_side,
-    joystick_left_front,
+    l3,
+    r3,
+    share,
+    opts,
+    home,
+    joystick_left_horiz,
+    joystick_left_vert,
     l2,
-    joystick_right_side,
-    joystick_right_front,
+    joystick_right_horiz,
+    joystick_right_vert,
     r2,
-    cross_front,
-    cross_side,
+    cross_vert,
+    cross_horiz,
     eKeybinding_END
 };
 
@@ -62,6 +45,31 @@ struct sControllerConfig
     // specific custom execution each publish loop. This can be used to
     // handle a weird deconnection from controller
     // void (JoyFormator::*custom_steps)(rover_msgs::msg::Joy* formatted_joy);
+};
+
+class JoyFormator : public rclcpp::Node
+{
+  static constexpr const char* DEFAULT_CONTROLLER = "DS5";
+  public:
+    JoyFormator();
+
+  private:
+    void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
+    void joyPublisher_CB();
+    template<typename T>
+    T getJoyValue(eKeybinding key);
+    void setControllerType(std::string controllerName);
+
+    rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
+    rclcpp::Publisher<scorpius_main::msg::Joy>::SharedPtr _pub_joyFormat;
+    rclcpp::TimerBase::SharedPtr _timer_pub;
+
+    sensor_msgs::msg::Joy _currentMsg;
+    sensor_msgs::msg::Joy _lastMsg;
+    scorpius_main::msg::Joy _lastFormattedJoy;
+
+    sControllerConfig _currentConfig;
+    bool controllerConnected = false;
 };
 
 #endif  // SCORPIUS_JOY_HPP
