@@ -37,54 +37,49 @@ JoyFormator::JoyFormator():
 
 void JoyFormator::joySubscriber_CB(const sensor_msgs::msg::Joy& msg_)
 {
-    if (!this->controllerConnected)
-        this->controllerConnected = true;
+    if (!this->isControllerConnected)
+        this->isControllerConnected = true;
     this->_currentMsg = msg_;
 }
 
 void JoyFormator::joyPublisher_CB(void)
 {
-    if (!this->controllerConnected)
+    if (!this->isControllerConnected)
     {
+        RCLCPP_ERROR(this->get_logger(), "Controller not connected");
         return;
     }
 
     if (_lastMsg == _currentMsg || _currentMsg.buttons.size() == 0 || _currentMsg.axes.size() == 0)
     {
+        RCLCPP_ERROR(this->get_logger(), "Invalid msg received. Sending last formatted msg");
         _pub_joyFormat->publish(_lastFormattedJoy);
     }
-
     scorpius_main::msg::Joy msg;
     msg.joy_data[scorpius_main::msg::Joy::A] = this->getJoyValue<bool>(eKeybinding::a);
     msg.joy_data[scorpius_main::msg::Joy::B] = this->getJoyValue<bool>(eKeybinding::b);
     msg.joy_data[scorpius_main::msg::Joy::X] = this->getJoyValue<bool>(eKeybinding::x);
     msg.joy_data[scorpius_main::msg::Joy::Y] = this->getJoyValue<bool>(eKeybinding::y);
     msg.joy_data[scorpius_main::msg::Joy::L1] = this->getJoyValue<bool>(eKeybinding::l1);
+    msg.joy_data[scorpius_main::msg::Joy::L3] = this->getJoyValue<bool>(eKeybinding::l3);
     msg.joy_data[scorpius_main::msg::Joy::R1] = this->getJoyValue<bool>(eKeybinding::r1);
+    msg.joy_data[scorpius_main::msg::Joy::R3] = this->getJoyValue<bool>(eKeybinding::r3);
+    msg.joy_data[scorpius_main::msg::Joy::SHARE] = this->getJoyValue<bool>(eKeybinding::share);
+    msg.joy_data[scorpius_main::msg::Joy::OPTS] = this->getJoyValue<bool>(eKeybinding::opts);
+    msg.joy_data[scorpius_main::msg::Joy::HOME] = this->getJoyValue<bool>(eKeybinding::home);
 
-    if (this->getJoyValue<int8_t>(eKeybinding::cross_vert) > 0)
-    {
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_UP] = true;
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_DOWN] = false;
-    }
-    else
-    {
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_UP] = false;
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_DOWN] = true;
-    }
+    float crossTemp = this->getJoyValue<float>(eKeybinding::cross_vert);
+    msg.joy_data[scorpius_main::msg::Joy::CROSS_UP] = (crossTemp > 0.0f) ? 1.0f : 0.0f;
+    msg.joy_data[scorpius_main::msg::Joy::CROSS_DOWN] = (crossTemp < 0.0f) ? 1.0f : 0.0f;
 
-    if (this->getJoyValue<int8_t>(eKeybinding::cross_horiz) > 0)
-    {
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_LEFT] = true;
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_RIGHT] = false;
-    }
-    else
-    {
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_LEFT] = false;
-        msg.joy_data[scorpius_main::msg::Joy::CROSS_RIGHT] = true;
-    }
-    // msg.joy_data[scorpius_main::msg::Joy::L2] = this->_currentMsg.buttons[5];
-    // msg.joy_data[scorpius_main::msg::Joy::R2] = this->_currentMsg.buttons[7];
+    crossTemp = this->getJoyValue<float>(eKeybinding::cross_horiz);
+    msg.joy_data[scorpius_main::msg::Joy::CROSS_LEFT] = (crossTemp > 0.0f) ? 1.0f : 0.0f;
+    msg.joy_data[scorpius_main::msg::Joy::CROSS_RIGHT] = (crossTemp < 0.0f) ? 1.0f : 0.0f;
+
+    msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_HORIZ] = this->applyJoystickDeadzone(eKeybinding::joystick_left_horiz);
+    msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_VERT] = this->applyJoystickDeadzone(eKeybinding::joystick_left_vert);
+    msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_HORIZ] = this->applyJoystickDeadzone(eKeybinding::joystick_right_horiz);
+    msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_VERT] = this->applyJoystickDeadzone(eKeybinding::joystick_right_vert);
     _pub_joyFormat->publish(msg);
     _lastFormattedJoy = msg;
 }
@@ -100,13 +95,13 @@ T JoyFormator::getJoyValue(eKeybinding key)
     {
         return static_cast<T>(_currentMsg.axes[_currentConfig.axes[std::to_underlying(key)]]);
     }
-    
+
     return static_cast<T>(0.0f);
 }
 
 void JoyFormator::setControllerType(std::string controllerName)
 {
-    if (controllerName == "DS5") // DualSense 5 controller
+    if (controllerName == "DS5")  // DualSense 5 controller
     {
         _currentConfig.buttons[std::to_underlying(eKeybinding::a)] = 0;
         _currentConfig.buttons[std::to_underlying(eKeybinding::b)] = 1;
@@ -133,5 +128,23 @@ void JoyFormator::setControllerType(std::string controllerName)
         _currentConfig.trigger_range_min = 0.0f;
         _currentConfig.trigger_range_max = 1.0f;
     }
-    // else {}
+    // else {} // Add more configurations here...
+}
+
+float JoyFormator::applyJoystickDeadzone(eKeybinding joystick)
+{
+    float joyValue = this->getJoyValue<float>(joystick);
+    float sign = (joyValue >= 0.0f) ? 1.0f : -1.0f;
+    float absValue = std::abs(joyValue);
+
+    if (absValue < this->_currentConfig.joystick_dead_zone)
+    {
+        return 0.0f;
+    }
+
+    // Remap from [deadzone, 1] to [0, 1]
+    absValue = (absValue - this->_currentConfig.joystick_dead_zone) / (1.0f - this->_currentConfig.joystick_dead_zone);
+    absValue = std::min(1.0f, absValue);  // Clamp to 1.0
+
+    return sign * absValue;
 }

@@ -7,21 +7,24 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
 
-    node_joy_main = Node(package="joy",
-                         namespace="/base/joy",
-                         executable="joy_node",
-                         name="main_joy_node",
-                         parameters=[{"autorepeat_rate": 20.0,
-                                      "device_name": "DualSense Wireless Controller",
-                                      "deadzone": 0.0}],
-                                    #   "device_name": "Sony Interactive Entertainment Wireless Controller"}],
-                         remappings=[("joy", "main_raw")])
+    node_joy_main = Node(
+        package="joy",
+        namespace="/base/joy",
+        executable="joy_node",
+        name="main_joy_node",
+        parameters=[{"autorepeat_rate": 20.0,
+        "device_name": "DualSense Wireless Controller",
+        "deadzone": 0.0}],
+        #   "device_name": "Sony Interactive Entertainment Wireless Controller"}],
+        remappings=[("joy", "main_raw")]
+    )
 
     node_joy = Node(
         package="scorpius_joy",
-        namespace="/scorpius/joy",
+        namespace="/base/joy",
         executable="joy_formator",
-        name="joy_formator"
+        name="joy_formator",
+        remappings=[("raw/joy", "main_raw")]
     )
 
     ld.add_action(node_joy_main)
