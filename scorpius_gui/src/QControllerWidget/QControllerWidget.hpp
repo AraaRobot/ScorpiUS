@@ -9,21 +9,21 @@
 
 #include "scorpius_main/msg/joy.hpp"
 
-struct Button
+struct sButton
 {
     QString name;     // e.g. "cross", "circle"
     QPointF posNorm;  // normalized x,y (0..1)
     bool pressed;     // state from ROS2
 };
 
-struct DButton
+struct sDButton
 {
     QString name;
     std::array<QPointF, 5> posNorm;
     bool pressed;
 };
 
-struct Joystick
+struct sJoystick
 {
     QString name;
     QPointF center;
@@ -64,12 +64,12 @@ class QControllerWidget : public QWidget
     void paintRLButtons(QPainter& p_, QRect& drawRect_);
     void paintJoystick(QPainter& p_, QRect& drawRect_);
 
-    std::array<Button, 4> _buttons = {{{"cross", QPointF(0.7875, 0.413), false},
+    std::array<sButton, 4> _buttons = {{{"cross", QPointF(0.7875, 0.413), false},
                                        {"circle", QPointF(0.8537, 0.3128), false},
                                        {"square", QPointF(0.7205, 0.3128), false},
                                        {"triangle", QPointF(0.7875, 0.2139), false}}};
 
-    std::array<DButton, 4> _dButtons
+    std::array<sDButton, 4> _dButtons
         = {{{"up",
              {{QPointF(0.19, 0.205), QPointF(0.19, 0.26), QPointF(0.215, 0.293), QPointF(0.24, 0.26), QPointF(0.24, 0.205)}},
              false},
@@ -83,10 +83,10 @@ class QControllerWidget : public QWidget
              {{QPointF(0.287, 0.279), QPointF(0.247, 0.279), QPointF(0.227, 0.31), QPointF(0.247, 0.347), QPointF(0.287, 0.347)}},
              false}}};
 
-    std::array<Joystick, 2> _joysticks
+    std::array<sJoystick, 2> _joysticks
         = {{{"left", QPointF(0.354, .501), 0.0f, 0.0f}, {"right", QPointF(0.649, .501), 0.0f, 0.0f}}};
 
-    std::array<Button, 6> _backButtons = {{{"L1", QPointF(0.01, 0.1), false},
+    std::array<sButton, 6> _backButtons = {{{"L1", QPointF(0.01, 0.1), false},
                                            {"L2", QPointF(0.01, 0.19), false},
                                            {"L3", QPointF(0.329, 0.70), false},
                                            {"R1", QPointF(0.94, 0.1), false},

@@ -55,7 +55,7 @@ void QControllerWidget::paintEvent(QPaintEvent*)
 
 void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
 {
-    for (const Button& b : _buttons)
+    for (const sButton& b : _buttons)
     {
         if (b.pressed)
         {
@@ -77,7 +77,7 @@ void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
 
 void QControllerWidget::paintDirectionButtons(QPainter& p_, QRect& drawRect_)
 {
-    for (const DButton& d : _dButtons)
+    for (const sDButton& d : _dButtons)
     {
         if (d.pressed)
         {
@@ -110,7 +110,7 @@ void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
     p_.setPen(QPen(Qt::black, 1));
     p_.setBrush(QBrush(QColor(173, 216, 230, 167)));
 
-    for (const Button& b : _backButtons)
+    for (const sButton& b : _backButtons)
     {
         if (b.pressed)
         {
@@ -134,7 +134,7 @@ void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
 void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 {
     int radius = drawRect_.width() * JOYSTICK_RADIUS_PERCENT;
-    for (const Joystick& j : _joysticks)
+    for (const sJoystick& j : _joysticks)
     {
         p_.setBrush(Qt::white);
         p_.setPen(Qt::black);
