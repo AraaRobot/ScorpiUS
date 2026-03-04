@@ -33,6 +33,7 @@ add_executable(gui src/gui.cpp
   src/gui_window.cpp
   src/debug_widget/debug_widget.cpp
   src/debug_widget/debug_widget_manager.cpp
+  src/debug_widget/debug_widget_manager.cpp
   src/QControllerWidget/QControllerWidget.cpp
   ui/DebugWidget.ui
   resources.qrc)
