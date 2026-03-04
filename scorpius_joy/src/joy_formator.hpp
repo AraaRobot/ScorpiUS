@@ -52,19 +52,15 @@ struct sControllerConfig
             axes[i] = -1;
         }
     }
-
-    // Point this pointer to a function for a controller which needs
-    // specific custom execution each publish loop. This can be used to
-    // handle a weird deconnection from controller
-    // void (JoyFormator::*custom_steps)(rover_msgs::msg::Joy* formatted_joy);
 };
 
 class JoyFormator : public rclcpp::Node
 {
     static constexpr const char* DEFAULT_CONTROLLER = "DS5";
-    static constexpr const char* TOPIC_SUBSCRIBER_NAME = "raw/joy";       // Relative: remapping works
-    static constexpr const char* TOPIC_PUBLISHER_NAME = "/scorpius/joy";  // Absolute: no namespace prefix
-    static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";   // Absolute: no namespace prefix
+    static constexpr const char* TOPIC_SUBSCRIBER_NAME = "raw/joy";
+    static constexpr const char* TOPIC_PUBLISHER_NAME = "/scorpius/joy";
+    static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";
+    static constexpr uint16_t THROTTLE_DELAY = 30'000U;
 
   public:
     JoyFormator();
@@ -73,16 +69,16 @@ class JoyFormator : public rclcpp::Node
     void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
     void joyPublisher_CB();
 
-    bool setControllerType(std::string controllerName_);
-    void setControllerType(std::string controllerName_, scorpius_main::srv::JoyConfig::Response& response_);
+    bool setControllerType(const std::string controllerName_);
+    void setControllerType(const std::string controllerName_, scorpius_main::srv::JoyConfig::Response& response_);
     void getControllerType(scorpius_main::srv::JoyConfig::Response& response_);
     void setDeadzone(float deadzone_, scorpius_main::srv::JoyConfig::Response& response_);
     void getDeadzone(scorpius_main::srv::JoyConfig::Response& response_);
 
     template<typename T>
-    T getJoyValue(eKeybinding key_);
-    float applyJoystickDeadzone(eKeybinding joystick_);
-    float getTriggerValues(eKeybinding trigger_);
+    T getJoyValue(const eKeybinding key_, const sensor_msgs::msg::Joy& msg_, const sControllerConfig& config_);
+    float applyJoystickDeadzone(const eKeybinding joystick_, const sensor_msgs::msg::Joy& msg_, const sControllerConfig& config);
+    float getTriggerValues(const eKeybinding trigger_, const sensor_msgs::msg::Joy& msg_, const sControllerConfig& config_);
 
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr _sub_joy;
     rclcpp::Publisher<scorpius_main::msg::Joy>::SharedPtr _pub_joyFormat;
@@ -94,7 +90,7 @@ class JoyFormator : public rclcpp::Node
     scorpius_main::msg::Joy _lastFormattedJoy;
 
     sControllerConfig _currentConfig;
-    bool isControllerConnected = false;
+    bool _isControllerConnected = false;
 };
 
 #endif  // SCORPIUS_JOY_HPP
