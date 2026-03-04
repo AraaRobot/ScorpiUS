@@ -7,8 +7,8 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _layout = new QVBoxLayout(_central);
     _tabs = new QTabWidget(_central);
     _debugWidgetManager = new DebugWidgetManager(node_, _tabs);
-    _controllerWidget = new QControllerWidget(node_, _tabs);
-    _controllerWidget->update();
+    _controllerManager = new QControllerManager(node_, _tabs);
+    _controllerManager->update();
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
@@ -17,7 +17,7 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _central->setLayout(_layout);
     setCentralWidget(_central);
     this->addTab(_debugWidgetManager, "Debug");
-    this->addTab(_controllerWidget, "Controller");
+    this->addTab(_controllerManager, "Controller");
 }
 
 int GuiWindow::addTab(QWidget* page, const QString& label)

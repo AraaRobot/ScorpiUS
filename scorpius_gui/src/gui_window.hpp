@@ -8,7 +8,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "debug_widget/debug_widget_manager.hpp"
-#include "QControllerWidget/QControllerWidget.hpp"
+#include "QControllerWidget/QControllerManager.hpp"
 
 class GuiWindow : public QMainWindow
 {
@@ -23,7 +23,7 @@ class GuiWindow : public QMainWindow
     QVBoxLayout* _layout{nullptr};
     QTabWidget* _tabs{nullptr};
     DebugWidgetManager* _debugWidgetManager{nullptr};
-    QControllerWidget* _controllerWidget{nullptr};
+    QControllerManager* _controllerManager{nullptr};
 };
 
 #endif  // define GUI_WINDOW_HPP
