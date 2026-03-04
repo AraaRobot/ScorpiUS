@@ -21,7 +21,7 @@ JoyFormator::JoyFormator():
     this->setControllerType(DEFAULT_CONTROLLER);
     _sub_joy = this->create_subscription<sensor_msgs::msg::Joy>(TOPIC_SUBSCRIBER_NAME,
                                                                 10,
-                                                                [this](const sensor_msgs::msg::Joy msg_)
+                                                                [this](const sensor_msgs::msg::Joy& msg_)
                                                                 {
                                                                     this->joySubscriber_CB(msg_);
                                                                 });
@@ -78,15 +78,17 @@ void JoyFormator::joyPublisher_CB(void)
 {
     if (!this->isControllerConnected)
     {
-        RCLCPP_ERROR(this->get_logger(), "Controller not connected");
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "Controller not connected");
         return;
     }
 
-    if (_lastMsg == _currentMsg || _currentMsg.buttons.size() == 0 || _currentMsg.axes.size() == 0)
+    if (_currentMsg == _lastMsg || _currentMsg.buttons.size() == 0 || _currentMsg.axes.size() == 0)
     {
         RCLCPP_ERROR(this->get_logger(), "Invalid msg received. Sending last formatted msg");
         _pub_joyFormat->publish(_lastFormattedJoy);
+        return;
     }
+
     scorpius_main::msg::Joy msg;
     msg.joy_data[scorpius_main::msg::Joy::A] = this->getJoyValue<bool>(eKeybinding::a);
     msg.joy_data[scorpius_main::msg::Joy::B] = this->getJoyValue<bool>(eKeybinding::b);
@@ -207,6 +209,15 @@ void JoyFormator::getDeadzone(scorpius_main::srv::JoyConfig::Response& response_
 
 float JoyFormator::applyJoystickDeadzone(eKeybinding joystick_)
 {
+    if (this->_currentConfig.joystick_dead_zone >= 1.0f)
+    {
+        RCLCPP_WARN_THROTTLE(this->get_logger(),
+                             *this->get_clock(),
+                             2000,
+                             "Deadzone currently set to 1.0. Unable to properly get joystick value");
+        return;
+    }
+
     float joyValue = this->getJoyValue<float>(joystick_);
     float sign = (joyValue >= 0.0f) ? 1.0f : -1.0f;
     float absValue = std::abs(joyValue);
