@@ -18,6 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Teleop.msg"
   "msg/ServoAngles.msg"
   "msg/Joy.msg"
+
+  "srv/JoyConfig.srv"
 )
 
 install(
