@@ -1,11 +1,5 @@
 #include "joy_formator.hpp"
 
-namespace
-{
-    constexpr int64_t PUB_FREQ = 10;
-    std::mutex mutex;
-}  // namespace
-
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
@@ -165,7 +159,7 @@ T JoyFormator::getJoyValue(const eKeybinding key_, const sensor_msgs::msg::Joy& 
     return static_cast<T>(0.0f);
 }
 
-bool JoyFormator::setControllerType(const std::string controllerName_)
+bool JoyFormator::setControllerType(const std::string& controllerName_)
 {
     if (controllerName_ == "DS5")  // DualSense 5 controller
     {
@@ -206,7 +200,7 @@ bool JoyFormator::setControllerType(const std::string controllerName_)
     return false;
 }
 
-void JoyFormator::setControllerType(const std::string controllerName_, scorpius_main::srv::JoyConfig::Response& response_)
+void JoyFormator::setControllerType(const std::string& controllerName_, scorpius_main::srv::JoyConfig::Response& response_)
 {
     bool success = this->setControllerType(controllerName_);
     response_.success = success;
@@ -270,7 +264,7 @@ float JoyFormator::applyJoystickDeadzone(const eKeybinding joystick_,
 
     // Remap from [deadzone, 1] to [0, 1]
     absValue = (absValue - config_.joystick_dead_zone) / (1.0f - config_.joystick_dead_zone);
-    absValue = std::min(1.0f, absValue);  // Clamp to 1.0
+    absValue = std::clamp(absValue, 0.0f, 1.0f);
 
     return sign * absValue;
 }

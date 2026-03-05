@@ -13,9 +13,13 @@ def generate_launch_description():
         executable="joy_node",
         name="main_joy_node",
         parameters=[{"autorepeat_rate": 20.0,
-        "device_name": "DualSense Wireless Controller",
+        # PS5 controller
+        # "device_name": "DualSense Wireless Controller",
+        "device_name": "Sony Interactive Entertainment DualSense Wireless Controller",
+        # PS4 controller
+        # "device_name": "Wireless Controller",
+        #  "device_name": "Sony Interactive Entertainment Wireless Controller"}],
         "deadzone": 0.0}],
-        #   "device_name": "Sony Interactive Entertainment Wireless Controller"}],
         remappings=[("joy", "main_raw")]
     )
 

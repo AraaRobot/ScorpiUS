@@ -61,6 +61,7 @@ class JoyFormator : public rclcpp::Node
     static constexpr const char* TOPIC_PUBLISHER_NAME = "/scorpius/joy";
     static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";
     static constexpr uint16_t THROTTLE_DELAY = 30'000U;
+    static constexpr int64_t PUB_FREQ = 10;
 
   public:
     JoyFormator();
@@ -69,8 +70,8 @@ class JoyFormator : public rclcpp::Node
     void joySubscriber_CB(const sensor_msgs::msg::Joy& joyInput_);
     void joyPublisher_CB();
 
-    bool setControllerType(const std::string controllerName_);
-    void setControllerType(const std::string controllerName_, scorpius_main::srv::JoyConfig::Response& response_);
+    bool setControllerType(const std::string& controllerName_);
+    void setControllerType(const std::string& controllerName_, scorpius_main::srv::JoyConfig::Response& response_);
     void getControllerType(scorpius_main::srv::JoyConfig::Response& response_);
     void setDeadzone(float deadzone_, scorpius_main::srv::JoyConfig::Response& response_);
     void getDeadzone(scorpius_main::srv::JoyConfig::Response& response_);
@@ -88,6 +89,9 @@ class JoyFormator : public rclcpp::Node
     sensor_msgs::msg::Joy _currentMsg;
     sensor_msgs::msg::Joy _lastMsg;
     scorpius_main::msg::Joy _lastFormattedJoy;
+
+    std::mutex mutex;
+
 
     sControllerConfig _currentConfig;
     bool _isControllerConnected = false;
