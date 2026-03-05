@@ -45,6 +45,7 @@ ament_target_dependencies(gui
 
 target_include_directories(gui PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 target_link_libraries(gui

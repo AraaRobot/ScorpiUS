@@ -3,6 +3,8 @@
 
 #include "QControllerWidget.hpp"
 
+#include "helpers/asyncExecutor.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <QVBoxLayout>
