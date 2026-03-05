@@ -67,7 +67,7 @@ JoyFormator::JoyFormator():
 
 void JoyFormator::joySubscriber_CB(const sensor_msgs::msg::Joy& msg_)
 {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     if (!this->_isControllerConnected)
         this->_isControllerConnected = true;
     this->_currentMsg = msg_;
@@ -82,7 +82,7 @@ void JoyFormator::joyPublisher_CB(void)
     bool isControllerConnected = false;
 
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         currentMsg = this->_currentMsg;
         lastMsg = this->_lastMsg;
         isControllerConnected = this->_isControllerConnected;
@@ -138,7 +138,7 @@ void JoyFormator::joyPublisher_CB(void)
     _pub_joyFormat->publish(msg);
 
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _lastFormattedJoy = msg;
         _lastMsg = _currentMsg;
     }
@@ -161,10 +161,10 @@ T JoyFormator::getJoyValue(const eKeybinding key_, const sensor_msgs::msg::Joy& 
 
 bool JoyFormator::setControllerType(const std::string& controllerName_)
 {
-    if (controllerName_ == "DS5")  // DualSense 5 controller
+    if (controllerName_ == "DS5" || controllerName_ == "DS4")  // DualSense 5 controller
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        _currentConfig.controllerType = "DS5";
+        std::lock_guard<std::mutex> lock(_mutex);
+        _currentConfig.controllerType = controllerName_;
         _currentConfig.buttons[std::to_underlying(eKeybinding::a)] = 0;
         _currentConfig.buttons[std::to_underlying(eKeybinding::b)] = 1;
         _currentConfig.buttons[std::to_underlying(eKeybinding::y)] = 2;
@@ -190,7 +190,8 @@ bool JoyFormator::setControllerType(const std::string& controllerName_)
         _currentConfig.trigger_range_min = 0.0f;
         _currentConfig.trigger_range_max = 1.0f;
 
-        RCLCPP_INFO(this->get_logger(), "Controller type now set to DS5");
+        std::string msg = "Controller type now set to " + controllerName_;
+        RCLCPP_INFO(this->get_logger(), msg.c_str());
         return true;
     }
     // else if {} // Add more configurations here...
@@ -212,7 +213,7 @@ void JoyFormator::getControllerType(scorpius_main::srv::JoyConfig::Response& res
 {
     response_.success = true;
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         response_.response = this->_currentConfig.controllerType;
     }
 }
@@ -223,7 +224,7 @@ void JoyFormator::setDeadzone(float deadzone_, scorpius_main::srv::JoyConfig::Re
     std::string msg = "Deadzone now set to " + std::to_string(deadzone);
 
     {
-        const std::lock_guard<std::mutex> lock(mutex);
+        const std::lock_guard<std::mutex> lock(_mutex);
         this->_currentConfig.joystick_dead_zone = deadzone;
     }
     response_.success = true;
@@ -235,7 +236,7 @@ void JoyFormator::getDeadzone(scorpius_main::srv::JoyConfig::Response& response_
 {
     response_.success = true;
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         response_.deadzone = this->_currentConfig.joystick_dead_zone;
     }
 }

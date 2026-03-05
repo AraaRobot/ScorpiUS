@@ -90,7 +90,7 @@ class JoyFormator : public rclcpp::Node
     sensor_msgs::msg::Joy _lastMsg;
     scorpius_main::msg::Joy _lastFormattedJoy;
 
-    std::mutex mutex;
+    std::mutex _mutex;
 
 
     sControllerConfig _currentConfig;
