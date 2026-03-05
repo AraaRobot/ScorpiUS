@@ -5,7 +5,7 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
 {
     _widget = new QControllerWidget(node_, this);
 
-    this->setupDeadzoneUI();
+    this->setupUI();
     this->setupLayout();
 }
 
@@ -14,7 +14,7 @@ QControllerManager::~QControllerManager()
     // reset ros elements
 }
 
-void QControllerManager::setupDeadzoneUI()
+void QControllerManager::setupUI()
 {
     _deadzoneLBox = new QDoubleSpinBox(this);
     _deadzoneLBox->setRange(0.0, 1.0);
@@ -33,6 +33,12 @@ void QControllerManager::setupDeadzoneUI()
 
     _deadzoneRLabel = new QLabel(this);
     _deadzoneRLabel->setText("Right deadzone");
+
+    _controllerSelectBox = new QComboBox(this);
+    _controllerSelectBox->addItem("PS4", "PS4");
+
+    _controllerSelectLabel = new QLabel;
+    _controllerSelectLabel->setText("Controller");
 };
 
 void QControllerManager::setupLayout()
@@ -42,6 +48,9 @@ void QControllerManager::setupLayout()
 
     _horizontalLayout->addWidget(_deadzoneLLabel);
     _horizontalLayout->addWidget(_deadzoneLBox);
+    _horizontalLayout->addStretch();
+    _horizontalLayout->addWidget(_controllerSelectLabel);
+    _horizontalLayout->addWidget(_controllerSelectBox);
     _horizontalLayout->addStretch();
     _horizontalLayout->addWidget(_deadzoneRLabel);
     _horizontalLayout->addWidget(_deadzoneRBox);

@@ -2,6 +2,7 @@
 #define QCONTROLLER_MANAGER_HPP
 
 #include "QControllerWidget.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <QVBoxLayout>
@@ -20,7 +21,7 @@ class QControllerManager : public QWidget
     ~QControllerManager();
 
   private:
-    void setupDeadzoneUI();
+    void setupUI();
     void setupLayout();
     
     QControllerWidget* _widget{nullptr};
@@ -28,8 +29,10 @@ class QControllerManager : public QWidget
     QHBoxLayout* _horizontalLayout{nullptr};
     QDoubleSpinBox* _deadzoneLBox{nullptr};
     QDoubleSpinBox* _deadzoneRBox{nullptr};
+    QComboBox* _controllerSelectBox{nullptr};
     QLabel* _deadzoneLLabel{nullptr};
     QLabel* _deadzoneRLabel{nullptr};
+    QLabel* _controllerSelectLabel{nullptr};
     std::shared_ptr<rclcpp::Node> _node;
 };
 
