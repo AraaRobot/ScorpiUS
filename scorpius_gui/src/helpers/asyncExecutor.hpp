@@ -1,16 +1,17 @@
-#ifndef QCONTROLLER_WORKER
-#define QCONTROLLER_WORKER
+#ifndef ASYNC_EXECUTOR_HPP
+#define ASYNC_EXECUTOR_HPP
 
-#include <rclcpp/rclcpp.hpp>
 
 #include <atomic>
 #include <condition_variable>
+#include <functional>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <thread>
 
 /**
- * @brief Executes tasks in a separate thread, used with Qt for large tasks that woudl slow down the gui
+ * @brief Executes tasks in a separate thread, used with Qt for large tasks that would slow down the gui
  * is not dependent on rclcpp or qt so can be reused anywhere
  * 
  */
@@ -25,8 +26,6 @@ class AsyncExecutor
   private:
     void executorLoop();
 
-    std::shared_ptr<rclcpp::Node> _node;
-
     std::thread _executorThread;
     std::mutex _queueMutex;
     std::atomic<bool> _running{true};
@@ -34,4 +33,4 @@ class AsyncExecutor
     std::queue<std::function<void()>> _queue;
 };
 
-#endif  // QCONTROLLER_WORKER
+#endif  // ASYNC_EXECUTOR_HPP

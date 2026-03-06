@@ -180,12 +180,14 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
     _joysticks[0].yPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_VERT], -1.0f, 1.0f);
 
     _joysticks[1].xPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_HORIZ], -1.0f, 1.0f);
-    _joysticks[2].yPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_VERT], -1.0f, 1.0f);
+    _joysticks[1].yPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_VERT], -1.0f, 1.0f);
 
     _backButtons[0].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::L1]);
     _backButtons[1].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::L2]);
-    _backButtons[2].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R1]);
-    _backButtons[3].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R2]);
+    _backButtons[2].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::L3]);
+    _backButtons[3].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R1]);
+    _backButtons[4].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R2]);
+    _backButtons[5].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R3]);
 
     this->update();
 }
