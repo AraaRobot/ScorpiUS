@@ -193,4 +193,5 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
 void QControllerWidget::setDeadzone(double deadzone_)
 {
     _joyStickDeadzone = deadzone_;
+    this->update();
 }

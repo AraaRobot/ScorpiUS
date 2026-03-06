@@ -18,7 +18,7 @@
 class QControllerManager : public QWidget
 {
   private:
-    static constexpr double JOYSTICK_DEADZONE_MIN = 0.20;
+    static constexpr double JOYSTICK_DEADZONE_DEFAULT = 0.20;
     static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";
 
   public:
@@ -33,14 +33,14 @@ class QControllerManager : public QWidget
     QControllerWidget* _widget{nullptr};
     QVBoxLayout* _verticalLayout{nullptr};
     QHBoxLayout* _horizontalLayout{nullptr};
-    QDoubleSpinBox* _deadzoneLBox{nullptr};
+    QDoubleSpinBox* _deadzoneBox{nullptr};
     QComboBox* _controllerSelectBox{nullptr};
-    QLabel* _deadzoneLLabel{nullptr};
+    QLabel* _deadzoneLabel{nullptr};
     QLabel* _controllerSelectLabel{nullptr};
-    std::shared_ptr<rclcpp::Node> _node;
 
     AsyncExecutor _executor = AsyncExecutor();
 
+    std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Client<scorpius_main::srv::JoyConfig>::SharedPtr _client;
 };
 

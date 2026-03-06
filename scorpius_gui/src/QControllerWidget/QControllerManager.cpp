@@ -1,14 +1,17 @@
 #include "QControllerManager.hpp"
 
 QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
-    QWidget(parent_)
+    QWidget(parent_), _node(node_)
 {
     _widget = new QControllerWidget(node_, this);
-
     _client = _node->create_client<scorpius_main::srv::JoyConfig>(SERVICE_NAME);
+    
 
     this->setupUI();
     this->setupLayout();
+    this->setDeadzone();
+
+    connect(_deadzoneBox, &QDoubleSpinBox::valueChanged, this, &QControllerManager::setDeadzone);
 }
 
 QControllerManager::~QControllerManager()
@@ -18,14 +21,14 @@ QControllerManager::~QControllerManager()
 
 void QControllerManager::setupUI()
 {
-    _deadzoneLBox = new QDoubleSpinBox(this);
-    _deadzoneLBox->setRange(0.0, 1.0);
-    _deadzoneLBox->setSingleStep(0.01);
-    _deadzoneLBox->setDecimals(2);
-    _deadzoneLBox->setValue(JOYSTICK_DEADZONE_MIN);
+    _deadzoneBox = new QDoubleSpinBox(this);
+    _deadzoneBox->setRange(0.0, 1.0);
+    _deadzoneBox->setSingleStep(0.01);
+    _deadzoneBox->setDecimals(2);
+    _deadzoneBox->setValue(JOYSTICK_DEADZONE_DEFAULT);
 
-    _deadzoneLLabel = new QLabel(this);
-    _deadzoneLLabel->setText("Left deadzone");
+    _deadzoneLabel = new QLabel(this);
+    _deadzoneLabel->setText("Deadzone");
 
     _controllerSelectBox = new QComboBox(this);
     _controllerSelectBox->addItem("PS4", "PS4");
@@ -39,12 +42,11 @@ void QControllerManager::setupLayout()
     _verticalLayout = new QVBoxLayout;
     _horizontalLayout = new QHBoxLayout;
 
-    _horizontalLayout->addWidget(_deadzoneLLabel);
-    _horizontalLayout->addWidget(_deadzoneLBox);
+    _horizontalLayout->addWidget(_deadzoneLabel);
+    _horizontalLayout->addWidget(_deadzoneBox);
     _horizontalLayout->addStretch();
     _horizontalLayout->addWidget(_controllerSelectLabel);
     _horizontalLayout->addWidget(_controllerSelectBox);
-    _horizontalLayout->addStretch();
 
     _verticalLayout->addWidget(_widget);
     _verticalLayout->addLayout(_horizontalLayout);
@@ -54,9 +56,9 @@ void QControllerManager::setupLayout()
 
 void QControllerManager::setDeadzone()
 {
-    _widget->setDeadzone(_deadzoneLBox->value());
+    _widget->setDeadzone(_deadzoneBox->value());
     rclcpp::Client<scorpius_main::srv::JoyConfig>::WeakPtr weakClient = _client;
-    float deadzone = _deadzoneLBox->value();
+    float deadzone = _deadzoneBox->value();
 
     _executor.addTask(
         [weakClient, deadzone]()
