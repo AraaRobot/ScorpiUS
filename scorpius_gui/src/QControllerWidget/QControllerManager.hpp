@@ -18,7 +18,7 @@
 class QControllerManager : public QWidget
 {
   private:
-    static constexpr double JOYSTICK_DEADZONE_DEFAULT = 0.20;
+    static constexpr double JOYSTICK_DEADZONE_DEFAULT = 0.05;
     static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";
 
   public:
