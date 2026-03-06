@@ -5,13 +5,15 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
 {
     _widget = new QControllerWidget(node_, this);
 
+    _client = _node->create_client<scorpius_main::srv::JoyConfig>(SERVICE_NAME);
+
     this->setupUI();
     this->setupLayout();
 }
 
 QControllerManager::~QControllerManager()
 {
-    // reset ros elements
+    _client.reset();
 }
 
 void QControllerManager::setupUI()
@@ -22,17 +24,8 @@ void QControllerManager::setupUI()
     _deadzoneLBox->setDecimals(2);
     _deadzoneLBox->setValue(JOYSTICK_DEADZONE_MIN);
 
-    _deadzoneRBox = new QDoubleSpinBox(this);
-    _deadzoneRBox->setRange(0.0, 1.0);
-    _deadzoneRBox->setSingleStep(0.01);
-    _deadzoneRBox->setDecimals(2);
-    _deadzoneRBox->setValue(JOYSTICK_DEADZONE_MIN);
-
     _deadzoneLLabel = new QLabel(this);
     _deadzoneLLabel->setText("Left deadzone");
-
-    _deadzoneRLabel = new QLabel(this);
-    _deadzoneRLabel->setText("Right deadzone");
 
     _controllerSelectBox = new QComboBox(this);
     _controllerSelectBox->addItem("PS4", "PS4");
@@ -52,11 +45,32 @@ void QControllerManager::setupLayout()
     _horizontalLayout->addWidget(_controllerSelectLabel);
     _horizontalLayout->addWidget(_controllerSelectBox);
     _horizontalLayout->addStretch();
-    _horizontalLayout->addWidget(_deadzoneRLabel);
-    _horizontalLayout->addWidget(_deadzoneRBox);
 
     _verticalLayout->addWidget(_widget);
     _verticalLayout->addLayout(_horizontalLayout);
 
     this->setLayout(_verticalLayout);
+}
+
+void QControllerManager::setDeadzone()
+{
+    _widget->setDeadzone(_deadzoneLBox->value());
+    rclcpp::Client<scorpius_main::srv::JoyConfig>::WeakPtr weakClient = _client;
+    float deadzone = _deadzoneLBox->value();
+
+    _executor.addTask(
+        [weakClient, deadzone]()
+        {
+            rclcpp::Client<scorpius_main::srv::JoyConfig>::SharedPtr client = weakClient.lock();
+            if (!client)
+            {
+                return;
+            }
+
+            scorpius_main::srv::JoyConfig::Request::SharedPtr request
+                = std::make_shared<scorpius_main::srv::JoyConfig::Request>();
+            request->command = scorpius_main::srv::JoyConfig::Request::SET_DEADZONE;
+            request->deadzone = deadzone;
+            rclcpp::Client<scorpius_main::srv::JoyConfig>::FutureAndRequestId result = client->async_send_request(request);
+        });
 }

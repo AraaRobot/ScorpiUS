@@ -40,7 +40,6 @@ class QControllerWidget : public QWidget
   private:
     static constexpr double BUTTON_RADIUS_PERCENT = 0.03;  // in percents of total image width
     static constexpr double JOYSTICK_RADIUS_PERCENT = 0.06;
-    static constexpr double JOYSTICK_DEADZONE_PERCENT = 0.25;
     static constexpr double FONT_SIZE_RATIO = 0.02;
     static constexpr int MIN_FONT_SIZE = 6;
     static constexpr int MAX_FONT_SIZE = 24;
@@ -50,6 +49,7 @@ class QControllerWidget : public QWidget
   public:
     QControllerWidget(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_ = nullptr);
     ~QControllerWidget();
+    void setDeadzone(double deadzone_);
 
   protected:
     void paintEvent(QPaintEvent*) override;
@@ -94,6 +94,9 @@ class QControllerWidget : public QWidget
                                             {"R1", QPointF(0.94, 0.1), false},
                                             {"R2", QPointF(0.94, 0.19), false},
                                             {"R3", QPointF(0.624, 0.70), false}}};
+
+    double _joyStickDeadzone = 0.0;
+
     QSvgRenderer _svgRenderer;
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Subscription<scorpius_main::msg::Joy>::SharedPtr _sub_joy;

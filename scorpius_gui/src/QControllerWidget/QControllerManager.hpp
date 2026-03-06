@@ -4,19 +4,22 @@
 #include "QControllerWidget.hpp"
 
 #include "helpers/asyncExecutor.hpp"
+#include "scorpius_main/srv/joy_config.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QDoubleSpinBox>
+#include <memory>
 #include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 class QControllerManager : public QWidget
 {
   private:
     static constexpr double JOYSTICK_DEADZONE_MIN = 0.20;
+    static constexpr const char* SERVICE_NAME = "/scorpius/joy_config";
 
   public:
     QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_ = nullptr);
@@ -25,17 +28,20 @@ class QControllerManager : public QWidget
   private:
     void setupUI();
     void setupLayout();
-    
+    void setDeadzone();
+
     QControllerWidget* _widget{nullptr};
     QVBoxLayout* _verticalLayout{nullptr};
     QHBoxLayout* _horizontalLayout{nullptr};
     QDoubleSpinBox* _deadzoneLBox{nullptr};
-    QDoubleSpinBox* _deadzoneRBox{nullptr};
     QComboBox* _controllerSelectBox{nullptr};
     QLabel* _deadzoneLLabel{nullptr};
-    QLabel* _deadzoneRLabel{nullptr};
     QLabel* _controllerSelectLabel{nullptr};
     std::shared_ptr<rclcpp::Node> _node;
+
+    AsyncExecutor _executor = AsyncExecutor();
+
+    rclcpp::Client<scorpius_main::srv::JoyConfig>::SharedPtr _client;
 };
 
 #endif

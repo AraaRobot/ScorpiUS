@@ -144,7 +144,7 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 
         p_.setBrush(Qt::NoBrush);
         p_.setPen(Qt::red);
-        p_.drawEllipse(QPointF(x, y), radius * JOYSTICK_DEADZONE_PERCENT, radius * JOYSTICK_DEADZONE_PERCENT);
+        p_.drawEllipse(QPointF(x, y), radius * _joyStickDeadzone, radius * _joyStickDeadzone);
 
         p_.setPen(QPen(Qt::darkGreen, 2));
         float line1x1 = x + j.xPos * radius + drawRect_.width() * 0.003;
@@ -188,4 +188,9 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
     _backButtons[3].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R2]);
 
     this->update();
+}
+
+void QControllerWidget::setDeadzone(double deadzone_)
+{
+    _joyStickDeadzone = deadzone_;
 }
