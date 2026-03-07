@@ -22,7 +22,7 @@ jobs:
     - name: Setup environment
       shell: bash
       run: |
-          echo -e "\e[0;34m=== Downloading and installing packages dependencies ... ===\e[0m"
+          echo -e "\e[0;34m[=== Downloading and installing packages dependencies ... ===]\e[0m"
           chmod +x scripts/provisions.sh 
           scripts/provisions.sh
           echo -e "\e[0;32m[OK] Dependencies installed successfully\e[0m"
@@ -31,11 +31,11 @@ jobs:
       # Build your program with the given configuration
       shell: bash
       run: |
-          echo -e "\e[0;34m=== Sourcing for build ... ===\e[0m"
+          echo -e "\e[0;34m[=== Sourcing for build ... ===]\e[0m"
           source /opt/ros/jazzy/setup.bash
           echo -e "\e[0;32m[OK]\e[0m"
           
-          echo -e "\e[0;34m=== Building ROS2 Packages ... ===\e[0m"
+          echo -e "\e[0;34m[=== Building ROS2 Packages ... ===]\e[0m"
           if colcon build; then
             echo -e "\e[0;32m=== [SUCCESS] ===\e[0m"
           else
