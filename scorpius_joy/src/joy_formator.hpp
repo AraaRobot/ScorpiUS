@@ -92,7 +92,6 @@ class JoyFormator : public rclcpp::Node
 
     std::mutex _mutex;
 
-
     sControllerConfig _currentConfig;
     bool _isControllerConnected = false;
 };
