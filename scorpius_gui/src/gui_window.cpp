@@ -22,5 +22,5 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
 
 int GuiWindow::addTab(QWidget* page, const QString& label)
 {
-  return _tabs->addTab(page, label);
+    return _tabs->addTab(page, label);
 }
