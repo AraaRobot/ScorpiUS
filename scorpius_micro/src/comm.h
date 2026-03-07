@@ -23,5 +23,4 @@ void comm_init(HardwareSerial& serial);
 void comm_process();
 void comm_consume(sAngles& angles_);
 
-
-#endif // COMM_H
+#endif  // COMM_H
