@@ -3949,3 +3949,4 @@ MonoBehaviour:
   forward: 1
   forwardAngle: 45
   backwardAngle: -45
+  neutralAngle: 0
