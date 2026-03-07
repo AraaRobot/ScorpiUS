@@ -10,15 +10,12 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
-    container:
-      image: osrf/ros:jazzy-desktop
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Lint check 
-      shell: bash
       run: |
           echo "=== Installing clang-format ==="
           if ! command -v clang-format &> /dev/null; then
