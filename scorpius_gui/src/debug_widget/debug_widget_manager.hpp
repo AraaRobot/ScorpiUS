@@ -16,7 +16,7 @@ class DebugWidgetManager : public QWidget
     static constexpr int ROWS = 3;
     static constexpr int COLS = 2;
 
-    static constexpr std::array<char, ROWS* COLS> aNumberToLetter = {'A', 'F', 'B', 'E', 'C', 'D'};
+    static constexpr std::array<char, ROWS * COLS> aNumberToLetter = {'A', 'F', 'B', 'E', 'C', 'D'};
 
     static int letterToIndex(char letter)
     {

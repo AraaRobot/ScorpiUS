@@ -7,7 +7,6 @@
 #include "gui_window.hpp"
 #include <rclcpp/rclcpp.hpp>
 
-
 int rosThreadFunction(std::shared_ptr<rclcpp::Node> node_);
 int guiMain(int argc, char* argv[], std::shared_ptr<rclcpp::Node> node_);
 
