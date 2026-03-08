@@ -28,6 +28,11 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
                                                                               });
 }
 
+DebugWidgetManager::~DebugWidgetManager()
+{
+    _sub_teleop.reset();
+}
+
 void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_)
 {
     emit _debugWidgets[letterToIndex('A')]->setAngleHorizontalSignal(msg_.horiz_a);
