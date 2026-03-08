@@ -191,6 +191,11 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
     _backButtons[4].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R2]);
     _backButtons[5].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R3]);
 
+    _psButton.pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::HOME]);
+
+    _optionButtons[0].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::SHARE]);
+    _optionButtons[1].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::OPTS]);
+
     this->update();
 }
 
