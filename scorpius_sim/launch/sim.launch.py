@@ -8,8 +8,8 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     node_sim = Node(
-        package="rover_sim",
-        namespace="/rover/sim",
+        package="scorpius_sim",
+        namespace="/scorpius/sim",
         executable="sim",
         name="sim"
     )
