@@ -13,11 +13,11 @@ QControllerWidget::QControllerWidget(std::shared_ptr<rclcpp::Node> node_, QWidge
     connect(this, &QControllerWidget::signal_joyMsg, this, &QControllerWidget::slot_joyMsg);
 
     _sub_joy = _node->create_subscription<scorpius_main::msg::Joy>(TOPIC_JOY,
-                                                        10,
-                                                        [this](const scorpius_main::msg::Joy& msg_)
-                                                        {
-                                                            emit this->signal_joyMsg(msg_);
-                                                        });
+                                                                   10,
+                                                                   [this](const scorpius_main::msg::Joy& msg_)
+                                                                   {
+                                                                       emit this->signal_joyMsg(msg_);
+                                                                   });
 }
 
 QControllerWidget::~QControllerWidget()
@@ -46,15 +46,18 @@ void QControllerWidget::paintEvent(QPaintEvent*)
 
     this->paintDirectionButtons(p, drawRect);
 
-    p.setBrush(Qt::NoBrush);
-
     this->paintJoystick(p, drawRect);
 
     this->paintRLButtons(p, drawRect);
+
+    this->paintPSButton(p, drawRect);
+
+    this->paintOptionButtons(p, drawRect);
 }
 
 void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
 {
+    int radius = drawRect_.width() * BUTTON_RADIUS_PERCENT;  // 3% of SVG width
     for (const sButton& b : _buttons)
     {
         if (b.pressed)
@@ -69,8 +72,7 @@ void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
         // convert normalized pos to actual coordinates
         int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
         int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
-        int radius = drawRect_.width() * BUTTON_RADIUS_PERCENT;  // 3% of SVG width
-
+        
         p_.drawEllipse(QPoint(x, y), radius, radius);
     }
 }
@@ -147,16 +149,16 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
         p_.drawEllipse(QPointF(x, y), radius * _joyStickDeadzone, radius * _joyStickDeadzone);
 
         p_.setPen(QPen(Qt::darkGreen, 2));
-        float line1x1 = x + j.xPos * radius + drawRect_.width() * 0.003;
-        float line1x2 = x + j.xPos * radius - drawRect_.width() * 0.003;
-        float line1y1 = y + j.yPos * radius;
-        float line1y2 = y + j.yPos * radius;
+        float line1x1 = x - j.xPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line1x2 = x - j.xPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line1y1 = y - j.yPos * radius;
+        float line1y2 = y - j.yPos * radius;
         QLine Line1 = QLine(line1x1, line1y1, line1x2, line1y2);
 
-        float line2x1 = x + j.xPos * radius;
-        float line2x2 = x + j.xPos * radius;
-        float line2y1 = y + j.yPos * radius + drawRect_.width() * 0.003;
-        float line2y2 = y + j.yPos * radius - drawRect_.width() * 0.003;
+        float line2x1 = x - j.xPos * radius;
+        float line2x2 = x - j.xPos * radius;
+        float line2y1 = y - j.yPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line2y2 = y - j.yPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
         QLine Line2 = QLine(line2x1, line2y1, line2x2, line2y2);
 
         p_.drawLine(Line1);
@@ -192,8 +194,48 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
     this->update();
 }
 
+void QControllerWidget::paintPSButton(QPainter& p_, QRect& drawRect_)
+{
+    p_.setPen(Qt::black);
+    if (_psButton.pressed)
+    {
+        p_.setBrush(QBrush(LIGHT_BLUE));
+    }
+    else
+    {
+        p_.setBrush(Qt::NoBrush);
+    }
+    int x = drawRect_.left() + _psButton.posNorm.x() * drawRect_.width();
+    int y = drawRect_.top() + _psButton.posNorm.y() * drawRect_.height();
+    int radius = drawRect_.width() * PS_BUTTON_RADIUS_PERCENT;
+    p_.drawEllipse(QPointF(x, y), radius, radius);
+}
+
 void QControllerWidget::setDeadzone(double deadzone_)
 {
     _joyStickDeadzone = deadzone_;
     this->update();
+}
+
+void QControllerWidget::paintOptionButtons(QPainter& p_, QRect& drawRect_) 
+{
+    int radius = drawRect_.width() * OPTION_BUTTON_RADIUS_PERCENT;
+
+    for (const sButton& b : _optionButtons)
+    {
+        if (b.pressed)
+        {
+            p_.setBrush(QBrush(LIGHT_BLUE));
+        }
+        else
+        {
+            p_.setBrush(Qt::NoBrush);
+        }
+
+        // convert normalized pos to actual coordinates
+        int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
+        int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
+        
+        p_.drawEllipse(QPoint(x, y), radius, radius);
+    }
 }

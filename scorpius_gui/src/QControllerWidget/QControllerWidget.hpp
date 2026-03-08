@@ -40,6 +40,9 @@ class QControllerWidget : public QWidget
   private:
     static constexpr double BUTTON_RADIUS_PERCENT = 0.03;  // in percents of total image width
     static constexpr double JOYSTICK_RADIUS_PERCENT = 0.06;
+    static constexpr double JOYSTICK_LINE_LENGTH = 0.003;
+    static constexpr double PS_BUTTON_RADIUS_PERCENT = 0.0252;
+    static constexpr double OPTION_BUTTON_RADIUS_PERCENT = 0.01;
     static constexpr double FONT_SIZE_RATIO = 0.02;
     static constexpr int MIN_FONT_SIZE = 6;
     static constexpr int MAX_FONT_SIZE = 24;
@@ -65,9 +68,11 @@ class QControllerWidget : public QWidget
     void paintDirectionButtons(QPainter& p_, QRect& drawRect_);
     void paintRLButtons(QPainter& p_, QRect& drawRect_);
     void paintJoystick(QPainter& p_, QRect& drawRect_);
+    void paintPSButton(QPainter& p_, QRect& drawRect_);
+    void paintOptionButtons(QPainter& p_, QRect& drawRect_);
 
     std::array<sButton, 4> _buttons = {{{"cross", QPointF(0.7875, 0.413), false},
-                                        {"circle", QPointF(0.8537, 0.3128), false},
+                                        {"circle", QPointF(0.8545, 0.3128), false},
                                         {"square", QPointF(0.7205, 0.3128), false},
                                         {"triangle", QPointF(0.7875, 0.2139), false}}};
 
@@ -94,6 +99,11 @@ class QControllerWidget : public QWidget
                                             {"R1", QPointF(0.94, 0.1), false},
                                             {"R2", QPointF(0.94, 0.19), false},
                                             {"R3", QPointF(0.624, 0.70), false}}};
+
+    sButton _psButton = {"PS", QPointF(0.5, 0.509), false};
+
+    std::array<sButton, 2> _optionButtons = {{{"Share", QPointF(0.315, 0.1785), false},
+                                            {"Options", QPointF(0.6885, 0.1785), false}}};
 
     double _joyStickDeadzone = 0.0;
 
