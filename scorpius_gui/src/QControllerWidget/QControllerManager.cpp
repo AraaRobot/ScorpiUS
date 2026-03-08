@@ -4,7 +4,7 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
     QWidget(parent_),
     _node(node_)
 {
-    _widget = new QControllerWidget(node_, this);
+    _widget = new QControllerWidget(node_, ps4Profile(), this);
     _client = _node->create_client<scorpius_main::srv::JoyConfig>(SERVICE_NAME);
 
     this->setupUI();
@@ -12,6 +12,23 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
     this->setDeadzone();
 
     connect(_deadzoneBox, &QDoubleSpinBox::valueChanged, this, &QControllerManager::setDeadzone);
+
+    connect(_controllerSelectBox,
+            &QComboBox::currentIndexChanged,
+            this,
+            [this]()
+            {
+                sControllerProfile p;
+                if (_controllerSelectBox->currentData() == "PS4")
+                {
+                    p = ps4Profile();
+                }
+                else if (_controllerSelectBox->currentData() == "Xbox")
+                {
+                    p = xboxProfile();
+                }
+                this->_widget->setProfile(p);
+            });
 }
 
 QControllerManager::~QControllerManager()
@@ -32,6 +49,7 @@ void QControllerManager::setupUI()
 
     _controllerSelectBox = new QComboBox(this);
     _controllerSelectBox->addItem("PS4", "PS4");
+    _controllerSelectBox->addItem("Xbox", "Xbox");
 
     _controllerSelectLabel = new QLabel;
     _controllerSelectLabel->setText("Controller");
