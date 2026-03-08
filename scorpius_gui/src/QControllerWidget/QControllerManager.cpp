@@ -1,11 +1,11 @@
 #include "QControllerManager.hpp"
 
 QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
-    QWidget(parent_), _node(node_)
+    QWidget(parent_),
+    _node(node_)
 {
     _widget = new QControllerWidget(node_, this);
     _client = _node->create_client<scorpius_main::srv::JoyConfig>(SERVICE_NAME);
-    
 
     this->setupUI();
     this->setupLayout();

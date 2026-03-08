@@ -102,8 +102,8 @@ class QControllerWidget : public QWidget
 
     sButton _psButton = {"PS", QPointF(0.5, 0.509), false};
 
-    std::array<sButton, 2> _optionButtons = {{{"Share", QPointF(0.315, 0.1785), false},
-                                            {"Options", QPointF(0.6885, 0.1785), false}}};
+    std::array<sButton, 2> _optionButtons
+        = {{{"Share", QPointF(0.315, 0.1785), false}, {"Options", QPointF(0.6885, 0.1785), false}}};
 
     double _joyStickDeadzone = 0.0;
 

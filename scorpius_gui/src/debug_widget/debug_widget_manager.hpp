@@ -42,7 +42,6 @@ class DebugWidgetManager : public QWidget
     DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
     ~DebugWidgetManager();
 
-
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
 

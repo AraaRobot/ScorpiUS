@@ -72,7 +72,7 @@ void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
         // convert normalized pos to actual coordinates
         int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
         int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
-        
+
         p_.drawEllipse(QPoint(x, y), radius, radius);
     }
 }
@@ -217,7 +217,7 @@ void QControllerWidget::setDeadzone(double deadzone_)
     this->update();
 }
 
-void QControllerWidget::paintOptionButtons(QPainter& p_, QRect& drawRect_) 
+void QControllerWidget::paintOptionButtons(QPainter& p_, QRect& drawRect_)
 {
     int radius = drawRect_.width() * OPTION_BUTTON_RADIUS_PERCENT;
 
@@ -235,7 +235,7 @@ void QControllerWidget::paintOptionButtons(QPainter& p_, QRect& drawRect_)
         // convert normalized pos to actual coordinates
         int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
         int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
-        
+
         p_.drawEllipse(QPoint(x, y), radius, radius);
     }
 }

@@ -1,7 +1,6 @@
 #ifndef ASYNC_EXECUTOR_HPP
 #define ASYNC_EXECUTOR_HPP
 
-
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -13,7 +12,7 @@
 /**
  * @brief Executes tasks in a separate thread, used with Qt for large tasks that would slow down the gui
  * is not dependent on rclcpp or qt so can be reused anywhere
- * 
+ *
  */
 class AsyncExecutor
 {

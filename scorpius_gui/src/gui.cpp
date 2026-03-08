@@ -1,7 +1,5 @@
 #include "gui_window.hpp"
 
-
-
 #include <QApplication>
 #include <QLabel>
 #include <QProcess>
