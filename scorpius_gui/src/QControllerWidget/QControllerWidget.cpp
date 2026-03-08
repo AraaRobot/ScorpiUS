@@ -42,6 +42,7 @@ void QControllerWidget::setProfile(sControllerProfile profile_)
     {
         _profile = profile_;
         _svgLoaded = true;
+        this->update();
     }
 }
 
@@ -87,7 +88,8 @@ void QControllerWidget::paintRoundButtons(QPainter& p_, QRect& drawRect_)
         }
         else
         {
-            p_.setBrush(Qt::NoBrush);
+            //p_.setBrush(Qt::NoBrush);
+            p_.setBrush(Qt::white);
         }
 
         // convert normalized pos to actual coordinates
