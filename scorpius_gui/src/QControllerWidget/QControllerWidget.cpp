@@ -88,8 +88,7 @@ void QControllerWidget::paintRoundButtons(QPainter& p_, QRect& drawRect_)
         }
         else
         {
-            //p_.setBrush(Qt::NoBrush);
-            p_.setBrush(Qt::white);
+            p_.setBrush(Qt::NoBrush);
         }
 
         // convert normalized pos to actual coordinates
@@ -116,13 +115,12 @@ void QControllerWidget::paintPolygonButtons(QPainter& p_, QRect& drawRect_)
 
         QPolygonF poly;
 
-        for (size_t i = 0; i < 5; ++i)
+        for (size_t i = 0; i < d.posNorm.size(); ++i)
         {
             int x = drawRect_.left() + d.posNorm[i].x() * drawRect_.width();
             int y = drawRect_.top() + d.posNorm[i].y() * drawRect_.height();
             poly << QPointF(x, y);
         }
-
         p_.drawPolygon(poly);
     }
 }
@@ -164,8 +162,8 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
         int radius = drawRect_.width() * j.radius;
         p_.setBrush(Qt::white);
         p_.setPen(Qt::black);
-        int x = drawRect_.left() + j.center.x() * drawRect_.width();
-        int y = drawRect_.top() + j.center.y() * drawRect_.height();
+        float x = drawRect_.left() + j.center.x() * drawRect_.width();
+        float y = drawRect_.top() + j.center.y() * drawRect_.height();
         p_.drawEllipse(QPointF(x, y), radius, radius);
 
         p_.setBrush(Qt::NoBrush);
@@ -192,7 +190,7 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 
 void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
 {
-    for (sButtonRound b : _profile.roundButtons)
+    for (sButtonRound& b : _profile.roundButtons)
     {
         if (b.joyIndex < 0 || b.joyIndex >= scorpius_main::msg::Joy::MAX)
         {
@@ -201,7 +199,7 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
         b.pressed = static_cast<bool>(msg_.joy_data[b.joyIndex]);
     }
 
-    for (sButtonPoly b : _profile.polyButtons)
+    for (sButtonPoly& b : _profile.polyButtons)
     {
         if (b.joyIndex < 0 || b.joyIndex >= scorpius_main::msg::Joy::MAX)
         {
@@ -210,7 +208,7 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
         b.pressed = static_cast<bool>(msg_.joy_data[b.joyIndex]);
     }
 
-    for (sButtonRect b : _profile.rectButtons)
+    for (sButtonRect& b : _profile.rectButtons)
     {
         if (b.joyIndex < 0 || b.joyIndex >= scorpius_main::msg::Joy::MAX)
         {
@@ -219,7 +217,7 @@ void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
         b.pressed = static_cast<bool>(msg_.joy_data[b.joyIndex]);
     }
 
-    for (sJoystick j : _profile.joysticks)
+    for (sJoystick& j : _profile.joysticks)
     {
         if (j.joyIndexHoriz < 0 || j.joyIndexHoriz >= scorpius_main::msg::Joy::MAX)
         {

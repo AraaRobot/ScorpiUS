@@ -18,6 +18,7 @@ namespace XboxConstants
     static constexpr double BUTTON_RADIUS_PERCENT = 0.03;
     static constexpr double HOME_BUTTON_RADIUS_PERCENT = 0.0325;
     static constexpr double OPTION_BUTTON_RADIUS_PERCENT = 0.0213;
+    static constexpr double JOYSTICK_RADIUS_PERCENT = 0.056;
 }  // namespace XboxConstants
 
 sControllerProfile ps4Profile()
@@ -121,5 +122,35 @@ sControllerProfile xboxProfile()
            {"Home", QPointF(0.5, 0.242), XboxConstants::HOME_BUTTON_RADIUS_PERCENT, false, scorpius_main::msg::Joy::HOME},
            {"View", QPointF(0.429, 0.342), XboxConstants::OPTION_BUTTON_RADIUS_PERCENT, false, scorpius_main::msg::Joy::SHARE},
            {"Menu", QPointF(0.574, 0.342), XboxConstants::OPTION_BUTTON_RADIUS_PERCENT, false, scorpius_main::msg::Joy::OPTS}};
+
+    profile.joysticks = {{"Left",
+                          QPointF(0.243, 0.343),
+                          XboxConstants::JOYSTICK_RADIUS_PERCENT,
+                          0.0f,
+                          0.0f,
+                          scorpius_main::msg::Joy::JOYSTICK_LEFT_HORIZ,
+                          scorpius_main::msg::Joy::JOYSTICK_LEFT_VERT},
+                         {"Right",
+                          QPointF(0.633, 0.493),
+                          XboxConstants::JOYSTICK_RADIUS_PERCENT,
+                          0.0f,
+                          0.0f,
+                          scorpius_main::msg::Joy::JOYSTICK_RIGHT_HORIZ,
+                          scorpius_main::msg::Joy::JOYSTICK_RIGHT_VERT}};
+
+    profile.polyButtons = {
+        {"Up", {{QPointF(0.34, 0.48), QPointF(0.395, 0.48), QPointF(0.3675, 0.43)}}, false, scorpius_main::msg::Joy::CROSS_UP},
+        {"Down",
+         {{QPointF(0.34, 0.53), QPointF(0.395, 0.53), QPointF(0.3675, 0.58)}},
+         false,
+         scorpius_main::msg::Joy::CROSS_DOWN},
+        {"Left", {{QPointF(0.34, 0.48), QPointF(0.34, 0.53), QPointF(0.29, 0.505)}}, false, scorpius_main::msg::Joy::CROSS_LEFT},
+        {"Right",
+         {{QPointF(0.395, 0.48), QPointF(0.395, 0.53), QPointF(0.445, 0.505)}},
+         false,
+         scorpius_main::msg::Joy::CROSS_RIGHT}};
+
+
+    profile.rectButtons = {};
     return profile;
 }
