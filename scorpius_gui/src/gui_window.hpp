@@ -24,6 +24,7 @@ class GuiWindow : public QMainWindow
     QTabWidget* _tabs{nullptr};
     DebugWidgetManager* _debugWidgetManager{nullptr};
     QControllerManager* _controllerManager{nullptr};
+    QSerialWidgetManager* _serialManager{nullptr};
 };
 
 #endif  // define GUI_WINDOW_HPP
