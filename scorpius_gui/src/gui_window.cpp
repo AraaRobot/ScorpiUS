@@ -32,16 +32,20 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
     if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-        switch (keyEvent->key())
+
+        if (keyEvent->modifiers() == Qt::NoModifier)
         {
-            case Qt::Key_C:
-                _tabs->setCurrentIndex(1);
-                return true;
-            case Qt::Key_D:
-                _tabs->setCurrentIndex(0);
-                return true;
-            default:
-                break;
+            switch (keyEvent->key())
+            {
+                case Qt::Key_C:
+                    _tabs->setCurrentIndex(1);
+                    return true;
+                case Qt::Key_D:
+                    _tabs->setCurrentIndex(0);
+                    return true;
+                default:
+                    break;
+            }
         }
     }
     return QMainWindow::eventFilter(obj, event);

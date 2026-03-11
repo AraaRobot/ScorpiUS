@@ -1,6 +1,7 @@
 #ifndef GUI_WINDOW_HPP
 #define GUI_WINDOW_HPP
 
+#include <QApplication>
 #include <QMainWindow>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -18,9 +19,10 @@ class GuiWindow : public QMainWindow
     explicit GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
 
     int addTab(QWidget* page, const QString& label);
-    bool eventFilter(QObject* obj, QEvent* event);
 
   private:
+    bool eventFilter(QObject* obj, QEvent* event);
+
     QWidget* _central{nullptr};
     QVBoxLayout* _layout{nullptr};
     QTabWidget* _tabs{nullptr};
