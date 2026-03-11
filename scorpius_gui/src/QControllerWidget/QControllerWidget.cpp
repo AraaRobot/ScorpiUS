@@ -171,14 +171,14 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
         p_.drawEllipse(QPointF(x, y), radius * _joyStickDeadzone, radius * _joyStickDeadzone);
 
         p_.setPen(QPen(Qt::darkGreen, 2));
-        float line1x1 = x - j.xPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
-        float line1x2 = x - j.xPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line1x1 = x + j.xPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line1x2 = x + j.xPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
         float line1y1 = y - j.yPos * radius;
         float line1y2 = y - j.yPos * radius;
         QLine Line1 = QLine(line1x1, line1y1, line1x2, line1y2);
 
-        float line2x1 = x - j.xPos * radius;
-        float line2x2 = x - j.xPos * radius;
+        float line2x1 = x + j.xPos * radius;
+        float line2x2 = x + j.xPos * radius;
         float line2y1 = y - j.yPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
         float line2y2 = y - j.yPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
         QLine Line2 = QLine(line2x1, line2y1, line2x2, line2y2);

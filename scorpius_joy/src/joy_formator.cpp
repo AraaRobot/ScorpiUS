@@ -128,11 +128,11 @@ void JoyFormator::joyPublisher_CB(void)
     msg.joy_data[scorpius_main::msg::Joy::CROSS_RIGHT] = (crossTemp < 0.0f) ? 1.0f : 0.0f;
 
     msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_HORIZ]
-        = this->applyJoystickDeadzone(eKeybinding::joystick_left_horiz, currentMsg, config);
+        = -this->applyJoystickDeadzone(eKeybinding::joystick_left_horiz, currentMsg, config);
     msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_VERT]
         = this->applyJoystickDeadzone(eKeybinding::joystick_left_vert, currentMsg, config);
     msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_HORIZ]
-        = this->applyJoystickDeadzone(eKeybinding::joystick_right_horiz, currentMsg, config);
+        = -this->applyJoystickDeadzone(eKeybinding::joystick_right_horiz, currentMsg, config);
     msg.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_VERT]
         = this->applyJoystickDeadzone(eKeybinding::joystick_right_vert, currentMsg, config);
     _pub_joyFormat->publish(msg);
