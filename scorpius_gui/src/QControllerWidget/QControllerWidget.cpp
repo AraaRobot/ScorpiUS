@@ -148,8 +148,8 @@ void QControllerWidget::paintSquareButtons(QPainter& p_, QRect& drawRect_)
         // convert normalized pos to actual coordinates
         int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
         int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
-        int length = drawRect_.width() * 0.05;
-        int height = drawRect_.width() * 0.03;  // 3% of SVG width
+        int length = drawRect_.width() * b.length;
+        int height = drawRect_.width() * b.width;  // 3% of SVG width
         QRect button = QRect(x, y, length, height);
         p_.drawRect(button);
         p_.drawText(button, Qt::AlignCenter, QString(b.name));
