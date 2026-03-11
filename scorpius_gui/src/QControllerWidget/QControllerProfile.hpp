@@ -13,7 +13,7 @@ struct sButtonRound
     QString name;
     QPointF posNorm;  // normalized x,y (0..1)
     double radius;
-    bool pressed;     
+    bool pressed;
     int8_t joyIndex{-1};
 };
 
@@ -23,10 +23,9 @@ struct sButtonRect
     QPointF posNorm;  // normalized x,y (0..1)
     double length;
     double width;
-    bool pressed;     
+    bool pressed;
     int8_t joyIndex{-1};
 };
-
 
 struct sButtonPoly
 {
@@ -47,7 +46,6 @@ struct sJoystick
     int8_t joyIndexVert{-1};
 };
 
-
 struct sControllerProfile
 {
     QString svgPath;
@@ -57,11 +55,9 @@ struct sControllerProfile
     std::vector<sButtonRect> rectButtons;
 };
 
-
 // Factory
 
 sControllerProfile ps4Profile();
 sControllerProfile xboxProfile();
-
 
 #endif

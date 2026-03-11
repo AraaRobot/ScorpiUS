@@ -22,10 +22,12 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
                 if (_controllerSelectBox->currentData() == "PS4")
                 {
                     p = ps4Profile();
+                    this->setControllerType("DS5");
                 }
                 else if (_controllerSelectBox->currentData() == "Xbox")
                 {
                     p = xboxProfile();
+                    this->setControllerType("Xbox");
                 }
                 this->_widget->setProfile(p);
             });
@@ -91,6 +93,29 @@ void QControllerManager::setDeadzone()
                 = std::make_shared<scorpius_main::srv::JoyConfig::Request>();
             request->command = scorpius_main::srv::JoyConfig::Request::SET_DEADZONE;
             request->deadzone = deadzone;
+            rclcpp::Client<scorpius_main::srv::JoyConfig>::FutureAndRequestId result = client->async_send_request(request);
+        });
+}
+
+void QControllerManager::setControllerType(const std::string& type_)
+{
+    std::string controllerType = type_;
+
+    rclcpp::Client<scorpius_main::srv::JoyConfig>::WeakPtr weakClient = _client;
+
+    _executor.addTask(
+        [weakClient, controllerType]()
+        {
+            rclcpp::Client<scorpius_main::srv::JoyConfig>::SharedPtr client = weakClient.lock();
+            if (!client)
+            {
+                return;
+            }
+
+            scorpius_main::srv::JoyConfig::Request::SharedPtr request
+                = std::make_shared<scorpius_main::srv::JoyConfig::Request>();
+            request->command = scorpius_main::srv::JoyConfig::Request::SET_TYPE;
+            request->type = controllerType;
             rclcpp::Client<scorpius_main::srv::JoyConfig>::FutureAndRequestId result = client->async_send_request(request);
         });
 }

@@ -1,6 +1,5 @@
 #include "QControllerProfile.hpp"
 #include "scorpius_main/msg/joy.hpp"
-
 namespace PSConstants
 {
     static constexpr const char* svgPath = ":/images/images/Dualshock_4_Layout.svg";
@@ -19,6 +18,8 @@ namespace XboxConstants
     static constexpr double HOME_BUTTON_RADIUS_PERCENT = 0.0325;
     static constexpr double OPTION_BUTTON_RADIUS_PERCENT = 0.0213;
     static constexpr double JOYSTICK_RADIUS_PERCENT = 0.056;
+    static constexpr double BACK_BUTTON_WIDTH = 0.03;
+    static constexpr double BACK_BUTTON_LENGTH = 0.05;
 }  // namespace XboxConstants
 
 sControllerProfile ps4Profile()
@@ -150,7 +151,42 @@ sControllerProfile xboxProfile()
          false,
          scorpius_main::msg::Joy::CROSS_RIGHT}};
 
+    profile.rectButtons = {{{"LB",
+                             QPointF(0.010, 0.10),
+                             PSConstants::BACK_BUTTON_LENGTH,
+                             PSConstants::BACK_BUTTON_WIDTH,
+                             false,
+                             scorpius_main::msg::Joy::L1},
+                            {"LT",
+                             QPointF(0.010, 0.19),
+                             PSConstants::BACK_BUTTON_LENGTH,
+                             PSConstants::BACK_BUTTON_WIDTH,
+                             false,
+                             scorpius_main::msg::Joy::L2},
+                            {"L3",
+                             QPointF(0.329, 0.70),
+                             PSConstants::BACK_BUTTON_LENGTH,
+                             PSConstants::BACK_BUTTON_WIDTH,
+                             false,
+                             scorpius_main::msg::Joy::L3},
+                            {"RB",
+                             QPointF(0.940, 0.10),
+                             PSConstants::BACK_BUTTON_LENGTH,
+                             PSConstants::BACK_BUTTON_WIDTH,
+                             false,
+                             scorpius_main::msg::Joy::R1},
+                            {"RT",
+                             QPointF(0.940, 0.19),
+                             PSConstants::BACK_BUTTON_LENGTH,
+                             PSConstants::BACK_BUTTON_WIDTH,
+                             false,
+                             scorpius_main::msg::Joy::R2},
+                            {"R3",
+                             QPointF(0.624, 0.70),
+                             PSConstants::BACK_BUTTON_LENGTH,
+                             PSConstants::BACK_BUTTON_WIDTH,
+                             false,
+                             scorpius_main::msg::Joy::R3}}};
 
-    profile.rectButtons = {};
     return profile;
 }
