@@ -21,9 +21,35 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     this->addTab(_controllerManager, "Controller");
     this->addTab(_serialManager, "Serial");
 
+
+    QApplication::instance()->installEventFilter(this);
 }
 
 int GuiWindow::addTab(QWidget* page, const QString& label)
 {
     return _tabs->addTab(page, label);
+}
+
+bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+        if (keyEvent->modifiers() == Qt::NoModifier)
+        {
+            switch (keyEvent->key())
+            {
+                case Qt::Key_C:
+                    _tabs->setCurrentIndex(1);
+                    return true;
+                case Qt::Key_D:
+                    _tabs->setCurrentIndex(0);
+                    return true;
+                default:
+                    break;
+            }
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
