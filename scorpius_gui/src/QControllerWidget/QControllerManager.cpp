@@ -99,7 +99,7 @@ void QControllerManager::setDeadzone()
 
 void QControllerManager::setControllerType(const std::string& type_)
 {
-    std::string controllerType = type_;
+    const std::string controllerType = type_;
 
     rclcpp::Client<scorpius_main::srv::JoyConfig>::WeakPtr weakClient = _client;
 
