@@ -17,18 +17,10 @@ class CommNode(Node):
             ServoAngles, '/scorpius/teleop', self.CB_teleop, 10)
         self.subscription  # prevent unused variable warning
 
-        try:
-            self.ser = serial.Serial(
-                '/dev/ttyACM0', 115200, timeout=1)
-            self.get_logger().info(
-                f"Opened serial /dev/ttyACM0 115200")
-        except (serial.SerialException, FileNotFoundError) as e:
-            self.get_logger().error(
-                f"Could not open serial port /dev/ttyACM0: {e}")
-            return
+        self.srv = self.create_service(
+            SerialConfig, '/scorpius/serial_config', self.handle_serial_config)
 
         self.ser = None
-        self.ser.reset_input_buffer()
 
     def destroy_node(self):
         if self.ser.is_open:
@@ -72,6 +64,30 @@ class CommNode(Node):
 
         packet = bytes([HEAD, length]) + payload + bytes([checksum, TAIL])
         return packet
+
+    def handle_serial_config(self, request, response):
+        try:
+            if getattr(self, 'ser', None) and self.ser.is_open:
+                self.get_logger().info("Serial already open; reopening with new config")
+                self.ser.close()
+
+            self.ser = serial.Serial(
+                request.port,
+                int(request.baud),
+                timeout=float(request.timeout)
+            )
+            self.ser.reset_input_buffer()
+
+            response.result = True
+            response.response = f"Opened {request.port} @ {request.baud}"
+            self.get_logger().info(response.response)
+
+        except (serial.SerialException, FileNotFoundError) as e:
+            response.result = False
+            response.response = str(e)
+            self.get_logger().error(response.response)
+
+        return response
 
 
 def main(args=None):
