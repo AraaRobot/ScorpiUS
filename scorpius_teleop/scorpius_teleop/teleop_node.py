@@ -5,8 +5,8 @@ import math
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import Joy
 
-from Vector2 import Vector2
-from HexapodAngles import HexapodAngles
+from .Vector2 import Vector2
+from .HexapodAngles import HexapodAngles
 
 class TeleopNode(Node):
     def __init__(self):
