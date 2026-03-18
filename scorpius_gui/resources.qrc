@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/Dualshock_4_Layout.svg</file>
+        <file>images/xbox-series-x.svg</file>
+    </qresource>
+</RCC>

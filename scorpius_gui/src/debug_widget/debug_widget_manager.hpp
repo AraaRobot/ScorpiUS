@@ -16,7 +16,7 @@ class DebugWidgetManager : public QWidget
     static constexpr int ROWS = 3;
     static constexpr int COLS = 2;
 
-    static constexpr std::array<char, ROWS* COLS> aNumberToLetter = {'A', 'F', 'B', 'E', 'C', 'D'};
+    static constexpr std::array<char, ROWS * COLS> aNumberToLetter = {'A', 'F', 'B', 'E', 'C', 'D'};
 
     static int letterToIndex(char letter)
     {
@@ -40,6 +40,7 @@ class DebugWidgetManager : public QWidget
 
   public:
     DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
+    ~DebugWidgetManager();
 
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);

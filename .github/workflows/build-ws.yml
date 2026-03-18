@@ -1,0 +1,46 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: Build ROS2 Jazzy project
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-jazzy:
+    name: "Build on ROS2 Jazzy (Ubuntu 24.04)"
+    runs-on: ubuntu-24.04
+
+    container:
+      image: osrf/ros:jazzy-desktop
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup environment
+      shell: bash
+      run: |
+          echo -e "\e[0;34m[=== Downloading and installing packages dependencies ... ===]\e[0m"
+          chmod +x scripts/provisions.sh 
+          scripts/provisions.sh
+          echo -e "\e[0;32m[OK] Dependencies installed successfully\e[0m"
+
+    - name: Build ScorpiUS packages
+      # Build your program with the given configuration
+      shell: bash
+      run: |
+          echo -e "\e[0;34m[=== Sourcing for build ... ===]\e[0m"
+          source /opt/ros/jazzy/setup.bash
+          echo -e "\e[0;32m[OK]\e[0m"
+          
+          echo -e "\e[0;34m[=== Building ROS2 Packages ... ===]\e[0m"
+          if colcon build; then
+            echo -e "\e[0;32m=== [SUCCESS] ===\e[0m"
+          else
+            echo -e "\e[0;31m[FAILED] Building step triggered warnings or errors\e[0m"
+            exit 1  # Exit with status 1 if build fails
+          fi
+          
+
