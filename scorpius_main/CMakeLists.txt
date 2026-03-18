@@ -22,6 +22,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SerialStatus.msg"
 
   "srv/JoyConfig.srv"
+  "srv/SerialConfig.srv"
 )
 
 install(

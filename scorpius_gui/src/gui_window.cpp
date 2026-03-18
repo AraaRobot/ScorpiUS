@@ -9,7 +9,7 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _debugWidgetManager = new DebugWidgetManager(node_, _tabs);
     _controllerManager = new QControllerManager(node_, _tabs);
     _controllerManager->update();
-    _serialManager = new SerialWidgetManager(node_, _tabs);
+    _serialManager = new QSerialManager(node_, _tabs);
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
