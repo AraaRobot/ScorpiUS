@@ -81,7 +81,7 @@ class TeleopNode(Node):
             self.step = self.MAX_STEP
 
         # debug
-        self.get_logger().info(f"Received : {data.joy_data[data.JOYSTICK_LEFT_HORIZ]} {data.joy_data[data.JOYSTICK_LEFT_VERT]} {data.joy_data[data.R2]} {data.joy_data[data.CROSS_UP]} {data.joy_data[data.CROSS_DOWN]}")
+        self.get_logger().debug(f"Received : {data.joy_data[data.JOYSTICK_LEFT_HORIZ]} {data.joy_data[data.JOYSTICK_LEFT_VERT]} {data.joy_data[data.R2]} {data.joy_data[data.CROSS_UP]} {data.joy_data[data.CROSS_DOWN]}")
         
     def logic_callback(self):
         # update movement method
@@ -100,7 +100,7 @@ class TeleopNode(Node):
         self.publisher_angles.publish(msg)
 
         # debug
-        # self.get_logger().info(
+        # self.get_logger().debug(
         #     f"\n================ Publishing ================\n"
         #     f"       vertical        horizontal\n"
         #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
@@ -115,7 +115,7 @@ class TeleopNode(Node):
     def angles_calculations(self):
         # debug
         msg = self.angles.to_servo_angles_msg()
-        self.get_logger().info(
+        self.get_logger().debug(
             f"\n================ Angles ================\n"
             f"       vertical        horizontal\n"
             f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
@@ -136,7 +136,7 @@ class TeleopNode(Node):
             state = (self.movement_state, self.position_state)
             half_angle_step = math.asin(self.step / (2 * self.leg_reach)) * 180 / math.pi # angle step for horizontal angles, degrees
             target_angle = self.input_vector.get_angle() - 90 # target angle for horizontal angles, degrees
-            self.get_logger().info(f"State: {state}, Target angle: {target_angle}")
+            self.get_logger().debug(f"State: {state}, Target angle: {target_angle}")
             match state:
                 case (0, _): # to idle
                     self.target_angles.set(self.VERT_DOWN_ANGLE, 
@@ -396,7 +396,7 @@ class TeleopNode(Node):
         
         # interpolate angles towards target angles based on speed
         if self.get_clock().now() - self.last_interpolation_time >= rclpy.duration.Duration(seconds=1/self.speed):
-            # self.get_logger().info("Interpolating angles.")
+            # self.get_logger().debug("Interpolating angles.")
             self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
             self.last_interpolation_time = self.get_clock().now()
 
