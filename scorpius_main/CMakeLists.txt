@@ -18,6 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Teleop.msg"
   "msg/ServoAngles.msg"
   "msg/Joy.msg"
+  "msg/SerialHeartbeat.msg"
+  "msg/SerialStatus.msg"
 
   "srv/JoyConfig.srv"
 )
