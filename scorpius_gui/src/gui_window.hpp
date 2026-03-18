@@ -1,6 +1,8 @@
 #ifndef GUI_WINDOW_HPP
 #define GUI_WINDOW_HPP
 
+#include <QApplication>
+#include <QKeyEvent>
 #include <QMainWindow>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -19,6 +21,8 @@ class GuiWindow : public QMainWindow
     int addTab(QWidget* page, const QString& label);
 
   private:
+    bool eventFilter(QObject* obj, QEvent* event);
+
     QWidget* _central{nullptr};
     QVBoxLayout* _layout{nullptr};
     QTabWidget* _tabs{nullptr};
