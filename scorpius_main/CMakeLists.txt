@@ -15,8 +15,10 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Teleop.msg"
   "msg/ServoAngles.msg"
+  "msg/Joy.msg"
+
+  "srv/JoyConfig.srv"
 )
 
 install(
