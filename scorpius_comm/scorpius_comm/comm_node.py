@@ -3,6 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from scorpius_main.msg import ServoAngles
+from scorpius_main.srv import SerialConfig
 import serial
 
 HEAD = 0xAA

@@ -1,0 +1,8 @@
+string port
+int32 baud
+int32 timeout
+
+---
+
+bool result
+string response
