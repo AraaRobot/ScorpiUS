@@ -8,6 +8,8 @@ public class ValueSubscriber : MonoBehaviour
     ROSConnection ros;
     private float[] servoAngles = new float[12];
 
+    [SerializeField] private ArduinoScript arduinoScript;
+
     void Start()
     {
         ros = ROSConnection.GetOrCreateInstance();
@@ -31,6 +33,8 @@ public class ValueSubscriber : MonoBehaviour
         servoAngles[10] = msg.horiz_e;
         servoAngles[11] = msg.horiz_f;
         Debug.Log("Received servo angles: " + string.Join(", ", servoAngles));
+
+        arduinoScript.SetServoAngles(servoAngles);
     }
 
     public float[] GetReceivedValue()

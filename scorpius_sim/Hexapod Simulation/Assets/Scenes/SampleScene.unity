@@ -319,6 +319,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1902627454583778700, guid: 7a1395cc65a1008408d9c7f8bec24244, type: 3}
+      propertyPath: arduinoScript
+      value: 
+      objectReference: {fileID: 8101955685336712556}
     - target: {fileID: 2108325291827296796, guid: 7a1395cc65a1008408d9c7f8bec24244, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -477,6 +481,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ede639c198f19b34ba891ac9333df559, type: 3}
+--- !u!114 &8101955685336712556 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4608340650464053624, guid: ede639c198f19b34ba891ac9333df559, type: 3}
+  m_PrefabInstance: {fileID: 8101955685336712555}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: defa4da0abdd5eb489f8b803434c68f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArduinoScript
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
