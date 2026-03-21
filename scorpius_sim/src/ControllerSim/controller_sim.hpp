@@ -18,6 +18,7 @@ class ControllerSim : public rclcpp::Node
 {
     static constexpr const char* TOPIC_JOY_SIM = "/scorpius/joy";
     static constexpr int64_t PUB_FREQ = 10;
+    static constexpr int64_t STATE_CHANGE_TIME = 5;
 
   public:
     ControllerSim();

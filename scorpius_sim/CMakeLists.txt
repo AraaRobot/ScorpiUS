@@ -14,7 +14,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(scorpius_main REQUIRED)
 
-add_executable(controller_sim src/controller_sim.cpp)
+add_executable(controller_sim src/ControllerSim/controller_sim.cpp)
 
 ament_target_dependencies(controller_sim
                           rclcpp

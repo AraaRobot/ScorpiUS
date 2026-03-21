@@ -24,11 +24,13 @@ ControllerSim::ControllerSim():
                                                    this->simControllerPub_CB();
                                                });
 
-    this->_timer_state = this->create_wall_timer(std::chrono::seconds(5),
+    this->_timer_state = this->create_wall_timer(std::chrono::seconds(this->STATE_CHANGE_TIME),
                                                  [this]()
                                                  {
                                                      this->updateState();
                                                  });
+
+    RCLCPP_INFO(this->get_logger(), "Current state: %s", this->getCurrentState());
 }
 
 void ControllerSim::simControllerPub_CB()
