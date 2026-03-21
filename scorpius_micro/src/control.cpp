@@ -31,7 +31,7 @@ void controlInit()
     goHome();
 }
 
-void processAngles(sAngles& angles_)
+void processAngles(const sAngles& angles_)
 {
     _lastAngles.vert_a = angles_.vert_a;
     _lastAngles.vert_b = angles_.vert_b;
