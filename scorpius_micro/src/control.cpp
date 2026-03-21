@@ -4,18 +4,18 @@
 // PCA9685 default address: 0x40
 static Adafruit_PWMServoDriver driverModule;
 
-static constexpr eServo allServos[] = {eServo::VERT_A,
-                                       eServo::VERT_B,
-                                       eServo::VERT_C,
-                                       eServo::VERT_D,
-                                       eServo::VERT_E,
-                                       eServo::VERT_F,
-                                       eServo::HORIZ_A,
-                                       eServo::HORIZ_B,
-                                       eServo::HORIZ_C,
-                                       eServo::HORIZ_D,
-                                       eServo::HORIZ_E,
-                                       eServo::HORIZ_F};
+static constexpr eServo servos[] = {eServo::VERT_A,
+                                    eServo::VERT_B,
+                                    eServo::VERT_C,
+                                    eServo::VERT_D,
+                                    eServo::VERT_E,
+                                    eServo::VERT_F,
+                                    eServo::HORIZ_A,
+                                    eServo::HORIZ_B,
+                                    eServo::HORIZ_C,
+                                    eServo::HORIZ_D,
+                                    eServo::HORIZ_E,
+                                    eServo::HORIZ_F};
 
 void controlInit()
 {
@@ -94,7 +94,7 @@ void servoGoTo(eServo servoId, int angle)
 
 void goHome()
 {
-    for (eServo s : allServos)
+    for (eServo s : servos)
     {
         servoGoTo(s, HOME_ANGLE);
         delay(50);
