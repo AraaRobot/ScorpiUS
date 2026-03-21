@@ -2,15 +2,16 @@
 #define CONTROL_H
 
 #include <Arduino.h>
+#include "comm.h"
 
 constexpr uint16_t SERVOMIN = 102;  // this is the 'minimum' pulse length count (out of 4096)
 constexpr uint16_t SERVOMAX = 522;  // this is the 'maximum' pulse length count (out of 4096)
 
-constexpr uint8_t NUMBER_OF_SERVOS = 12;  // Number of servos currently used
-constexpr uint8_t MAX_ANGLE_VERTICAL = 90;
-constexpr uint8_t MIN_ANGLE_VERTICAL = -90;
-constexpr uint8_t MAX_ANGLE_HORIZONTAL = 45;
-constexpr uint8_t MIN_ANGLE_HORIZONTAL = -45;
+constexpr uint8_t MAX_ANGLE_VERTICAL = 90U;
+constexpr int8_t MIN_ANGLE_VERTICAL = -90;
+constexpr uint8_t MAX_ANGLE_HORIZONTAL = 45U;
+constexpr int8_t MIN_ANGLE_HORIZONTAL = -45;
+constexpr uint8_t HOME_ANGLE = 0U;
 
 enum class eServo : uint8_t
 {
@@ -25,10 +26,14 @@ enum class eServo : uint8_t
     VERT_E,
     HORIZ_E,
     VERT_F,
-    HORIZ_F
+    HORIZ_F,
+    // Add servos here...
+    NUM_SERVOS
 };
 
 void controlInit();
+void processAngles(sAngles& angles);
 void servoGoTo(eServo servoId, int angle);
+void goHome();
 
 #endif  // CONTROL_H

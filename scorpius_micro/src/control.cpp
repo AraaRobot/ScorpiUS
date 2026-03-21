@@ -4,6 +4,19 @@
 // PCA9685 default address: 0x40
 static Adafruit_PWMServoDriver driverModule;
 
+static constexpr eServo allServos[] = {eServo::VERT_A,
+                                       eServo::VERT_B,
+                                       eServo::VERT_C,
+                                       eServo::VERT_D,
+                                       eServo::VERT_E,
+                                       eServo::VERT_F,
+                                       eServo::HORIZ_A,
+                                       eServo::HORIZ_B,
+                                       eServo::HORIZ_C,
+                                       eServo::HORIZ_D,
+                                       eServo::HORIZ_E,
+                                       eServo::HORIZ_F};
+
 void controlInit()
 {
     driverModule = Adafruit_PWMServoDriver(0x40);
@@ -12,15 +25,30 @@ void controlInit()
 
     driverModule.setPWMFreq(50);
     delay(200);
+
+    goHome();
+}
+
+void processAngles(sAngles& angles)
+{
+    servoGoTo(eServo::VERT_A, angles.vert_a);
+    servoGoTo(eServo::VERT_B, angles.vert_b);
+    servoGoTo(eServo::VERT_C, angles.vert_c);
+    servoGoTo(eServo::VERT_D, angles.vert_d);
+    servoGoTo(eServo::VERT_E, angles.vert_e);
+    servoGoTo(eServo::VERT_F, angles.vert_f);
+    servoGoTo(eServo::HORIZ_A, angles.hori_a);
+    servoGoTo(eServo::HORIZ_B, angles.hori_b);
+    servoGoTo(eServo::HORIZ_C, angles.hori_c);
+    servoGoTo(eServo::HORIZ_D, angles.hori_d);
+    servoGoTo(eServo::HORIZ_E, angles.hori_e);
+    servoGoTo(eServo::HORIZ_F, angles.hori_f);
+    delay(50);  // Delay to allow servos to reach the position. Might be useless?
 }
 
 static int angleToPulse(int ang)  // gets the angle in degree and returns the pulse width
 {
     int pulse = map(ang, -90, 90, SERVOMIN, SERVOMAX);  // map angle of 0 to 180 to Servo min and Servo max
-    // Serial.print("Angle: ");
-    // Serial.print(ang);
-    // Serial.print("\tpulse: ");
-    // Serial.println(pulse);
     return pulse;
 }
 
@@ -61,5 +89,14 @@ void servoGoTo(eServo servoId, int angle)
         default:
             Serial.println("Invalid servo ID");
             break;
+    }
+}
+
+void goHome()
+{
+    for (eServo s : allServos)
+    {
+        servoGoTo(s, HOME_ANGLE);
+        delay(50);
     }
 }
