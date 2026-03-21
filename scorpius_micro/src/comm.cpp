@@ -119,11 +119,11 @@ void comm_process()
     }
 }
 
-void comm_consume(sAngles& angles_)
+bool comm_consume(sAngles& angles_)
 {
     if (!packetReady)
     {
-        return;
+        return false;
     }
 
     if (packetLen != COMM_EXPECTED_LEN)  // Can be change to a switch case if there a more message types in the future
@@ -132,7 +132,7 @@ void comm_consume(sAngles& angles_)
         commSerial->println(len);
         packetReady = false;
         state = WAIT_HEAD;
-        return;
+        return false;
     }
 
     size_t index = 0;

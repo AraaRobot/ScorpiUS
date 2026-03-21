@@ -27,8 +27,12 @@ void loop()
 {
     comm_process();
     sAngles angles;
-    comm_consume(angles);
-    processAngles(angles);
+    if (comm_consume(angles))
+    {
+        processAngles(angles);
+    }
+
+    updatePosition();
 }
 
 void testLegJoints()

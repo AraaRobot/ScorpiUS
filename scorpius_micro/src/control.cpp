@@ -4,6 +4,8 @@
 // PCA9685 default address: 0x40
 static Adafruit_PWMServoDriver driverModule;
 
+static sAngles _lastAngles;
+
 static constexpr eServo servos[] = {eServo::VERT_A,
                                     eServo::VERT_B,
                                     eServo::VERT_C,
@@ -29,21 +31,36 @@ void controlInit()
     goHome();
 }
 
-void processAngles(sAngles& angles)
+void processAngles(sAngles& angles_)
 {
-    servoGoTo(eServo::VERT_A, angles.vert_a);
-    servoGoTo(eServo::VERT_B, angles.vert_b);
-    servoGoTo(eServo::VERT_C, angles.vert_c);
-    servoGoTo(eServo::VERT_D, angles.vert_d);
-    servoGoTo(eServo::VERT_E, angles.vert_e);
-    servoGoTo(eServo::VERT_F, angles.vert_f);
-    servoGoTo(eServo::HORIZ_A, angles.hori_a);
-    servoGoTo(eServo::HORIZ_B, angles.hori_b);
-    servoGoTo(eServo::HORIZ_C, angles.hori_c);
-    servoGoTo(eServo::HORIZ_D, angles.hori_d);
-    servoGoTo(eServo::HORIZ_E, angles.hori_e);
-    servoGoTo(eServo::HORIZ_F, angles.hori_f);
-    delay(50);  // Delay to allow servos to reach the position. Might be useless?
+    _lastAngles.vert_a = angles_.vert_a;
+    _lastAngles.vert_b = angles_.vert_b;
+    _lastAngles.vert_c = angles_.vert_c;
+    _lastAngles.vert_d = angles_.vert_d;
+    _lastAngles.vert_e = angles_.vert_e;
+    _lastAngles.vert_f = angles_.vert_f;
+    _lastAngles.hori_a = angles_.hori_a;
+    _lastAngles.hori_b = angles_.hori_b;
+    _lastAngles.hori_c = angles_.hori_c;
+    _lastAngles.hori_d = angles_.hori_d;
+    _lastAngles.hori_e = angles_.hori_e;
+    _lastAngles.hori_f = angles_.hori_f;
+}
+
+void updatePosition()
+{
+    servoGoTo(eServo::VERT_A, _lastAngles.vert_a);
+    servoGoTo(eServo::VERT_B, _lastAngles.vert_b);
+    servoGoTo(eServo::VERT_C, _lastAngles.vert_c);
+    servoGoTo(eServo::VERT_D, _lastAngles.vert_d);
+    servoGoTo(eServo::VERT_E, _lastAngles.vert_e);
+    servoGoTo(eServo::VERT_F, _lastAngles.vert_f);
+    servoGoTo(eServo::HORIZ_A, _lastAngles.hori_a);
+    servoGoTo(eServo::HORIZ_B, _lastAngles.hori_b);
+    servoGoTo(eServo::HORIZ_C, _lastAngles.hori_c);
+    servoGoTo(eServo::HORIZ_D, _lastAngles.hori_d);
+    servoGoTo(eServo::HORIZ_E, _lastAngles.hori_e);
+    servoGoTo(eServo::HORIZ_F, _lastAngles.hori_f);
 }
 
 static int angleToPulse(int ang)  // gets the angle in degree and returns the pulse width
