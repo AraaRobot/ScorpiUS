@@ -2,11 +2,11 @@
 #define GUI_WINDOW_HPP
 
 #include <QApplication>
+#include <QKeyEvent>
 #include <QMainWindow>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QKeyEvent>
 #include <rclcpp/rclcpp.hpp>
 
 #include "debug_widget/debug_widget_manager.hpp"

@@ -29,6 +29,7 @@ class QControllerManager : public QWidget
     void setupUI();
     void setupLayout();
     void setDeadzone();
+    void setControllerType(const std::string& type_);
 
     QControllerWidget* _widget{nullptr};
     QVBoxLayout* _verticalLayout{nullptr};

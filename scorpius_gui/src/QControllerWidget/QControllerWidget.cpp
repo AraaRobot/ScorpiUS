@@ -1,11 +1,12 @@
 #include "QControllerWidget.hpp"
 
-QControllerWidget::QControllerWidget(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
+QControllerWidget::QControllerWidget(std::shared_ptr<rclcpp::Node> node_, sControllerProfile profile_, QWidget* parent_):
     QWidget(parent_),
+    _profile(profile_),
     _node(node_)
 {
-    bool loadOk = _svgRenderer.load(QString(":/images/images/Dualshock_4_Layout.svg"));
-    if (!loadOk)
+    _svgLoaded = _svgRenderer.load(_profile.svgPath);
+    if (!_svgLoaded)
     {
         RCLCPP_ERROR(_node->get_logger(), "SVG was not loaded");
     }
@@ -25,8 +26,33 @@ QControllerWidget::~QControllerWidget()
     _sub_joy.reset();
 }
 
+void QControllerWidget::setProfile(sControllerProfile profile_)
+{
+    bool ok = _svgRenderer.load(profile_.svgPath);
+    if (!ok && !_svgLoaded)
+    {
+        RCLCPP_ERROR(_node->get_logger(), "SVG was not loaded, no profile to fallback to");
+    }
+    else if (!ok && _svgLoaded)
+    {
+        RCLCPP_ERROR(_node->get_logger(), "SVG was not loaded, falling back to old profile");
+        _svgRenderer.load(_profile.svgPath);
+    }
+    else
+    {
+        _profile = profile_;
+        _svgLoaded = true;
+        this->update();
+    }
+}
+
 void QControllerWidget::paintEvent(QPaintEvent*)
 {
+    if (!_svgLoaded)
+    {
+        return;
+    }
+
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     p.setRenderHint(QPainter::SmoothPixmapTransform);
@@ -42,23 +68,19 @@ void QControllerWidget::paintEvent(QPaintEvent*)
 
     _svgRenderer.render(&p, drawRect);
 
-    this->paintButtons(p, drawRect);
+    this->paintRoundButtons(p, drawRect);
 
-    this->paintDirectionButtons(p, drawRect);
+    this->paintPolygonButtons(p, drawRect);
 
     this->paintJoystick(p, drawRect);
 
-    this->paintRLButtons(p, drawRect);
-
-    this->paintPSButton(p, drawRect);
-
-    this->paintOptionButtons(p, drawRect);
+    this->paintSquareButtons(p, drawRect);
 }
 
-void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
+void QControllerWidget::paintRoundButtons(QPainter& p_, QRect& drawRect_)
 {
-    int radius = drawRect_.width() * BUTTON_RADIUS_PERCENT;  // 3% of SVG width
-    for (const sButton& b : _buttons)
+    // 3% of SVG width
+    for (const sButtonRound& b : _profile.roundButtons)
     {
         if (b.pressed)
         {
@@ -72,14 +94,15 @@ void QControllerWidget::paintButtons(QPainter& p_, QRect& drawRect_)
         // convert normalized pos to actual coordinates
         int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
         int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
+        int radius = drawRect_.width() * b.radius;
 
         p_.drawEllipse(QPoint(x, y), radius, radius);
     }
 }
 
-void QControllerWidget::paintDirectionButtons(QPainter& p_, QRect& drawRect_)
+void QControllerWidget::paintPolygonButtons(QPainter& p_, QRect& drawRect_)
 {
-    for (const sDButton& d : _dButtons)
+    for (const sButtonPoly& d : _profile.polyButtons)
     {
         if (d.pressed)
         {
@@ -92,27 +115,26 @@ void QControllerWidget::paintDirectionButtons(QPainter& p_, QRect& drawRect_)
 
         QPolygonF poly;
 
-        for (size_t i = 0; i < 5; ++i)
+        for (size_t i = 0; i < d.posNorm.size(); ++i)
         {
             int x = drawRect_.left() + d.posNorm[i].x() * drawRect_.width();
             int y = drawRect_.top() + d.posNorm[i].y() * drawRect_.height();
             poly << QPointF(x, y);
         }
-
         p_.drawPolygon(poly);
     }
 }
 
-void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
+void QControllerWidget::paintSquareButtons(QPainter& p_, QRect& drawRect_)
 {
     QFont font;
     int pointSize = std::clamp(int(drawRect_.height() * FONT_SIZE_RATIO), MIN_FONT_SIZE, MAX_FONT_SIZE);
     font.setPointSize(pointSize);
     p_.setFont(font);
     p_.setPen(QPen(Qt::black, 1));
-    p_.setBrush(QBrush(QColor(173, 216, 230, 167)));
+    p_.setBrush(QBrush(LIGHT_BLUE));
 
-    for (const sButton& b : _backButtons)
+    for (const sButtonRect& b : _profile.rectButtons)
     {
         if (b.pressed)
         {
@@ -126,8 +148,8 @@ void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
         // convert normalized pos to actual coordinates
         int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
         int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
-        int length = drawRect_.width() * 0.05;
-        int height = drawRect_.width() * 0.03;  // 3% of SVG width
+        int length = drawRect_.width() * b.length;
+        int height = drawRect_.width() * b.width;  // 3% of SVG width
         QRect button = QRect(x, y, length, height);
         p_.drawRect(button);
         p_.drawText(button, Qt::AlignCenter, QString(b.name));
@@ -135,13 +157,13 @@ void QControllerWidget::paintRLButtons(QPainter& p_, QRect& drawRect_)
 }
 void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 {
-    int radius = drawRect_.width() * JOYSTICK_RADIUS_PERCENT;
-    for (const sJoystick& j : _joysticks)
+    for (const sJoystick& j : _profile.joysticks)
     {
+        int radius = drawRect_.width() * j.radius;
         p_.setBrush(Qt::white);
         p_.setPen(Qt::black);
-        int x = drawRect_.left() + j.center.x() * drawRect_.width();
-        int y = drawRect_.top() + j.center.y() * drawRect_.height();
+        float x = drawRect_.left() + j.center.x() * drawRect_.width();
+        float y = drawRect_.top() + j.center.y() * drawRect_.height();
         p_.drawEllipse(QPointF(x, y), radius, radius);
 
         p_.setBrush(Qt::NoBrush);
@@ -149,14 +171,14 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
         p_.drawEllipse(QPointF(x, y), radius * _joyStickDeadzone, radius * _joyStickDeadzone);
 
         p_.setPen(QPen(Qt::darkGreen, 2));
-        float line1x1 = x - j.xPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
-        float line1x2 = x - j.xPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line1x1 = x + j.xPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
+        float line1x2 = x + j.xPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
         float line1y1 = y - j.yPos * radius;
         float line1y2 = y - j.yPos * radius;
         QLine Line1 = QLine(line1x1, line1y1, line1x2, line1y2);
 
-        float line2x1 = x - j.xPos * radius;
-        float line2x2 = x - j.xPos * radius;
+        float line2x1 = x + j.xPos * radius;
+        float line2x2 = x + j.xPos * radius;
         float line2y1 = y - j.yPos * radius + drawRect_.width() * JOYSTICK_LINE_LENGTH;
         float line2y2 = y - j.yPos * radius - drawRect_.width() * JOYSTICK_LINE_LENGTH;
         QLine Line2 = QLine(line2x1, line2y1, line2x2, line2y2);
@@ -168,79 +190,52 @@ void QControllerWidget::paintJoystick(QPainter& p_, QRect& drawRect_)
 
 void QControllerWidget::slot_joyMsg(const scorpius_main::msg::Joy& msg_)
 {
-    _buttons[0].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::A]);
-    _buttons[1].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::B]);
-    _buttons[2].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::X]);
-    _buttons[3].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::Y]);
+    for (sButtonRound& b : _profile.roundButtons)
+    {
+        if (b.joyIndex < 0 || b.joyIndex >= scorpius_main::msg::Joy::MAX)
+        {
+            continue;
+        }
+        b.pressed = static_cast<bool>(msg_.joy_data[b.joyIndex]);
+    }
 
-    _dButtons[0].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::CROSS_UP]);
-    _dButtons[1].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::CROSS_DOWN]);
-    _dButtons[2].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::CROSS_LEFT]);
-    _dButtons[3].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::CROSS_RIGHT]);
+    for (sButtonPoly& b : _profile.polyButtons)
+    {
+        if (b.joyIndex < 0 || b.joyIndex >= scorpius_main::msg::Joy::MAX)
+        {
+            continue;
+        }
+        b.pressed = static_cast<bool>(msg_.joy_data[b.joyIndex]);
+    }
 
-    _joysticks[0].xPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_HORIZ], -1.0f, 1.0f);
-    _joysticks[0].yPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_LEFT_VERT], -1.0f, 1.0f);
+    for (sButtonRect& b : _profile.rectButtons)
+    {
+        if (b.joyIndex < 0 || b.joyIndex >= scorpius_main::msg::Joy::MAX)
+        {
+            continue;
+        }
+        b.pressed = static_cast<bool>(msg_.joy_data[b.joyIndex]);
+    }
 
-    _joysticks[1].xPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_HORIZ], -1.0f, 1.0f);
-    _joysticks[1].yPos = std::clamp<float>(msg_.joy_data[scorpius_main::msg::Joy::JOYSTICK_RIGHT_VERT], -1.0f, 1.0f);
-
-    _backButtons[0].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::L1]);
-    _backButtons[1].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::L2]);
-    _backButtons[2].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::L3]);
-    _backButtons[3].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R1]);
-    _backButtons[4].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R2]);
-    _backButtons[5].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::R3]);
-
-    _psButton.pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::HOME]);
-
-    _optionButtons[0].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::SHARE]);
-    _optionButtons[1].pressed = static_cast<bool>(msg_.joy_data[scorpius_main::msg::Joy::OPTS]);
+    for (sJoystick& j : _profile.joysticks)
+    {
+        if (j.joyIndexHoriz < 0 || j.joyIndexHoriz >= scorpius_main::msg::Joy::MAX)
+        {
+            continue;
+        }
+        if (j.joyIndexVert < 0 || j.joyIndexVert >= scorpius_main::msg::Joy::MAX)
+        {
+            continue;
+        }
+        j.xPos = std::clamp<float>(msg_.joy_data[j.joyIndexHoriz], -1.0f, 1.0f);
+        j.yPos = std::clamp<float>(msg_.joy_data[j.joyIndexVert], -1.0f, 1.0f);
+    }
 
     this->update();
-}
-
-void QControllerWidget::paintPSButton(QPainter& p_, QRect& drawRect_)
-{
-    p_.setPen(Qt::black);
-    if (_psButton.pressed)
-    {
-        p_.setBrush(QBrush(LIGHT_BLUE));
-    }
-    else
-    {
-        p_.setBrush(Qt::NoBrush);
-    }
-    int x = drawRect_.left() + _psButton.posNorm.x() * drawRect_.width();
-    int y = drawRect_.top() + _psButton.posNorm.y() * drawRect_.height();
-    int radius = drawRect_.width() * PS_BUTTON_RADIUS_PERCENT;
-    p_.drawEllipse(QPointF(x, y), radius, radius);
 }
 
 void QControllerWidget::setDeadzone(double deadzone_)
 {
     _joyStickDeadzone = deadzone_;
     this->update();
-}
-
-void QControllerWidget::paintOptionButtons(QPainter& p_, QRect& drawRect_)
-{
-    int radius = drawRect_.width() * OPTION_BUTTON_RADIUS_PERCENT;
-
-    for (const sButton& b : _optionButtons)
-    {
-        if (b.pressed)
-        {
-            p_.setBrush(QBrush(LIGHT_BLUE));
-        }
-        else
-        {
-            p_.setBrush(Qt::NoBrush);
-        }
-
-        // convert normalized pos to actual coordinates
-        int x = drawRect_.left() + b.posNorm.x() * drawRect_.width();
-        int y = drawRect_.top() + b.posNorm.y() * drawRect_.height();
-
-        p_.drawEllipse(QPoint(x, y), radius, radius);
-    }
 }
