@@ -32,9 +32,9 @@ enum class eServo : uint8_t
 };
 
 void controlInit();
-void processAngles(const sAngles& angles);
+void processAngles(const sAngles& angles_);
 void updatePosition();
-void servoGoTo(eServo servoId, int angle);
+void servoGoTo(eServo servoId_, int angle_);
 void goHome();
 
 #endif  // CONTROL_H

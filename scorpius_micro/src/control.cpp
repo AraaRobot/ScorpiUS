@@ -2,11 +2,11 @@
 #include <Adafruit_PWMServoDriver.h>
 
 // PCA9685 default address: 0x40
-static Adafruit_PWMServoDriver driverModule;
+static Adafruit_PWMServoDriver _driverModule;
 
 static sAngles _lastAngles;
 
-static constexpr eServo servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eServo::VERT_A,
+static constexpr eServo _servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eServo::VERT_A,
                                                                             eServo::VERT_B,
                                                                             eServo::VERT_C,
                                                                             eServo::VERT_D,
@@ -21,72 +21,72 @@ static constexpr eServo servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eSer
 
 void controlInit()
 {
-    driverModule = Adafruit_PWMServoDriver(0x40);
-    driverModule.begin();
+    _driverModule = Adafruit_PWMServoDriver(0x40);
+    _driverModule.begin();
     delay(100);
 
-    driverModule.setPWMFreq(50);
+    _driverModule.setPWMFreq(50);
     delay(200);
 
     goHome();
 }
 
-static int8_t& getAngleForServo(sAngles& _lastAngles, eServo servoId)
+static int8_t getAngleForServo(sAngles& angles_, eServo servoId_)
 {
-    switch (servoId)
+    switch (servoId_)
     {
         case eServo::VERT_A:
-            return _lastAngles.vert_a;
+            return angles_.vert_a;
         case eServo::VERT_B:
-            return _lastAngles.vert_b;
+            return angles_.vert_b;
         case eServo::VERT_C:
-            return _lastAngles.vert_c;
+            return angles_.vert_c;
         case eServo::VERT_D:
-            return _lastAngles.vert_d;
+            return angles_.vert_d;
         case eServo::VERT_E:
-            return _lastAngles.vert_e;
+            return angles_.vert_e;
         case eServo::VERT_F:
-            return _lastAngles.vert_f;
+            return angles_.vert_f;
         case eServo::HORIZ_A:
-            return _lastAngles.hori_a;
+            return angles_.hori_a;
         case eServo::HORIZ_B:
-            return _lastAngles.hori_b;
+            return angles_.hori_b;
         case eServo::HORIZ_C:
-            return _lastAngles.hori_c;
+            return angles_.hori_c;
         case eServo::HORIZ_D:
-            return _lastAngles.hori_d;
+            return angles_.hori_d;
         case eServo::HORIZ_E:
-            return _lastAngles.hori_e;
+            return angles_.hori_e;
         case eServo::HORIZ_F:
-            return _lastAngles.hori_f;
+            return angles_.hori_f;
         default:
-            return _lastAngles.vert_a;
+            return angles_.vert_a;
     }
 }
-void processAngles(const sAngles& angles)
+void processAngles(const sAngles& angles_)
 {
-    _lastAngles = angles;
+    _lastAngles = angles_;
 }
 
 void updatePosition()
 {
-    for (eServo servo : servos)
+    for (eServo servo : _servos)
     {
         servoGoTo(servo, getAngleForServo(_lastAngles, servo));
     }
 }
 
-static int angleToPulse(int ang)  // gets the angle in degree and returns the pulse width
+static int angleToPulse(int ang_)  // gets the angle in degree and returns the pulse width
 {
-    int pulse = map(ang, -90, 90, SERVOMIN, SERVOMAX);  // map angle of 0 to 180 to Servo min and Servo max
+    int pulse = map(ang_, -90, 90, SERVOMIN, SERVOMAX);  // map angle of 0 to 180 to Servo min and Servo max
     return pulse;
 }
 
-void servoGoTo(eServo servoId, int angle)
+void servoGoTo(eServo servoId_, int angle_)
 {
     int desiredAngle = 0;
 
-    switch (servoId)
+    switch (servoId_)
     {
         case eServo::VERT_A:
             [[fallthrough]];
@@ -99,8 +99,8 @@ void servoGoTo(eServo servoId, int angle)
         case eServo::VERT_E:
             [[fallthrough]];
         case eServo::VERT_F:
-            desiredAngle = constrain(angle, MIN_ANGLE_VERTICAL, MAX_ANGLE_VERTICAL);
-            driverModule.setPWM(static_cast<uint8_t>(servoId), 0, angleToPulse(desiredAngle));
+            desiredAngle = constrain(angle_, MIN_ANGLE_VERTICAL, MAX_ANGLE_VERTICAL);
+            _driverModule.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
         case eServo::HORIZ_A:
             [[fallthrough]];
@@ -113,8 +113,8 @@ void servoGoTo(eServo servoId, int angle)
         case eServo::HORIZ_E:
             [[fallthrough]];
         case eServo::HORIZ_F:
-            desiredAngle = constrain(angle, MIN_ANGLE_HORIZONTAL, MAX_ANGLE_HORIZONTAL);
-            driverModule.setPWM(static_cast<uint8_t>(servoId), 0, angleToPulse(desiredAngle));
+            desiredAngle = constrain(angle_, MIN_ANGLE_HORIZONTAL, MAX_ANGLE_HORIZONTAL);
+            _driverModule.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
         default:
             Serial.println("Invalid servo ID");
@@ -124,7 +124,7 @@ void servoGoTo(eServo servoId, int angle)
 
 void goHome()
 {
-    for (eServo s : servos)
+    for (eServo s : _servos)
     {
         servoGoTo(s, HOME_ANGLE);
         delay(50);

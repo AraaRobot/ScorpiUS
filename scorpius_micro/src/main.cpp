@@ -32,7 +32,13 @@ void loop()
         processAngles(angles);
     }
 
-    updatePosition();
+    static unsigned long lastUpdate = 0;
+    unsigned long now = millis();
+    if (now - lastUpdate >= 20)  // ~50 Hz
+    {
+        updatePosition();
+        lastUpdate = now;
+    }
 }
 
 void testLegJoints()
