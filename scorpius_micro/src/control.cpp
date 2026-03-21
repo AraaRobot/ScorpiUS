@@ -7,17 +7,17 @@ static Adafruit_PWMServoDriver _driverModule;
 static sAngles _lastAngles;
 
 static constexpr eServo _servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eServo::VERT_A,
-                                                                            eServo::VERT_B,
-                                                                            eServo::VERT_C,
-                                                                            eServo::VERT_D,
-                                                                            eServo::VERT_E,
-                                                                            eServo::VERT_F,
-                                                                            eServo::HORIZ_A,
-                                                                            eServo::HORIZ_B,
-                                                                            eServo::HORIZ_C,
-                                                                            eServo::HORIZ_D,
-                                                                            eServo::HORIZ_E,
-                                                                            eServo::HORIZ_F};
+                                                                             eServo::VERT_B,
+                                                                             eServo::VERT_C,
+                                                                             eServo::VERT_D,
+                                                                             eServo::VERT_E,
+                                                                             eServo::VERT_F,
+                                                                             eServo::HORIZ_A,
+                                                                             eServo::HORIZ_B,
+                                                                             eServo::HORIZ_C,
+                                                                             eServo::HORIZ_D,
+                                                                             eServo::HORIZ_E,
+                                                                             eServo::HORIZ_F};
 
 void controlInit()
 {
