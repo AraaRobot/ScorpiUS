@@ -5,7 +5,6 @@
 #include <QGridLayout>
 #include <QComboBox>
 #include <QRadioButton>
-// #include <QTextEdit>
 #include <QLabel>
 #include <QLineEdit>
 
