@@ -11,7 +11,9 @@ def generate_launch_description():
         package="scorpius_teleop",
         namespace="/scorpius/teleop",
         executable="teleop",
-        name="teleop"
+        name="teleop",
+        output="screen",
+        emulate_tty=True
     )
     ld.add_action(node_media)
     return ld

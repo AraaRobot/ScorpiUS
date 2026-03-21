@@ -55,25 +55,25 @@ class TeleopNode(Node):
 
     def subscriber_callback(self, msg):
         # read msg
-        data = msg
+        data : Joy = msg
 
         # update normalized input vector
-        self.input_vector.x = data.joy_data[data.JOYSTICK_LEFT_HORIZ]
-        self.input_vector.y = data.joy_data[data.JOYSTICK_LEFT_VERT]
+        self.input_vector.x = data.joy_data[Joy.JOYSTICK_LEFT_HORIZ]
+        self.input_vector.y = data.joy_data[Joy.JOYSTICK_LEFT_VERT]
         self.input_vector = self.input_vector.normalized()
 
         # update speed
-        if data.joy_data[data.R2] >= 1:
+        if data.joy_data[Joy.R2] >= 1:
             self.speed = self.MAX_SPEED
-        elif data.joy_data[data.R2] <= 0:
+        elif data.joy_data[Joy.R2] <= 0:
             self.speed = self.MIN_SPEED
         else:
-            self.speed = data.joy_data[data.R2] * (self.MAX_SPEED - self.MIN_SPEED) + self.MIN_SPEED
+            self.speed = data.joy_data[Joy.R2] * (self.MAX_SPEED - self.MIN_SPEED) + self.MIN_SPEED
 
         # update step
-        if data.joy_data[data.CROSS_UP]:
+        if data.joy_data[Joy.CROSS_UP]:
             self.step += self.STEP_CHANGE
-        elif data.joy_data[data.CROSS_DOWN]:
+        elif data.joy_data[Joy.CROSS_DOWN]:
             self.step -= self.STEP_CHANGE
         if self.step < self.MIN_STEP:
             self.step = self.MIN_STEP
@@ -81,7 +81,11 @@ class TeleopNode(Node):
             self.step = self.MAX_STEP
 
         # debug
-        self.get_logger().debug(f"Received : {data.joy_data[data.JOYSTICK_LEFT_HORIZ]} {data.joy_data[data.JOYSTICK_LEFT_VERT]} {data.joy_data[data.R2]} {data.joy_data[data.CROSS_UP]} {data.joy_data[data.CROSS_DOWN]}")
+        self.get_logger().debug(f"Received : {data.joy_data[Joy.JOYSTICK_LEFT_HORIZ]} "
+                                f"{data.joy_data[Joy.JOYSTICK_LEFT_VERT]} "
+                                f"{data.joy_data[Joy.R2]} "
+                                f"{data.joy_data[Joy.CROSS_UP]} " 
+                                f"{data.joy_data[Joy.CROSS_DOWN]}")
         
     def logic_callback(self):
         # update movement method
