@@ -9,7 +9,7 @@ def generate_launch_description():
 
     node_controller_sim = Node(
         package="scorpius_sim",
-        namespace="/scorpius/sim/",
+        namespace="/scorpius/sim",
         executable="controller_sim",
         name="controller_sim"
     )
