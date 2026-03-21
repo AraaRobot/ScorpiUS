@@ -11,12 +11,21 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(scorpius_main REQUIRED)
-find_package(scorpius_joy REQUIRED)
+
+add_executable(controller_sim src/controller_sim.cpp)
+
+ament_target_dependencies(controller_sim
+                          rclcpp
+                          scorpius_main)
 
 install(
   DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(TARGETS
+            controller_sim
+            DESTINATION lib/${PROJECT_NAME}/)
 ament_package()
