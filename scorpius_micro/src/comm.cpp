@@ -152,6 +152,7 @@ bool comm_consume(sAngles& angles_)
     packetReady = false;
     state = WAIT_HEAD;
     len = 0;
+    return true;
 }
 
 void comm_init(HardwareSerial& serial)
