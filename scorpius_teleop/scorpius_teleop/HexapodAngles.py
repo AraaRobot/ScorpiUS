@@ -8,9 +8,10 @@ class HexapodLegAngles:
     def __init__(self, verticalAngle:float=0, horizontalAngle:float=0):
         self.vAngle = verticalAngle
         self.hAngle = horizontalAngle
+        self.epsilon = 1e-6 # Epsilon based float comparison
 
     def __eq__(self, other):
-        return isinstance(other, HexapodLegAngles) and self.vAngle == other.vAngle and self.hAngle == other.hAngle
+        return isinstance(other, HexapodLegAngles) and (self.vAngle - other.vAngle <= self.epsilon) and (self.hAngle - other.hAngle <= self.epsilon)
         
 
 class HexapodAngles:
