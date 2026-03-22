@@ -12,22 +12,33 @@ void setup()
 {
     Serial.begin(115200);
     delay(100);  // Give serial time to initialize
+    Serial.println("Initializing ScorpiUS project...");
 
     Wire.begin();
     Wire.setClock(100000);
     delay(100);
 
-    Serial.println("Initializing PCA9685...");
-
     controlInit();
     comm_init(Serial);
+    Serial.println("Initialization complete. Entering main loop.");
 }
 
 void loop()
 {
     comm_process();
     sAngles angles;
-    comm_consume(angles);
+    if (comm_consume(angles))
+    {
+        processAngles(angles);
+    }
+
+    static unsigned long lastUpdate = 0;
+    unsigned long now = millis();
+    if (now - lastUpdate >= 20)  // ~50 Hz
+    {
+        updatePosition();
+        lastUpdate = now;
+    }
 }
 
 void testLegJoints()
@@ -144,4 +155,6 @@ void executeDebug()
             angle = 0;
         }
     }
+
+    delay(50);
 }
