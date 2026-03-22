@@ -23,6 +23,8 @@ class HexapodAngles:
         self.legE = HexapodLegAngles(0, 0)
         self.legF = HexapodLegAngles(0, 0)
 
+        self.epsilon = 1e-6
+
     def set(self, vA:float=0, hA:float=0, vB:float=0, hB:float=0, vC:float=0, hC:float=0, 
                    vD:float=0, hD:float=0, vE:float=0, hE:float=0, vF:float=0, hF:float=0):
         self.legA = HexapodLegAngles(vA, hA)
@@ -86,8 +88,8 @@ class HexapodAngles:
         if ratio <= 0 or ratio > 1:
             raise ValueError("Ratio must be between 0 and 1. 0 is exclusive.")
 
-        def next_angle(start_angle, target_angle, current_angle, exponent: float = 2):
-            if start_angle == target_angle:
+        def next_angle(start_angle : float, target_angle : float, current_angle : float, exponent: float = 2):
+            if (start_angle - target_angle <= self.epsilon):
                 return target_angle
             k = max(target_angle, start_angle, key=abs)
             h = 1/ratio * (target_angle != 0)
