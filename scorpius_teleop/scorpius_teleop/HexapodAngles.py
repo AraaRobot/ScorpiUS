@@ -11,7 +11,7 @@ class HexapodLegAngles:
         self.epsilon = 1e-6 # Epsilon based float comparison
 
     def __eq__(self, other):
-        return isinstance(other, HexapodLegAngles) and (self.vAngle - other.vAngle <= self.epsilon) and (self.hAngle - other.hAngle <= self.epsilon)
+        return isinstance(other, HexapodLegAngles) and math.isclose(self.vAngle, other.vAngle, abs_tol=self.epsilon) and math.isclose(self.hAngle, other.hAngle, abs_tol=self.epsilon)
         
 
 class HexapodAngles:
@@ -89,7 +89,7 @@ class HexapodAngles:
             raise ValueError("Ratio must be between 0 and 1. 0 is exclusive.")
 
         def next_angle(start_angle : float, target_angle : float, current_angle : float, exponent: float = 2):
-            if (start_angle - target_angle <= self.epsilon):
+            if math.isclose(start_angle, target_angle, abs_tol=self.epsilon):
                 return target_angle
             k = max(target_angle, start_angle, key=abs)
             h = 1/ratio * (target_angle != 0)
