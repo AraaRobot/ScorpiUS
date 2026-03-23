@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(scorpius_main)
+project(scorpius_sim)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 23)
@@ -9,24 +9,23 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(ament_index_cpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(scorpius_main REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/ServoAngles.msg"
-  "msg/SerialHeartbeat.msg"
-  "msg/SerialStatus.msg"
-  "msg/Joy.msg"
+add_executable(controller_sim src/ControllerSim/controller_sim.cpp)
 
-  "srv/JoyConfig.srv"
-  "srv/SerialConfig.srv"
-)
+ament_target_dependencies(controller_sim
+                          rclcpp
+                          scorpius_main)
 
 install(
   DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(TARGETS
+            controller_sim
+            DESTINATION lib/${PROJECT_NAME}/)
 ament_package()
