@@ -8,7 +8,7 @@ TAIL 0xBB
 
 #include "comm.h"
 
-#define COMM_EXPECTED_LEN 12
+#define COMM_EXPECTED_LEN 13
 
 static HardwareSerial* commSerial = &Serial;
 static volatile int len = 0;
@@ -136,6 +136,13 @@ bool comm_consume(sAngles& angles_)
     }
 
     size_t index = 0;
+
+    if((int8_t)packet[index++] != 0x00)
+    {
+        commSerial->print("Unknown serial msg type");
+        return false;
+    }
+
     angles_.vert_a = (int8_t)packet[index++];
     angles_.vert_b = (int8_t)packet[index++];
     angles_.vert_c = (int8_t)packet[index++];
