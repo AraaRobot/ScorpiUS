@@ -3,11 +3,14 @@
 import rclpy
 from rclpy.node import Node
 from scorpius_main.msg import ServoAngles
+from scorpius_main.msg import SerialStatus
 from scorpius_main.srv import SerialConfig
 import serial
 
 HEAD = 0xAA
 TAIL = 0xBB
+COMMAND = 0x00
+ERROR = 0x02
 
 
 class CommNode(Node):
@@ -20,7 +23,13 @@ class CommNode(Node):
         self.srv = self.create_service(
             SerialConfig, '/scorpius/serial_config', self.handle_serial_config)
 
+        self.status_pub = self.create_publisher(
+            SerialStatus, '/scorpius/serial_status', 10)
+
+        self.read_timer = self.create_timer(0.05, self.read_serial)
+
         self.ser = None
+        self.rx_buffer = bytearray()
 
     def destroy_node(self):
         if self.ser.is_open:
@@ -43,6 +52,7 @@ class CommNode(Node):
     def build_packet(self, msg):
         # order must match Arduino expectations
         values = [
+            COMMAND,
             msg.vert_a,
             msg.vert_b,
             msg.vert_c,
@@ -89,6 +99,90 @@ class CommNode(Node):
 
         return response
 
+    def read_serial(self):
+        if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
+            return
+
+        # Non-blocking check for incoming data
+        if self.ser.in_waiting:
+            try:
+                data = self.ser.read(self.ser.in_waiting)
+                self.process_serial_data(data)
+            except Exception as e:
+                self.get_logger().error(f"Serial read failed: {e}")
+                self.publish_serial_status(False, f"Serial read failed: {e}")
+
+    def process_serial_data(self, data: bytes):
+        # Buffer incoming data and parse complete packets in the format:
+        # HEAD | LENGTH | PAYLOAD... | CHECKSUM | TAIL
+        # PAYLOAD case 1: ERROR (0x02) + error_code (1 byte)
+        self.rx_buffer.extend(data)
+        self.get_logger().debug(f"Serial RX append ({len(data)} bytes): {data.hex()}")
+
+        while True:
+            if len(self.rx_buffer) < 4:
+                # Need at least HEAD, LENGTH, CHECKSUM, TAIL
+                break
+
+            if self.rx_buffer[0] != HEAD:
+                self.get_logger().warning(f"Discarding byte before HEAD: {self.rx_buffer[0]:02X}")
+                del self.rx_buffer[0]
+                continue
+
+            packet_len = self.rx_buffer[1]
+            total_len = 4 + packet_len
+
+            if len(self.rx_buffer) < total_len:
+                # Wait for full packet
+                break
+
+            if self.rx_buffer[total_len - 1] != TAIL:
+                self.get_logger().warning("Malformed packet: wrong TAIL, dropping HEAD byte")
+                del self.rx_buffer[0]
+                continue
+
+            packet = bytes(self.rx_buffer[:total_len])
+            payload = packet[2:2 + packet_len]
+            checksum = packet[2 + packet_len]
+            calc_chk = sum(payload) & 0xFF
+
+            if checksum != calc_chk:
+                self.get_logger().warning(
+                    f"Bad checksum: received {checksum:02X}, expected {calc_chk:02X}; dropping packet"
+                )
+                del self.rx_buffer[0]
+                continue
+
+            self.handle_packet(payload)
+            del self.rx_buffer[:total_len]
+
+    def publish_serial_status(self, ok: bool, message: str = ""):
+        status_msg = SerialStatus()
+        status_msg.ok = ok
+        status_msg.message = message
+        self.status_pub.publish(status_msg)
+
+    def handle_packet(self, payload: bytes):
+        if len(payload) == 0:
+            self.get_logger().warning("Received empty payload")
+            return
+
+        packet_type = payload[0]
+
+        if packet_type == ERROR:
+            if len(payload) < 2:
+                self.get_logger().warning("ERROR packet missing error code")
+                self.publish_serial_status(False, "ERROR packet missing error code")
+                return
+            error_code = payload[1]
+            status_text = f"Error 0x{error_code:02X}"
+            self.get_logger().error(f"Received ERROR packet, code={status_text}")
+            self.publish_serial_status(True, status_text)
+            # TODO: implement additional error handling as needed
+        else:
+            self.get_logger().info(f"Received non-ERROR packet type=0x{packet_type:02X}, payload={payload.hex()}")
+            self.publish_serial_status(True, "Unknown serial msg type")
+            # TODO: implement handling for other packet types
 
 def main(args=None):
     rclpy.init(args=args)
