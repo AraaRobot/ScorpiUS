@@ -26,7 +26,7 @@ class TeleopNode(Node):
 
         # limits
         self.MAX_SPEED = self.position_count / 1 # maximum speed in position / second
-        self.MIN_SPEED = self.position_count / self.position_count # minimum speed in position / second
+        self.MIN_SPEED = self.position_count / 10 # minimum speed in position / second
         self.MAX_ABS_HORIZ_ANGLE = 45 # maximum absolute horizontal servo angle
         self.MAX_VERT_ANGLE = 90 # maximum vertical servo angle
         self.MIN_VERT_ANGLE = 0 # minimum vertical servo angle
@@ -46,7 +46,7 @@ class TeleopNode(Node):
         self.timer_logic = self.create_timer(logic_period, self.logic_callback)
 
         # subscribe members
-        self.input_vector = Vector2(0, 0)
+        self.input_vector = Vector2(0, 1)
         self.speed = self.MIN_SPEED # speed in degrees / second
         self.step = self.MIN_STEP # step of the hexapod in mm
 
@@ -95,7 +95,7 @@ class TeleopNode(Node):
 
     def publisher_callback(self):
         # send msg
-        self.angles.clamp(self.MIN_VERT_ANGLE, self.MAX_VERT_ANGLE, -self.MAX_ABS_HORIZ_ANGLE, self.MAX_ABS_HORIZ_ANGLE)
+        #self.angles.clamp(self.MIN_VERT_ANGLE, self.MAX_VERT_ANGLE, -self.MAX_ABS_HORIZ_ANGLE, self.MAX_ABS_HORIZ_ANGLE)
         msg = self.angles.to_servo_angles_msg()
         self.publisher_angles.publish(msg)
 
@@ -393,6 +393,18 @@ class TeleopNode(Node):
                 f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
                 f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
                 f"========================================"
+            )
+            msg = self.target_angles.to_servo_angles_msg()
+            self.get_logger().info(
+                f"\n============= Target angles =============\n"
+                f"       vertical        horizontal\n"
+                f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
+                f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
+                f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
+                f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
+                f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
+                f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
+                f"========================================="
             )
 
             # self.get_logger().info("Interpolating angles.")

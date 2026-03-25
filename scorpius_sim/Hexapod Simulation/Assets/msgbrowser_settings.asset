@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c444d6f85828f1b4f9b89c7c387f9ddd, type: 3}
   m_Name: msgbrowser_settings
   m_EditorClassIdentifier: Unity.Robotics.ROSTCPConnector.Editor::Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration.MessageGenBrowserSettings
-  inputPath: C:/Users/Simon/GitHub/ScorpiUS/scorpius_main/msg
+  inputPath: /home/simp4/Documents/scorpius_ws/src/ScorpiUS/scorpius_main/msg
   relativeOutPath: RosMessages
