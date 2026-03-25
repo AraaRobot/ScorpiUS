@@ -25,7 +25,7 @@ INFO 0x01
 ERROR 0x02
     From: Arduino
     To: Pi
-    Content: 1 byte reprensenting error code (use lookup table)
+    Content: 1 byte representing error code (use lookup table)
 
 HEARTBEAT 0x03
     FROM: Arduino

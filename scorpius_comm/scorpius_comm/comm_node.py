@@ -29,6 +29,8 @@ ERROR_TEXT = {
     0x07: "Invalid servo ID",
 }
 
+MAX_PACKET_LEN = 32
+
 class CommNode(Node):
     def __init__(self):
         super().__init__('Comm_Node')
@@ -48,7 +50,7 @@ class CommNode(Node):
         self.rx_buffer = bytearray()
 
     def destroy_node(self):
-        if self.ser.is_open:
+        if getattr(self, 'ser', None) and getattr(self.ser, 'is_open', False):
             self.ser.close()
         super().destroy_node()
 
@@ -146,6 +148,7 @@ class CommNode(Node):
                 continue
 
             packet_len = self.rx_buffer[1]
+            packet_len = min(packet_len, 32)
             total_len = 4 + packet_len
 
             if len(self.rx_buffer) < total_len:
@@ -181,7 +184,7 @@ class CommNode(Node):
     def handle_packet(self, payload: bytes):
         if len(payload) == 0:
             self.get_logger().warning("Received empty payload")
-            self.publish_serial_status(False, "Empty payload")
+            self.publish_serial_status(True, "Empty payload")
             return
 
         packet_type = payload[0]
@@ -189,7 +192,7 @@ class CommNode(Node):
         if packet_type == INFO:
             if len(payload) < 2:
                 self.get_logger().warning("INFO packet missing info code")
-                self.publish_serial_status(False, "INFO packet missing code")
+                self.publish_serial_status(True, "INFO packet missing code")
                 return
             info_code = payload[1]
             status_text = self.get_info_text(info_code)
@@ -199,12 +202,12 @@ class CommNode(Node):
         elif packet_type == ERROR:
             if len(payload) < 2:
                 self.get_logger().warning("ERROR packet missing error code")
-                self.publish_serial_status(False, "ERROR packet missing code")
+                self.publish_serial_status(True, "ERROR packet missing code")
                 return
             error_code = payload[1]
             status_text = f"Error 0x{error_code:02X}: {self.get_error_text(error_code)}"
             self.get_logger().error(f"Received ERROR packet: {status_text}")
-            self.publish_serial_status(False, status_text)
+            self.publish_serial_status(True, status_text)
 
         elif packet_type == HEARTBEAT:
             self.get_logger().debug("Received HEARTBEAT packet")
@@ -214,7 +217,7 @@ class CommNode(Node):
             self.get_logger().warning(
                 f"Received unknown packet type=0x{packet_type:02X}, payload={payload.hex()}"
             )
-            self.publish_serial_status(False, f"Unknown packet type 0x{packet_type:02X}")
+            self.publish_serial_status(True, f"Unknown packet type 0x{packet_type:02X}")
 
     def get_info_text(self, code: int) -> str:
         return INFO_TEXT.get(code, f"Unknown INFO code 0x{code:02X}")

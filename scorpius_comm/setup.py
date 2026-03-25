@@ -21,8 +21,8 @@ setup(
     zip_safe=True,
     maintainer='chuck',
     maintainer_email='chucklafond2005@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='ROS2 serial communication utilities',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

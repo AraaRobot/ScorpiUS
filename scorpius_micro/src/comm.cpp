@@ -56,7 +56,7 @@ void comm_process()
                 {
                     COMM_DEBUG("Invalid packet length: ");
                     COMM_DEBUG(len);
-                    static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_COMMAND_RECEIVED)};
+                    static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
                     comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
                     state = WAIT_HEAD;
                 }
@@ -155,6 +155,9 @@ bool comm_consume(sAngles& angles_)
         COMM_DEBUG("Unknown serial msg type");
         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_MSG_TYPE_RECEIVED)};
         comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
+        packetReady = false;
+        state = WAIT_HEAD;
+        len = 0;
         return false;
     }
 
@@ -231,7 +234,7 @@ bool comm_send(uint8_t msgType_, const uint8_t* msgContent_, uint8_t contentLeng
             break;
 
         default:
-            // convert unknown/CMD into ERROR(0x05)
+            // convert unknown/CMD into ERROR(0x06)
             msgType_ = static_cast<uint8_t>(eSerialMsgType::ERROR);
             static const uint8_t invalidPayload[1] = {static_cast<uint8_t>(eErrorCode::TRIED_TO_SEND_INVALID_COMMAND)};
             expectedLen = 1;
