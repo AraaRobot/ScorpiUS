@@ -15,11 +15,12 @@ public class ValueSubscriber : MonoBehaviour
         ros = ROSConnection.GetOrCreateInstance();
         ros.RosIPAddress = "127.0.0.1";
         ros.RosPort = 10000;
-        ros.Subscribe<ServoAnglesMsg>("ServoAngles", Callback);
+        ros.Subscribe<ServoAnglesMsg>("/scorpius/teleop", Callback);
     }
 
     void Callback(ServoAnglesMsg msg)
     {
+        // Debug.Log("Message received.");
         servoAngles[0] = msg.vert_a;
         servoAngles[1] = msg.vert_b;
         servoAngles[2] = msg.vert_c;
@@ -32,7 +33,7 @@ public class ValueSubscriber : MonoBehaviour
         servoAngles[9] = msg.horiz_d;
         servoAngles[10] = msg.horiz_e;
         servoAngles[11] = msg.horiz_f;
-        Debug.Log("Received servo angles: " + string.Join(", ", servoAngles));
+        // Debug.Log("Received servo angles: " + string.Join(", ", servoAngles));
 
         arduinoScript.SetServoAngles(servoAngles);
     }

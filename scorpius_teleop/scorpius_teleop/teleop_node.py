@@ -46,9 +46,9 @@ class TeleopNode(Node):
         self.timer_logic = self.create_timer(logic_period, self.logic_callback)
 
         # subscribe members
-        self.input_vector = Vector2(0, 1)
-        self.speed = self.MIN_SPEED # speed in degrees / second
-        self.step = self.MIN_STEP # step of the hexapod in mm
+        self.input_vector = Vector2(0, 0)
+        self.speed = self.MAX_SPEED / 2 # speed in degrees / second
+        self.step = self.MAX_STEP / 2 # step of the hexapod in mm
 
         # publish members
         self.angles = HexapodAngles() # leg A is left from head, rest goes counterclockwise

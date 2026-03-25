@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: msgbrowser_settings
   m_EditorClassIdentifier: Unity.Robotics.ROSTCPConnector.Editor::Unity.Robotics.ROSTCPConnector.Editor.MessageGeneration.MessageGenBrowserSettings
   inputPath: /home/simp4/Documents/scorpius_ws/src/ScorpiUS/scorpius_main/msg
-  relativeOutPath: RosMessages
+  relativeOutPath: RosMessageTypes
