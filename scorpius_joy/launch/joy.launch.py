@@ -14,8 +14,8 @@ def generate_launch_description():
         name="main_joy_node",
         parameters=[{"autorepeat_rate": 20.0,
         # PS5 controller
-        # "device_name": "DualSense Wireless Controller",
-        "device_name": "Sony Interactive Entertainment DualSense Wireless Controller",
+        "device_name": "DualSense Wireless Controller",
+        # "device_name": "Sony Interactive Entertainment DualSense Wireless Controller",
         # PS4 controller
         # "device_name": "Wireless Controller",
         #  "device_name": "Sony Interactive Entertainment Wireless Controller"}],
