@@ -48,7 +48,7 @@ enum class eErrorCode : uint8_t
     INVALID_SERVO_ID = 0x07
 };
 
-enum class eInfoCode: uint8_t
+enum class eInfoCode : uint8_t
 {
     INIT_COMPLETE = 0x01,
     SERVOS_HOMED = 0x02

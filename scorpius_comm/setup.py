@@ -4,8 +4,10 @@ from glob import glob
 
 package_name = 'scorpius_comm'
 
+# ROS2 entry point script uses 'scorpius-comm' as distribution name.
+# Keep this aligned to avoid importlib.metadata.PackageNotFoundError.
 setup(
-    name=package_name,
+    name='scorpius-comm',
     version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
