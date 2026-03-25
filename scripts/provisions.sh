@@ -13,6 +13,7 @@ sudo apt install -y ros-dev-tools
 sudo apt install -y ros-jazzy-desktop
 sudo apt install -y ros-jazzy-ros-base
 sudo apt install -y ros-jazzy-joy
+sudo apt install -y ros-jazzy-rmw-cyclonedds-cpp
 sudo apt install -y qt6-base-dev
 sudo apt install -y qt6-tools-dev
 sudo apt install -y qt6-webengine-dev
