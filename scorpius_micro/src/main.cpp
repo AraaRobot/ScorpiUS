@@ -12,7 +12,6 @@ void setup()
 {
     Serial.begin(115200);
     delay(100);  // Give serial time to initialize
-    Serial.println("Initializing ScorpiUS project...");
 
     Wire.begin();
     Wire.setClock(100000);
@@ -20,7 +19,10 @@ void setup()
 
     controlInit();
     comm_init(Serial);
-    Serial.println("Initialization complete. Entering main loop.");
+    COMM_DEBUG("Initialization complete. Entering main loop.");
+
+    static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::INIT_COMPLETE)};
+    comm_send(static_cast<uint8_t>(eSerialMsgType::INFO), infoPayload, 1);
 }
 
 void loop()
@@ -95,10 +97,10 @@ void executeDebug()
 {
     static int angle = 0;
     static int servo = 0;
-    Serial.print("Current servo: ");
-    Serial.print(servo);
-    Serial.print(" Current angle: ");
-    Serial.println(angle);
+    COMM_DEBUG("Current servo: ");
+    COMM_DEBUG(servo);
+    COMM_DEBUG(" Current angle: ");
+    COMM_DEBUG(angle);
     char c = Serial.read();
 
     if (c == 'e')
