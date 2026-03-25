@@ -26,7 +26,7 @@ class TeleopNode(Node):
 
         # limits
         self.MAX_SPEED = self.position_count / 1 # maximum speed in position / second
-        self.MIN_SPEED = self.position_count / 10 # minimum speed in position / second
+        self.MIN_SPEED = self.position_count / self.position_count # minimum speed in position / second
         self.MAX_ABS_HORIZ_ANGLE = 45 # maximum absolute horizontal servo angle
         self.MAX_VERT_ANGLE = 90 # maximum vertical servo angle
         self.MIN_VERT_ANGLE = 0 # minimum vertical servo angle
@@ -104,7 +104,7 @@ class TeleopNode(Node):
         self.publisher_angles.publish(msg)
 
         # debug
-        # self.get_logger().debug(
+        # self.get_logger().info(
         #     f"\n================ Publishing ================\n"
         #     f"       vertical        horizontal\n"
         #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
@@ -117,20 +117,6 @@ class TeleopNode(Node):
         # )
     
     def angles_calculations(self):
-        # debug
-        msg = self.angles.to_servo_angles_msg()
-        self.get_logger().debug(
-            f"\n================ Angles ================\n"
-            f"       vertical        horizontal\n"
-            f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
-            f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
-            f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
-            f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
-            f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
-            f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
-            f"========================================"
-        )
-
         # update target angles based on movement state
         if self.angles == self.target_angles:
             # update angles
@@ -140,7 +126,6 @@ class TeleopNode(Node):
             state = (self.movement_state, self.position_state)
             half_angle_step = math.asin(self.step / (2 * self.leg_reach)) * 180 / math.pi # angle step for horizontal angles, degrees
             target_angle = self.input_vector.get_angle() - 90 # target angle for horizontal angles, degrees
-            self.get_logger().debug(f"State: {state}, Target angle: {target_angle}")
             match state:
                 case (0, _): # to idle
                     self.target_angles.set(self.VERT_DOWN_ANGLE, 
@@ -400,9 +385,24 @@ class TeleopNode(Node):
         
         # interpolate angles towards target angles based on speed
         if self.get_clock().now() - self.last_interpolation_time >= rclpy.duration.Duration(seconds=1/self.speed):
-            # self.get_logger().debug("Interpolating angles.")
+            # Debug
+            msg = self.angles.to_servo_angles_msg()
+            self.get_logger().info(
+                f"\n================ Angles ================\n"
+                f"       vertical        horizontal\n"
+                f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
+                f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
+                f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
+                f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
+                f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
+                f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
+                f"========================================"
+            )
+
+            # self.get_logger().info("Interpolating angles.")
             self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
             self.last_interpolation_time = self.get_clock().now()
+
 
     def update_movement_state(self):
         # get normalized input
@@ -424,6 +424,8 @@ class TeleopNode(Node):
             else:
                 self.movement_state = 0
                 self.get_logger().error("Movement state not found.")
+        
+        # self.get_logger().info(f"Mouvement state: {self.movement_state}")
 
 
 def main(args=None):
