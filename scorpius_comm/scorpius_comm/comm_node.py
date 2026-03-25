@@ -11,7 +11,23 @@ HEAD = 0xAA
 TAIL = 0xBB
 COMMAND = 0x00
 ERROR = 0x02
+INFO = 0x01
+HEARTBEAT = 0x03
 
+INFO_TEXT = {
+    0x01: "Init complete",
+    0x02: "Servos homed",
+}
+
+ERROR_TEXT = {
+    0x01: "Received invalid packet length",
+    0x02: "Checksum mismatch",
+    0x03: "Packet dropped",
+    0x04: "Wrong msg type",
+    0x05: "Invalid COMMAND (0x00) received",
+    0x06: "Tried to send invalid command",
+    0x07: "Invalid servo ID",
+}
 
 class CommNode(Node):
     def __init__(self):
@@ -165,24 +181,46 @@ class CommNode(Node):
     def handle_packet(self, payload: bytes):
         if len(payload) == 0:
             self.get_logger().warning("Received empty payload")
+            self.publish_serial_status(False, "Empty payload")
             return
 
         packet_type = payload[0]
 
-        if packet_type == ERROR:
+        if packet_type == INFO:
+            if len(payload) < 2:
+                self.get_logger().warning("INFO packet missing info code")
+                self.publish_serial_status(False, "INFO packet missing code")
+                return
+            info_code = payload[1]
+            status_text = self.get_info_text(info_code)
+            self.get_logger().info(f"Received INFO packet: {status_text}")
+            self.publish_serial_status(True, status_text)
+
+        elif packet_type == ERROR:
             if len(payload) < 2:
                 self.get_logger().warning("ERROR packet missing error code")
-                self.publish_serial_status(False, "ERROR packet missing error code")
+                self.publish_serial_status(False, "ERROR packet missing code")
                 return
             error_code = payload[1]
-            status_text = f"Error 0x{error_code:02X}"
-            self.get_logger().error(f"Received ERROR packet, code={status_text}")
-            self.publish_serial_status(True, status_text)
-            # TODO: implement additional error handling as needed
+            status_text = f"Error 0x{error_code:02X}: {self.get_error_text(error_code)}"
+            self.get_logger().error(f"Received ERROR packet: {status_text}")
+            self.publish_serial_status(False, status_text)
+
+        elif packet_type == HEARTBEAT:
+            self.get_logger().debug("Received HEARTBEAT packet")
+            #self.publish_heartbeat(True) next PR
+
         else:
-            self.get_logger().info(f"Received non-ERROR packet type=0x{packet_type:02X}, payload={payload.hex()}")
-            self.publish_serial_status(True, "Unknown serial msg type")
-            # TODO: implement handling for other packet types
+            self.get_logger().warning(
+                f"Received unknown packet type=0x{packet_type:02X}, payload={payload.hex()}"
+            )
+            self.publish_serial_status(False, f"Unknown packet type 0x{packet_type:02X}")
+
+    def get_info_text(self, code: int) -> str:
+        return INFO_TEXT.get(code, f"Unknown INFO code 0x{code:02X}")
+
+    def get_error_text(self, code: int) -> str:
+        return ERROR_TEXT.get(code, f"Unknown ERROR code 0x{code:02X}")
 
 def main(args=None):
     rclpy.init(args=args)
