@@ -53,7 +53,7 @@ class CommNode(Node):
             self.ser.close()
         super().destroy_node()
 
-    def CB_teleop(self, msg):
+    def CB_teleop(self, msg : ServoAngles) -> None:
         if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
@@ -63,14 +63,13 @@ class CommNode(Node):
         except Exception as e:
             self.get_logger().error(str(e))
 
-    def angle_to_uint8(self, angle):
+    def angle_to_uint8(self, angle : float) -> int:
+        # map [-90,90] to uint8 by two's complement representation for signed int8 receiver
         angle = int(max(-90, min(90, angle)))
         return angle & 0xFF
 
-    def build_packet(self, msg):
-        # order must match Arduino expectations
-        values = [
-            COMMAND,
+    def build_packet(self, msg : ServoAngles) -> bytes:
+        angles = [
             msg.vert_a,
             msg.vert_b,
             msg.vert_c,
@@ -85,15 +84,16 @@ class CommNode(Node):
             msg.horiz_f,
         ]
 
-        payload = bytes(self.angle_to_uint8(v) for v in values)
-        length = len(payload)
+        data = bytes(self.angle_to_uint8(v) for v in angles)
+        packet_type = COMMAND
+        length = 1 + len(data)  # msg type + data
 
-        checksum = (sum(payload)) & 0xFF
+        checksum = (packet_type + sum(data)) & 0xFF
 
-        packet = bytes([HEAD, length]) + payload + bytes([checksum, TAIL])
+        packet = bytes([HEAD, length, packet_type]) + data + bytes([checksum, TAIL])
         return packet
 
-    def handle_serial_config(self, request, response):
+    def handle_serial_config(self, request : SerialConfig.Request, response : SerialConfig.Response) -> SerialConfig.Response:
         try:
             if getattr(self, 'ser', None) and self.ser.is_open:
                 self.get_logger().info("Serial already open; reopening with new config")
@@ -117,7 +117,7 @@ class CommNode(Node):
 
         return response
 
-    def read_serial(self):
+    def read_serial(self) -> None:
         if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
             return
 
@@ -130,7 +130,7 @@ class CommNode(Node):
                 self.get_logger().error(f"Serial read failed: {e}")
                 self.publish_serial_status(False, f"Serial read failed: {e}")
 
-    def process_serial_data(self, data: bytes):
+    def process_serial_data(self, data: bytes) -> None:
         # Buffer incoming data and parse complete packets in the format:
         # HEAD | LENGTH | PAYLOAD... | CHECKSUM | TAIL
         # PAYLOAD case 1: ERROR (0x02) + error_code (1 byte)
@@ -176,13 +176,13 @@ class CommNode(Node):
             self.handle_packet(payload)
             del self.rx_buffer[:total_len]
 
-    def publish_serial_status(self, ok: bool, message: str = ""):
+    def publish_serial_status(self, ok: bool, message: str = "") -> None:
         status_msg = SerialStatus()
         status_msg.ok = ok
         status_msg.message = message
         self.status_pub.publish(status_msg)
 
-    def handle_packet(self, payload: bytes):
+    def handle_packet(self, payload: bytes) -> None:
         if len(payload) == 0:
             self.get_logger().warning("Received empty payload")
             self.publish_serial_status(True, "Empty payload")
