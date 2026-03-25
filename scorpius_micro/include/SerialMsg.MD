@@ -15,7 +15,7 @@ TAIL 0xBB
 COMMAND 0x00
     From: Pi
     To: Arduino
-    Content: 16 bytes representing servo angles
+    Content: 12 bytes representing servo angles
 
 INFO 0x01
     From: Arduino
@@ -49,5 +49,6 @@ ERROR
 | 0x02   | Checksum mismatch|
 | 0x03   | Packet dropped |
 | 0x04   | Wrong msg type|
-| 0x05   | Invalid command |
-| 0x06   | Invalid servo ID|
+| 0x05   | Invalid COMMAND (0x00) received|
+| 0x06   | Tried to send invalid command|
+| 0x07   | Invalid servo ID|

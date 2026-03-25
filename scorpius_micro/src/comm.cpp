@@ -137,7 +137,7 @@ bool comm_consume(sAngles& angles_)
 
     size_t index = 0;
 
-    if((int8_t)packet[index++] != 0x00)
+    if ((int8_t)packet[index++] != 0x00)
     {
         commSerial->print("Unknown serial msg type");
         return false;
@@ -160,6 +160,79 @@ bool comm_consume(sAngles& angles_)
     state = WAIT_HEAD;
     len = 0;
     return true;
+}
+
+static bool comm_writePacket(uint8_t msgType, const uint8_t* msgContent, uint8_t msgContentLen)
+{
+    if (!commSerial)
+    {
+        return false;
+    }
+
+    uint8_t len = 1 + msgContentLen;
+    uint8_t checksum = msgType;
+
+    commSerial->write(0xAA);
+    commSerial->write(len);
+    commSerial->write(msgType);
+
+    for (uint8_t i = 0; i < msgContentLen; ++i)
+    {
+        commSerial->write(msgContent[i]);
+        checksum += msgContent[i];
+    }
+
+    commSerial->write(checksum);
+    commSerial->write(0xBB);
+    return true;
+}
+
+bool comm_send(uint8_t msgType_, uint8_t msgContent_[])
+{
+    if (!commSerial)
+    {
+        return false;
+    }
+
+    uint8_t expectedLen;
+    const uint8_t* contentPtr = nullptr;
+
+    switch (msgType_)
+    {
+        case eSerialMsgType::INFO:  // INFO
+            [[fallthrough]]
+        case eSerialMsgType::ERROR:  // ERROR
+            expectedLen = 1;
+            if (msgContent_ == nullptr)
+            {
+                return false;
+            }
+            contentPtr = msgContent_;
+            break;
+
+        case eSerialMsgType::HEARTBEAT:  // HEARTBEAT
+            expectedLen = 0;
+            contentPtr = nullptr;
+            break;
+
+        default:
+            // convert unknown/CMD into ERROR(0x05)
+            msgType_ = eSerialMsgType::ERROR;
+            static const uint8_t invalidPayload[1] = {eErrorCode::TRIED_TO_SEND_INVALID_COMMAND};
+            expectedLen = 1;
+            contentPtr = invalidPayload;
+            break;
+    }
+
+    if (expectedLen > 0 && msgContent_ == nullptr)
+    {
+        // should never happen because switch handles, but safe guard
+        msgType_ = 0x02;
+        static const uint8_t invalidPayload[1] = {eErrorCode::TRIED_TO_SEND_INVALID_COMMAND};
+        return comm_writePacket(0x02, invalidPayload, 1);
+    }
+
+    return comm_writePacket(msgType_, contentPtr, expectedLen);
 }
 
 void comm_init(HardwareSerial& serial)
