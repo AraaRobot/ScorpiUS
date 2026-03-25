@@ -7,11 +7,11 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
 
-    node_media = Node(
-        package="scorpius_media",
-        namespace="/scorpius/media",
-        executable="media",
-        name="media"
+    node_controller_sim = Node(
+        package="scorpius_sim",
+        namespace="/scorpius/sim",
+        executable="controller_sim",
+        name="controller_sim"
     )
-    ld.add_action(node_media)
+    ld.add_action(node_controller_sim)
     return ld

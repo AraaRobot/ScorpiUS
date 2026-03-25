@@ -17,17 +17,30 @@ void setup()
     Wire.setClock(100000);
     delay(100);
 
-    Serial.println("Initializing PCA9685...");
-
     controlInit();
     comm_init(Serial);
+    COMM_DEBUG("Initialization complete. Entering main loop.");
+
+    static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::INIT_COMPLETE)};
+    comm_send(eSerialMsgType::INFO, infoPayload, 1);
 }
 
 void loop()
 {
     comm_process();
     sAngles angles;
-    comm_consume(angles);
+    if (comm_consume(angles))
+    {
+        processAngles(angles);
+    }
+
+    static unsigned long lastUpdate = 0;
+    unsigned long now = millis();
+    if (now - lastUpdate >= 20)  // ~50 Hz
+    {
+        updatePosition();
+        lastUpdate = now;
+    }
 }
 
 void testLegJoints()
@@ -84,10 +97,10 @@ void executeDebug()
 {
     static int angle = 0;
     static int servo = 0;
-    Serial.print("Current servo: ");
-    Serial.print(servo);
-    Serial.print(" Current angle: ");
-    Serial.println(angle);
+    COMM_DEBUG("Current servo: ");
+    COMM_DEBUG(servo);
+    COMM_DEBUG(" Current angle: ");
+    COMM_DEBUG(angle);
     char c = Serial.read();
 
     if (c == 'e')
@@ -144,4 +157,6 @@ void executeDebug()
             angle = 0;
         }
     }
+
+    delay(50);
 }

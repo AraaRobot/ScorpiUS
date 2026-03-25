@@ -7,10 +7,7 @@ from launch.substitutions import PathJoinSubstitution
 
 def generate_launch_description():
 
-    return LaunchDescription([
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([PathJoinSubstitution([FindPackageShare('scorpius_media'), 'launch', 'media.launch.py'])])),
-        
+    return LaunchDescription([     
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([PathJoinSubstitution([FindPackageShare('scorpius_joy'), 'launch', 'joy.launch.py'])])),
             
