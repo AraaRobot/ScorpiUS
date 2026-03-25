@@ -57,7 +57,7 @@ void comm_process()
                     COMM_DEBUG("Invalid packet length: ");
                     COMM_DEBUG(len);
                     static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
-                    comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
+                    comm_send(eSerialMsgType::ERROR, errPayload, 1);
                     state = WAIT_HEAD;
                 }
                 else
@@ -95,7 +95,7 @@ void comm_process()
                     COMM_DEBUG((int)expected);
 
                     static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::CHECKSUM_MISMATCH)};
-                    comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
+                    comm_send(eSerialMsgType::ERROR, errPayload, 1);
                     state = WAIT_HEAD;
                 }
                 break;
@@ -108,7 +108,7 @@ void comm_process()
                         COMM_DEBUG("Dropped a packet");
 
                         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::PACKET_DROPPED)};
-                        comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
+                        comm_send(eSerialMsgType::ERROR, errPayload, 1);
                     }
                     memcpy(packet, dataBuf, size_t(len));
                     packetLen = len;
@@ -142,7 +142,7 @@ bool comm_consume(sAngles& angles_)
         COMM_DEBUG("comm_consume: bad len=");
         COMM_DEBUG(packetLen);
         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
-        comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
+        comm_send(eSerialMsgType::ERROR, errPayload, 1);
         packetReady = false;
         state = WAIT_HEAD;
         return false;
@@ -150,11 +150,11 @@ bool comm_consume(sAngles& angles_)
 
     size_t index = 0;
 
-    if ((int8_t)packet[index++] != 0x00)
+    if ((int8_t)packet[index++] != static_cast<uint8_t>(eSerialMsgType::COMMAND))
     {
         COMM_DEBUG("Unknown serial msg type");
         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_MSG_TYPE_RECEIVED)};
-        comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
+        comm_send(eSerialMsgType::ERROR, errPayload, 1);
         packetReady = false;
         state = WAIT_HEAD;
         len = 0;
@@ -190,7 +190,7 @@ static bool comm_writePacket(uint8_t msgType_, const uint8_t* msgContent_, uint8
     uint8_t writeLength = 1 + msgContentLen_;
     uint8_t checksum = msgType_;
 
-    commSerial->write(0xAA);
+    commSerial->write(HEAD);
     commSerial->write(writeLength);
     commSerial->write(msgType_);
 
@@ -201,11 +201,11 @@ static bool comm_writePacket(uint8_t msgType_, const uint8_t* msgContent_, uint8
     }
 
     commSerial->write(checksum);
-    commSerial->write(0xBB);
+    commSerial->write(TAIL);
     return true;
 }
 
-bool comm_send(uint8_t msgType_, const uint8_t* msgContent_, uint8_t contentLength_)
+bool comm_send(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_)
 {
     if (!commSerial)
     {
@@ -217,9 +217,9 @@ bool comm_send(uint8_t msgType_, const uint8_t* msgContent_, uint8_t contentLeng
 
     switch (msgType_)
     {
-        case static_cast<uint8_t>(eSerialMsgType::INFO):
+        case eSerialMsgType::INFO:
         [[fallthrough]]
-        case static_cast<uint8_t>(eSerialMsgType::ERROR):
+        case eSerialMsgType::ERROR:
             expectedLen = 1;
             if (msgContent_ == nullptr || contentLength_ != 1)
             {
@@ -228,21 +228,21 @@ bool comm_send(uint8_t msgType_, const uint8_t* msgContent_, uint8_t contentLeng
             contentPtr = msgContent_;
             break;
 
-        case static_cast<uint8_t>(eSerialMsgType::HEARTBEAT):
+        case eSerialMsgType::HEARTBEAT:
             expectedLen = 0;
             contentPtr = nullptr;
             break;
 
         default:
             // convert unknown/CMD into ERROR(0x06)
-            msgType_ = static_cast<uint8_t>(eSerialMsgType::ERROR);
+            msgType_ = eSerialMsgType::ERROR;
             static const uint8_t invalidPayload[1] = {static_cast<uint8_t>(eErrorCode::TRIED_TO_SEND_INVALID_COMMAND)};
             expectedLen = 1;
             contentPtr = invalidPayload;
             break;
     }
 
-    return comm_writePacket(msgType_, contentPtr, expectedLen);
+    return comm_writePacket(static_cast<uint8_t>(msgType_), contentPtr, expectedLen);
 }
 
 void comm_init(HardwareSerial& serial)
