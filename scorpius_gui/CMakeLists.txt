@@ -37,10 +37,8 @@ add_executable(gui src/gui.cpp
   src/QControllerWidget/QControllerWidget.cpp
   src/QControllerWidget/QControllerProfile.cpp
   src/helpers/asyncExecutor.cpp
-  src/QSerialWidget/QSerialWidget.cpp
   src/QSerialWidget/QSerialManager.cpp
   ui/DebugWidget.ui
-  ui/SerialWidget.ui
   resources.qrc)
 
 ament_target_dependencies(gui

@@ -20,6 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Joy.msg"
   "msg/SerialHeartbeat.msg"
   "msg/SerialStatus.msg"
+  "msg/SerialPorts.msg"
 
   "srv/JoyConfig.srv"
   "srv/SerialConfig.srv"
