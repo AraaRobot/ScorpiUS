@@ -140,7 +140,7 @@ bool comm_consume(sAngles& angles_)
     if (packetLen != COMM_EXPECTED_LEN)  // Can be change to a switch case if there a more message types in the future
     {
         COMM_DEBUG("comm_consume: bad len=");
-        COMM_DEBUG(len);
+        COMM_DEBUG(packetLen);
         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
         comm_send(static_cast<uint8_t>(eSerialMsgType::ERROR), errPayload, 1);
         packetReady = false;

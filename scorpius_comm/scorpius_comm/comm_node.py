@@ -29,7 +29,6 @@ ERROR_TEXT = {
     0x07: "Invalid servo ID",
 }
 
-MAX_PACKET_LEN = 32
 
 class CommNode(Node):
     def __init__(self):
@@ -56,7 +55,8 @@ class CommNode(Node):
 
     def CB_teleop(self, msg):
         if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
-            self.get_logger().warning("Serial not open — dropping teleop message")
+            self.get_logger().warning(
+                "Serial not open — dropping teleop message", throttle_duration_sec=30)
             return
         try:
             self.ser.write(self.build_packet(msg))
@@ -135,7 +135,8 @@ class CommNode(Node):
         # HEAD | LENGTH | PAYLOAD... | CHECKSUM | TAIL
         # PAYLOAD case 1: ERROR (0x02) + error_code (1 byte)
         self.rx_buffer.extend(data)
-        self.get_logger().debug(f"Serial RX append ({len(data)} bytes): {data.hex()}")
+        self.get_logger().debug(
+            f"Serial RX append ({len(data)} bytes): {data.hex()}")
 
         while True:
             if len(self.rx_buffer) < 4:
@@ -143,12 +144,12 @@ class CommNode(Node):
                 break
 
             if self.rx_buffer[0] != HEAD:
-                self.get_logger().warning(f"Discarding byte before HEAD: {self.rx_buffer[0]:02X}")
+                self.get_logger().warning(
+                    f"Discarding byte before HEAD: {self.rx_buffer[0]:02X}")
                 del self.rx_buffer[0]
                 continue
 
             packet_len = self.rx_buffer[1]
-            packet_len = min(packet_len, 32)
             total_len = 4 + packet_len
 
             if len(self.rx_buffer) < total_len:
@@ -211,19 +212,21 @@ class CommNode(Node):
 
         elif packet_type == HEARTBEAT:
             self.get_logger().debug("Received HEARTBEAT packet")
-            #self.publish_heartbeat(True) next PR
+            # self.publish_heartbeat(True) next PR
 
         else:
             self.get_logger().warning(
                 f"Received unknown packet type=0x{packet_type:02X}, payload={payload.hex()}"
             )
-            self.publish_serial_status(True, f"Unknown packet type 0x{packet_type:02X}")
+            self.publish_serial_status(
+                True, f"Unknown packet type 0x{packet_type:02X}")
 
     def get_info_text(self, code: int) -> str:
         return INFO_TEXT.get(code, f"Unknown INFO code 0x{code:02X}")
 
     def get_error_text(self, code: int) -> str:
         return ERROR_TEXT.get(code, f"Unknown ERROR code 0x{code:02X}")
+
 
 def main(args=None):
     rclpy.init(args=args)

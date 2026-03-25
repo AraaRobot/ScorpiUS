@@ -1,2 +1,2 @@
-#Set up the QoS to handle disconnection robustly
+# Set up the QoS to handle disconnection robustly
 bool beat

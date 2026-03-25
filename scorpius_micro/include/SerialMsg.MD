@@ -28,7 +28,7 @@ ERROR 0x02
     Content: 1 byte representing error code (use lookup table)
 
 HEARTBEAT 0x03
-    FROM: Arduino
+    From: Arduino
     To: Pi
     Content: Empty (only send msg type)
 
@@ -39,16 +39,16 @@ INFO
 | Code   | Meaning     |
 | ------ | ------------- |
 | 0x01   | Init complete |
-| 0x02   | Servos Homed|
+| 0x02   | Servos Homed |
 
 ERROR
 
 | Code   | Meaning     |
 | ------ | ------------- |
 | 0x01   | Received invalid packet length |
-| 0x02   | Checksum mismatch|
+| 0x02   | Checksum mismatch |
 | 0x03   | Packet dropped |
-| 0x04   | Wrong msg type|
-| 0x05   | Invalid COMMAND (0x00) received|
-| 0x06   | Tried to send invalid command|
-| 0x07   | Invalid servo ID|
+| 0x04   | Wrong msg type |
+| 0x05   | Invalid COMMAND (0x00) received |
+| 0x06   | Tried to send invalid command |
+| 0x07   | Invalid servo ID |
