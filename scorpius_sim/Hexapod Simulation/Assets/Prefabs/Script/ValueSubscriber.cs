@@ -13,7 +13,7 @@ public class ValueSubscriber : MonoBehaviour
     void Start()
     {
         ros = ROSConnection.GetOrCreateInstance();
-        ros.RosIPAddress = "10.238.167.236";
+        ros.RosIPAddress = "127.0.0.1";
         ros.RosPort = 10000;
         ros.Subscribe<ServoAnglesMsg>("ServoAngles", Callback);
     }
