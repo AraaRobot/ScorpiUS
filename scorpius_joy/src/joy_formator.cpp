@@ -194,6 +194,39 @@ bool JoyFormator::setControllerType(const std::string& controllerName_)
         RCLCPP_INFO(this->get_logger(), msg.c_str());
         return true;
     }
+    else if (controllerName_ == "Xbox")
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _currentConfig.controllerType = controllerName_;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::a)] = 0;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::b)] = 1;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::y)] = 4;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::x)] = 3;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::l1)] = 6;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::r1)] = 7;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::share)] = 10;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::opts)] = 11;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::home)] = 12;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::l3)] = 13;
+        _currentConfig.buttons[std::to_underlying(eKeybinding::r3)] = 14;
+
+        _currentConfig.axes[std::to_underlying(eKeybinding::joystick_left_horiz)] = 0;
+        _currentConfig.axes[std::to_underlying(eKeybinding::joystick_left_vert)] = 1;
+        _currentConfig.axes[std::to_underlying(eKeybinding::joystick_right_horiz)] = 2;
+        _currentConfig.axes[std::to_underlying(eKeybinding::joystick_right_vert)] = 3;
+        _currentConfig.axes[std::to_underlying(eKeybinding::l2)] = 5;
+        _currentConfig.axes[std::to_underlying(eKeybinding::r2)] = 4;
+        _currentConfig.axes[std::to_underlying(eKeybinding::cross_horiz)] = 6;
+        _currentConfig.axes[std::to_underlying(eKeybinding::cross_vert)] = 7;
+
+        _currentConfig.joystick_dead_zone = 0.075f;
+        _currentConfig.trigger_range_min = 0.0f;
+        _currentConfig.trigger_range_max = 1.0f;
+
+        std::string msg = "Controller type now set to " + controllerName_;
+        RCLCPP_INFO(this->get_logger(), msg.c_str());
+        return true;
+    }
     // else if {} // Add more configurations here...
 
     RCLCPP_ERROR(this->get_logger(), "Unrecognized controller type. Default to DS5");
