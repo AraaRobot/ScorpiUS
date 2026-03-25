@@ -231,18 +231,18 @@ class CommNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    CommNode = CommNode()
+    Comm_Node = CommNode()
 
     # Try/Except here because ROS doesn't catch it as well on Python as on C++
     try:
-        rclpy.spin(CommNode)    
+        rclpy.spin(Comm_Node)    
     except KeyboardInterrupt:
         pass
     finally:
         # Destroy the node explicitly
         # (optional - otherwise it will be done automatically
         # when the garbage collector destroys the node object)
-        CommNode.destroy_node()
+        Comm_Node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
 
