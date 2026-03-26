@@ -5,7 +5,9 @@ from rclpy.node import Node
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import SerialStatus
 from scorpius_main.srv import SerialConfig
+from scorpius_main.srv import SerialPorts
 import serial
+import serial.tools.list_ports
 
 HEAD = 0xAA
 TAIL = 0xBB
@@ -39,6 +41,8 @@ class CommNode(Node):
 
         self.srv = self.create_service(
             SerialConfig, '/scorpius/serial_config', self.handle_serial_config)
+
+        self.port_srv = self.create_service(SerialPorts, '/scorpius/serial_ports', self.handle_serial_ports)
 
         self.status_pub = self.create_publisher(
             SerialStatus, '/scorpius/serial_status', 10)
@@ -115,6 +119,12 @@ class CommNode(Node):
             response.response = str(e)
             self.get_logger().error(response.response)
 
+        return response
+    
+    def handle_serial_ports(self, request : SerialPorts.Request, response : SerialPorts.Response) -> SerialPorts.Response:
+        ports = [p for p in serial.tools.list_ports.comports() if p.description.lower() != 'n/a']
+        response.ports = [p.device for p in ports]
+        response.descriptions = [p.description for p in ports]
         return response
 
     def read_serial(self) -> None:
