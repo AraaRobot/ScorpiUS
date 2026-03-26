@@ -120,6 +120,8 @@ void servoGoTo(eServo servoId_, int angle_)
             Serial.println("Invalid servo ID");
             break;
     }
+
+    delay(500);
 }
 
 void goHome()

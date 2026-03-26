@@ -25,20 +25,22 @@ void setup()
 
 void loop()
 {
-    comm_process();
-    sAngles angles;
-    if (comm_consume(angles))
-    {
-        processAngles(angles);
-    }
+    // comm_process();
+    // sAngles angles;
+    // if (comm_consume(angles))
+    // {
+    //     processAngles(angles);
+    // }
 
-    static unsigned long lastUpdate = 0;
-    unsigned long now = millis();
-    if (now - lastUpdate >= 20)  // ~50 Hz
-    {
-        updatePosition();
-        lastUpdate = now;
-    }
+    // static unsigned long lastUpdate = 0;
+    // unsigned long now = millis();
+    // if (now - lastUpdate >= 20)  // ~50 Hz
+    // {
+    //     updatePosition();
+    //     lastUpdate = now;
+    // }
+
+    executeDebug();
 }
 
 void testLegJoints()
