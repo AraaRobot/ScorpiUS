@@ -15,10 +15,12 @@ def generate_launch_description():
         parameters=[{"autorepeat_rate": 20.0,
         # PS5 controller
         # "device_name": "DualSense Wireless Controller",
-        "device_name": "Sony Interactive Entertainment DualSense Wireless Controller",
+        # "device_name": "Sony Interactive Entertainment DualSense Wireless Controller",
         # PS4 controller
         # "device_name": "Wireless Controller",
         #  "device_name": "Sony Interactive Entertainment Wireless Controller"}],
+        # Xbox One controller
+        "device_name": "Xbox Series X Controller",
         "deadzone": 0.0}],
         remappings=[("joy", "main_raw")]
     )

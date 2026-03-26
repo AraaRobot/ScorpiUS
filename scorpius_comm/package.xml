@@ -3,16 +3,20 @@
 <package format="3">
   <name>scorpius_comm</name>
   <version>0.0.0</version>
-  <description>Handles the UART communication with the MCU</description>
-  <maintainer email="anibal.arango@usherbrooke.ca">anibal</maintainer>
+  <description>ROS2 serial communication utilities</description>
+  <maintainer email="charles-eloi.lafond@USherbrooke.ca">chuck</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclpy</depend>
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <exec_depend>pyserial</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>
