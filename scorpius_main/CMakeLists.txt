@@ -22,6 +22,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
   "srv/JoyConfig.srv"
   "srv/SerialConfig.srv"
+  "srv/SerialPorts.srv"
 )
 
 install(
