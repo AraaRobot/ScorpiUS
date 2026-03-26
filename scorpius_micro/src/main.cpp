@@ -5,8 +5,15 @@
 #include "comm.h"
 #include "control.h"
 
+#ifndef ENABLE_DEBUG
+#define ENABLE_DEBUG 0
+#endif
+
 void testLegJoints();
+
+#if ENABLE_DEBUG
 void executeDebug();
+#endif
 
 void setup()
 {
@@ -27,24 +34,27 @@ void setup()
 
 void loop()
 {
-    // comm_process();
-    // sAngles angles;
-    // if (comm_consume(angles))
-    // {
-    //     processAngles(angles);
-    // }
-
-    // static unsigned long lastUpdate = 0;
-    // unsigned long now = millis();
-    // if (now - lastUpdate >= 20)  // ~50 Hz
-    // {
-    //     updatePosition();
-    //     lastUpdate = now;
-    // }
-
+#if ENABLE_DEBUG
     executeDebug();
+#else
+    comm_process();
+    sAngles angles;
+    if (comm_consume(angles))
+    {
+        processAngles(angles);
+    }
+
+    static unsigned long lastUpdate = 0;
+    unsigned long now = millis();
+    if (now - lastUpdate >= 20)  // ~50 Hz
+    {
+        updatePosition();
+        lastUpdate = now;
+    }
+#endif  // ENABLE_DEBUG
 }
 
+#if ENABLE_DEBUG
 void testLegJoints()
 {
     int angle0 = 0;
@@ -99,10 +109,6 @@ void executeDebug()
 {
     static int angle = 0;
     static int servo = 0;
-    COMM_DEBUG("Current servo: ");
-    COMM_DEBUG(servo);
-    COMM_DEBUG(" Current angle: ");
-    COMM_DEBUG(angle);
     char c = Serial.read();
 
     if (c == 'e')
@@ -126,6 +132,8 @@ void executeDebug()
                 angle += 5;
         }
         servoGoTo(static_cast<eServo>(servo), angle);
+        COMM_DEBUG("Current angle: ");
+        COMM_DEBUG(angle);
     }
     else if (c == 's')
     {
@@ -140,25 +148,37 @@ void executeDebug()
                 angle -= 5;
         }
         servoGoTo(static_cast<eServo>(servo), angle);
+        COMM_DEBUG("Current angle: ");
+        COMM_DEBUG(angle);
     }
     else if (c == 'a')
     {
         if (servo > 0)
+        {
             servo--;
+            angle = 0;
+        }
+        COMM_DEBUG("Current servo: ");
+        COMM_DEBUG(servo);
     }
     else if (c == 'd')
     {
         if (servo < 11)
+        {
             servo++;
+            angle = 0;
+        }
+        COMM_DEBUG("Current servo: ");
+        COMM_DEBUG(servo);
     }
     else if (c == 'z')
     {
-        for (uint8_t sm = 0; sm < 12U; sm++)
-        {
-            servoGoTo(static_cast<eServo>(sm), 0);
-            angle = 0;
-        }
+        goHome();
+        angle = 0;
+        COMM_DEBUG("Homed");
     }
 
     delay(50);
 }
+
+#endif  // ENABLE_DEBUG

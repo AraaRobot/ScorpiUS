@@ -122,8 +122,6 @@ void servoGoTo(eServo servoId_, int angle_)
             comm_send(eSerialMsgType::ERROR, errPayload, 1);
             break;
     }
-
-    delay(500);
 }
 
 void goHome()
