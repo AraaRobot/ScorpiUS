@@ -177,6 +177,7 @@ bool comm_consume(sAngles& angles_)
     packetReady = false;
     state = WAIT_HEAD;
     len = 0;
+    COMM_DEBUG("Received angles ok");
     return true;
 }
 
