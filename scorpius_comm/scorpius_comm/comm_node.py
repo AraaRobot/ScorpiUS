@@ -65,7 +65,8 @@ class CommNode(Node):
 
         self.heartbeat_pub = self.create_publisher(SerialHeartbeat, '/scorpius/serial_heartbeat', heartbeat_qos)
         self.heartbeat_timer = self.create_timer(1.0, self.heartbeat_check)
-        self.heartbeat_ok = False
+        self.heartbeat_ok: bool = False
+        self.heartbeat_sequence:int = 0
 
         self.ser = None
         self.rx_buffer = bytearray()
@@ -258,7 +259,10 @@ class CommNode(Node):
     
     def publish_heartbeat(self, ok: bool) -> None:
         msg = SerialHeartbeat()
-        msg.beat = ok
+        msg.alive = ok
+        msg.seq = self.heartbeat_sequence
+        self.heartbeat_sequence = self.heartbeat_sequence + 1
+        msg.stamp = self.get_clock().now().to_msg()
         self.heartbeat_pub.publish(msg)
 
     def heartbeat_check(self) -> None:
