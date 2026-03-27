@@ -2,8 +2,11 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy, LivelinessPolicy
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import SerialStatus
+from scorpius_main.msg import SerialHeartbeat
 from scorpius_main.srv import SerialConfig
 from scorpius_main.srv import SerialPorts
 import serial
@@ -48,6 +51,21 @@ class CommNode(Node):
             SerialStatus, '/scorpius/serial_status', 10)
 
         self.read_timer = self.create_timer(0.05, self.read_serial)
+
+        heartbeat_qos = QoSProfile(
+            depth=1,
+            history=HistoryPolicy.KEEP_LAST,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            deadline=Duration(seconds=1.0),
+            lifespan=Duration(seconds=1.5),
+            liveliness=LivelinessPolicy.AUTOMATIC,
+            liveliness_lease_duration=Duration(seconds=1.5),
+        )
+
+        self.heartbeat_pub = self.create_publisher(SerialHeartbeat, '/scorpius/serial_heartbeat', heartbeat_qos)
+        self.heartbeat_timer = self.create_timer(1.0, self.heartbeat_check)
+        self.heartbeat_ok = False
 
         self.ser = None
         self.rx_buffer = bytearray()
@@ -222,7 +240,8 @@ class CommNode(Node):
 
         elif packet_type == HEARTBEAT:
             self.get_logger().debug("Received HEARTBEAT packet")
-            # self.publish_heartbeat(True) next PR
+            self.publish_heartbeat(True)
+            self.heartbeat_ok = True
 
         else:
             self.get_logger().warning(
@@ -236,6 +255,17 @@ class CommNode(Node):
 
     def get_error_text(self, code: int) -> str:
         return ERROR_TEXT.get(code, f"Unknown ERROR code 0x{code:02X}")
+    
+    def publish_heartbeat(self, ok: bool) -> None:
+        msg = SerialHeartbeat()
+        msg.beat = ok
+        self.heartbeat_pub.publish(msg)
+
+    def heartbeat_check(self) -> None:
+        if (not self.heartbeat_ok):
+            self.publish_heartbeat(False)
+        else:
+            self.heartbeat_ok = False
 
 
 def main(args=None):
