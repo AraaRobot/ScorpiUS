@@ -22,11 +22,10 @@ class TeleopNode(Node):
         self.front_angle = 90 # front degrees in witch the hexapod goes directly in the wanted direction
         self.movement_state = 0 # 0 -> idle, 1 -> forward, 2 -> backward, 3 -> turn right, 4 -> turn left
         self.position_state = 0 # 0 -> neutral, 1 -> left neutral, 2 -> right down, 3 -> right neutral, 4 -> left down
-        self.last_interpolation_time = self.get_clock().now() # time of the last interpolation, used for smooth movement
 
         # limits
-        self.MAX_SPEED = self.position_count / 1 # maximum speed in position / second
-        self.MIN_SPEED = self.position_count / 10 # minimum speed in position / second
+        self.MAX_SPEED = self.position_count / 0.3 # maximum speed in positions / second
+        self.MIN_SPEED = self.position_count / 10 # minimum speed in positions / second
         self.MAX_ABS_HORIZ_ANGLE = 45 # maximum absolute horizontal servo angle
         self.MAX_VERT_ANGLE = 90 # maximum vertical servo angle
         self.MIN_VERT_ANGLE = 0 # minimum vertical servo angle
@@ -41,14 +40,14 @@ class TeleopNode(Node):
         self.publisher_angles = self.create_publisher(ServoAngles, '/scorpius/teleop', 10)
         self.subscriber_input = self.create_subscription(Joy, '/scorpius/joy', self.subscriber_callback, 10)
 
-        # callbacks
-        logic_period = 0.5  # seconds
-        self.timer_logic = self.create_timer(logic_period, self.logic_callback)
-
         # subscribe members
         self.input_vector = Vector2(0, 0)
-        self.speed = self.MAX_SPEED / 2 # speed in degrees / second
+        self.speed = self.MAX_SPEED / 2 # speed in positions / second
         self.step = self.MAX_STEP / 2 # step of the hexapod in mm
+
+        # callbacks
+        self.input_timer = self.create_timer(0.5, self.input_callback) # dummy timer to set the period of the subscriber callback
+        self.output_timer = self.create_timer(1/self.speed , self.output_callback)
 
         # publish members
         self.angles = HexapodAngles() # leg A is left from head, rest goes counterclockwise
@@ -69,6 +68,8 @@ class TeleopNode(Node):
             self.speed = self.MIN_SPEED
         else:
             self.speed = data.joy_data[Joy.R2] * (self.MAX_SPEED - self.MIN_SPEED) + self.MIN_SPEED
+        self.output_timer.destroy()
+        self.output_timer = self.create_timer(1/self.speed , self.output_callback)
 
         # update step
         if data.joy_data[Joy.CROSS_UP]:
@@ -87,10 +88,11 @@ class TeleopNode(Node):
                                 f"{data.joy_data[Joy.CROSS_UP]} " 
                                 f"{data.joy_data[Joy.CROSS_DOWN]}")
         
-    def logic_callback(self):
+    def input_callback(self):
         # update movement method
         self.update_movement_state()
 
+    def output_callback(self):
         # angles calculations
         self.angles_calculations()
 
@@ -384,37 +386,34 @@ class TeleopNode(Node):
                     return
         
         # interpolate angles towards target angles based on speed
-        if self.get_clock().now() - self.last_interpolation_time >= rclpy.duration.Duration(seconds=1/self.speed):
-            # Debug
-            msg = self.angles.to_servo_angles_msg()
-            self.get_logger().info(
-                f"\n================ Angles ================\n"
-                f"       vertical        horizontal\n"
-                f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
-                f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
-                f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
-                f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
-                f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
-                f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
-                f"========================================"
-            )
-            msg = self.target_angles.to_servo_angles_msg()
-            self.get_logger().info(
-                f"\n============= Target angles =============\n"
-                f"       vertical        horizontal\n"
-                f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
-                f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
-                f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
-                f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
-                f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
-                f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
-                f"========================================="
-            )
+        self.get_logger().info("Updating angles to next position.")
+        self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
 
-            # self.get_logger().info("Interpolating angles.")
-            self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
-            self.last_interpolation_time = self.get_clock().now()
-
+        # Debug
+        # msg = self.angles.to_servo_angles_msg()
+        # self.get_logger().info(
+        #     f"\n================ Angles ================\n"
+        #     f"       vertical        horizontal\n"
+        #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
+        #     f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
+        #     f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
+        #     f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
+        #     f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
+        #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
+        #     f"========================================"
+        # )
+        # msg = self.target_angles.to_servo_angles_msg()
+        # self.get_logger().info(
+        #     f"\n============= Target angles =============\n"
+        #     f"       vertical        horizontal\n"
+        #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
+        #     f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
+        #     f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
+        #     f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
+        #     f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
+        #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
+        #     f"========================================="
+        # )
 
     def update_movement_state(self):
         # get normalized input
