@@ -117,7 +117,9 @@ void servoGoTo(eServo servoId_, int angle_)
             _driverModule.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
         default:
-            Serial.println("Invalid servo ID");
+            COMM_DEBUG("Invalid servo ID");
+            static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_SERVO_ID)};
+            comm_send(eSerialMsgType::ERROR, errPayload, 1);
             break;
     }
 }
@@ -129,4 +131,7 @@ void goHome()
         servoGoTo(s, HOME_ANGLE);
         delay(50);
     }
+
+    static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::SERVOS_HOMED)};
+    comm_send(eSerialMsgType::INFO, infoPayload, 1);
 }

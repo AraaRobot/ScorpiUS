@@ -16,9 +16,13 @@ find_package(rclcpp REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ServoAngles.msg"
+  "msg/SerialHeartbeat.msg"
+  "msg/SerialStatus.msg"
   "msg/Joy.msg"
 
   "srv/JoyConfig.srv"
+  "srv/SerialConfig.srv"
+  "srv/SerialPorts.srv"
 )
 
 install(
