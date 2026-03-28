@@ -35,11 +35,21 @@ void loop()
     }
 
     static unsigned long lastUpdate = 0;
+    static unsigned long lastHeartbeat = 0;
     unsigned long now = millis();
-    if (now - lastUpdate >= 20)  // ~50 Hz
+
+    // Position update at ~50 Hz
+    if (now - lastUpdate >= 20)
     {
         updatePosition();
         lastUpdate = now;
+    }
+
+    // Heartbeat at 2 Hz (every 500 ms)
+    if (now - lastHeartbeat >= 500)
+    {
+        comm_heartbeat();
+        lastHeartbeat = now;
     }
 }
 
