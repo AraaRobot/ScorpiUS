@@ -1,2 +1,5 @@
 # Set up the QoS to handle disconnection robustly
-bool beat
+bool alive
+uint64 seq
+builtin_interfaces/Time stamp
+

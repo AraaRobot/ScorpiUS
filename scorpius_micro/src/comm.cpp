@@ -270,6 +270,11 @@ bool comm_send(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t cont
     return comm_writePacket(static_cast<uint8_t>(msgType_), contentPtr, expectedLen);
 }
 
+void comm_heartbeat(void)
+{
+    comm_send(eSerialMsgType::HEARTBEAT, nullptr, 0);
+}
+
 void comm_init(HardwareSerial& serial)
 {
     commSerial = &serial;
