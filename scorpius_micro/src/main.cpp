@@ -4,6 +4,7 @@
 
 #include "comm.h"
 #include "control.h"
+#include "state_machine.h"
 
 void testLegJoints();
 void executeDebug();
@@ -29,9 +30,18 @@ void loop()
 {
     comm_process();
     sAngles angles;
-    if (comm_consume(angles))
+    eSerialMsgType type = comm_consume(angles);
+
+    if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
     {
         processAngles(angles);
+    }
+    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
+    {
+        goHome();
+    }
+    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
+    {
     }
 
     static unsigned long lastUpdate = 0;

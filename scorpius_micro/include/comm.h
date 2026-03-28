@@ -34,7 +34,9 @@ enum class eSerialMsgType : uint8_t
     COMMAND = 0x00,
     INFO = 0x01,
     ERROR = 0x02,
-    HEARTBEAT = 0x03
+    HEARTBEAT = 0x03,
+    STATE = 0x04,
+    UNKNOWN = 0xFF
 };
 
 enum class eErrorCode : uint8_t
@@ -56,7 +58,7 @@ enum class eInfoCode : uint8_t
 
 void comm_init(HardwareSerial& serial);
 void comm_process();
-bool comm_consume(sAngles& angles_);
+eSerialMsgType comm_consume(sAngles& angles_);
 bool comm_send(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
 
 void comm_debug_impl(const char* msg);

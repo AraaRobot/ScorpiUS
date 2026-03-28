@@ -32,6 +32,11 @@ HEARTBEAT 0x03
     To: Pi
     Content: Empty (only send msg type)
 
+STATE 0x04
+    From: Pi
+    To: Arduino
+    Content: 1 byte reprensenting state to change to
+
 ### MSG LOOKUP TABLE
 
 INFO
@@ -52,3 +57,11 @@ ERROR
 | 0x05   | Invalid COMMAND (0x00) received |
 | 0x06   | Tried to send invalid command |
 | 0x07   | Invalid servo ID |
+
+STATE
+
+| Code   | Meaning     |
+| ------ | ------------- |
+| 0x01   | Home |
+| 0x02   | Running |
+| 0x03   | Reset |
