@@ -2,8 +2,11 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy, LivelinessPolicy
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import SerialStatus
+from scorpius_main.msg import SerialHeartbeat
 from scorpius_main.srv import SerialConfig
 from scorpius_main.srv import SerialPorts
 import serial
@@ -42,12 +45,30 @@ class CommNode(Node):
         self.srv = self.create_service(
             SerialConfig, '/scorpius/serial_config', self.handle_serial_config)
 
-        self.port_srv = self.create_service(SerialPorts, '/scorpius/serial_ports', self.handle_serial_ports)
+        self.port_srv = self.create_service(
+            SerialPorts, '/scorpius/serial_ports', self.handle_serial_ports)
 
         self.status_pub = self.create_publisher(
             SerialStatus, '/scorpius/serial_status', 10)
 
         self.read_timer = self.create_timer(0.05, self.read_serial)
+
+        heartbeat_qos = QoSProfile(
+            depth=1,
+            history=HistoryPolicy.KEEP_LAST,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            deadline=Duration(seconds=1.0),
+            lifespan=Duration(seconds=1.5),
+            liveliness=LivelinessPolicy.AUTOMATIC,
+            liveliness_lease_duration=Duration(seconds=1.5),
+        )
+
+        self.heartbeat_pub = self.create_publisher(
+            SerialHeartbeat, '/scorpius/serial_heartbeat', heartbeat_qos)
+        self.heartbeat_timer = self.create_timer(1.0, self.heartbeat_check)
+        self.heartbeat_ok: bool = False
+        self.heartbeat_sequence: int = 0
 
         self.ser = None
         self.rx_buffer = bytearray()
@@ -57,7 +78,7 @@ class CommNode(Node):
             self.ser.close()
         super().destroy_node()
 
-    def CB_teleop(self, msg : ServoAngles) -> None:
+    def CB_teleop(self, msg: ServoAngles) -> None:
         if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
@@ -67,12 +88,12 @@ class CommNode(Node):
         except Exception as e:
             self.get_logger().error(str(e))
 
-    def angle_to_uint8(self, angle : float) -> int:
+    def angle_to_uint8(self, angle: float) -> int:
         # map [-90,90] to uint8 by two's complement representation for signed int8 receiver
         angle = int(max(-90, min(90, angle)))
         return angle & 0xFF
 
-    def build_packet(self, msg : ServoAngles) -> bytes:
+    def build_packet(self, msg: ServoAngles) -> bytes:
         angles = [
             msg.vert_a,
             msg.vert_b,
@@ -94,10 +115,11 @@ class CommNode(Node):
 
         checksum = (packet_type + sum(data)) & 0xFF
 
-        packet = bytes([HEAD, length, packet_type]) + data + bytes([checksum, TAIL])
+        packet = bytes([HEAD, length, packet_type]) + \
+            data + bytes([checksum, TAIL])
         return packet
 
-    def handle_serial_config(self, request : SerialConfig.Request, response : SerialConfig.Response) -> SerialConfig.Response:
+    def handle_serial_config(self, request: SerialConfig.Request, response: SerialConfig.Response) -> SerialConfig.Response:
         try:
             if getattr(self, 'ser', None) and self.ser.is_open:
                 self.get_logger().info("Serial already open; reopening with new config")
@@ -120,9 +142,10 @@ class CommNode(Node):
             self.get_logger().error(response.response)
 
         return response
-    
-    def handle_serial_ports(self, request : SerialPorts.Request, response : SerialPorts.Response) -> SerialPorts.Response:
-        ports = [p for p in serial.tools.list_ports.comports() if p.description.lower() != 'n/a']
+
+    def handle_serial_ports(self, request: SerialPorts.Request, response: SerialPorts.Response) -> SerialPorts.Response:
+        ports = [p for p in serial.tools.list_ports.comports()
+                 if p.description.lower() != 'n/a']
         response.ports = [p.device for p in ports]
         response.descriptions = [p.description for p in ports]
         return response
@@ -222,7 +245,8 @@ class CommNode(Node):
 
         elif packet_type == HEARTBEAT:
             self.get_logger().debug("Received HEARTBEAT packet")
-            # self.publish_heartbeat(True) next PR
+            self.publish_heartbeat(True)
+            self.heartbeat_ok = True
 
         else:
             self.get_logger().warning(
@@ -237,6 +261,20 @@ class CommNode(Node):
     def get_error_text(self, code: int) -> str:
         return ERROR_TEXT.get(code, f"Unknown ERROR code 0x{code:02X}")
 
+    def publish_heartbeat(self, ok: bool) -> None:
+        msg = SerialHeartbeat()
+        msg.alive = ok
+        msg.seq = self.heartbeat_sequence
+        self.heartbeat_sequence = self.heartbeat_sequence + 1
+        msg.stamp = self.get_clock().now().to_msg()
+        self.heartbeat_pub.publish(msg)
+
+    def heartbeat_check(self) -> None:
+        if (not self.heartbeat_ok):
+            self.publish_heartbeat(False)
+        else:
+            self.heartbeat_ok = False
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -245,7 +283,7 @@ def main(args=None):
 
     # Try/Except here because ROS doesn't catch it as well on Python as on C++
     try:
-        rclpy.spin(Comm_Node)    
+        rclpy.spin(Comm_Node)
     except KeyboardInterrupt:
         pass
     finally:
