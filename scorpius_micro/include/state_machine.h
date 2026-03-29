@@ -1,3 +1,6 @@
+#ifndef STATE_MACHINE_H
+#define STATE_MACHINE_H
+
 #include <Arduino.h>
 
 enum class eStates : uint8_t
@@ -8,4 +11,6 @@ enum class eStates : uint8_t
     eLast
 };
 
-eStates controllerStateMachine = eStates::HOME;
+extern eStates controllerStateMachine;
+
+#endif // define STATE_MACHINE_H

@@ -35,7 +35,7 @@ HEARTBEAT 0x03
 STATE 0x04
     From: Pi
     To: Arduino
-    Content: 1 byte reprensenting state to change to
+    Content: 1 byte representing state to change to
 
 ### MSG LOOKUP TABLE
 
@@ -65,4 +65,4 @@ STATE
 | ------ | ------------- |
 | 0x01   | Home |
 | 0x02   | Running |
-| 0x03   | Reset |
+| 0x03   | Reboot |

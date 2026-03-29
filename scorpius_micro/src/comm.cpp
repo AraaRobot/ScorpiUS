@@ -183,7 +183,8 @@ eSerialMsgType comm_consume(sAngles& angles_)
                 return type;
             }
 
-            uint8_t uState = packet[index++] if (uState >= eStates::eLast)
+            uint8_t uState = packet[index++];
+            if (uState < static_cast<uint8_t>(eStates::HOME) || uState >= static_cast<uint8_t>(eStates::eLast))
             {
                 COMM_DEBUG("Invalid state received");
                 COMM_DEBUG(uState);
@@ -191,11 +192,12 @@ eSerialMsgType comm_consume(sAngles& angles_)
                 comm_send(eSerialMsgType::ERROR, errPayload, 1);
                 packetReady = false;
                 serialStateMachine = WAIT_HEAD;
-                return type
+                return type;
             }
-            controllerStateMachine = (eStates);
+            controllerStateMachine = static_cast<eStates>(uState);
             type = eSerialMsgType::STATE;
             break;
+
         default:
             COMM_DEBUG("Unknown serial msg type");
             static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_MSG_TYPE_RECEIVED)};
