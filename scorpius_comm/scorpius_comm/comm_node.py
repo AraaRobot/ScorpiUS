@@ -120,7 +120,7 @@ class CommNode(Node):
         return response
 
     def CB_teleop(self, msg: ServoAngles) -> None:
-        if self.serial_ready():
+        if not self.serial_ready():
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
             return
