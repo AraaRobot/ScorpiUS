@@ -151,4 +151,33 @@ void QSerialManager::pushButtonClicked()
     {
         return;
     }
+    std::shared_ptr<scorpius_main::srv::SerialConfig::Request> request
+        = std::make_shared<scorpius_main::srv::SerialConfig::Request>();
+
+    request->port = _box->currentText().toStdString();
+    request->timeout = 1000;
+    request->baud = 115200;
+
+    auto futureAndRequest = _srv_config->async_send_request(request);
+    std::future<std::shared_ptr<scorpius_main::srv::SerialConfig::Response>> future
+     = std::move(futureAndRequest.future);
+
+    if (future.wait_for(std::chrono::milliseconds(1000)) == std::future_status::ready)
+    {
+        auto response = future.get();
+        if (response->result)
+        {
+            last_message += "Port série connecté avec succès\n";
+        }
+        else
+        {
+            last_message += "Échec de la connexion au port série\n";
+        }
+    }
+    else
+    {
+        last_message += "Le serveur n'a pas répondu à temps\n";
+    }
+
+    _label->setText(last_message);
 }
