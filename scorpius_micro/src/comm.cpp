@@ -146,7 +146,7 @@ eSerialMsgType comm_consume(sAngles& angles_)
     switch ((int8_t)packet[index++])
     {
         case static_cast<uint8_t>(eSerialMsgType::COMMAND):
-            if (packetLen != COMMAND_EXPECTED_LEN)  // Can be change to a switch case if there a more message types in the future
+            if (packetLen != COMMAND_EXPECTED_LEN)
             {
                 COMM_DEBUG("comm_consume: bad len=");
                 COMM_DEBUG(packetLen);
@@ -183,10 +183,14 @@ eSerialMsgType comm_consume(sAngles& angles_)
                 return type;
             }
 
-            uint8_t uState = packet[index++]
-            if (uState >= eStates::eLast)
+            uint8_t uState = packet[index++] if (uState >= eStates::eLast)
             {
-                // Add new error code here
+                COMM_DEBUG("Invalid state received");
+                COMM_DEBUG(uState);
+                static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_STATE_RECEIVED)};
+                comm_send(eSerialMsgType::ERROR, errPayload, 1);
+                packetReady = false;
+                serialStateMachine = WAIT_HEAD;
                 return type
             }
             controllerStateMachine = (eStates);

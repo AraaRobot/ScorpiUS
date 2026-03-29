@@ -47,7 +47,8 @@ enum class eErrorCode : uint8_t
     INVALID_MSG_TYPE_RECEIVED = 0x04,
     INVALID_COMMAND_RECEIVED = 0x05,
     TRIED_TO_SEND_INVALID_COMMAND = 0x06,
-    INVALID_SERVO_ID = 0x07
+    INVALID_SERVO_ID = 0x07,
+    INVALID_STATE_RECEIVED = 0x08
 };
 
 enum class eInfoCode : uint8_t

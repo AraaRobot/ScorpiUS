@@ -57,6 +57,7 @@ ERROR
 | 0x05   | Invalid COMMAND (0x00) received |
 | 0x06   | Tried to send invalid command |
 | 0x07   | Invalid servo ID |
+| 0x08   | Received invalid state |
 
 STATE
 

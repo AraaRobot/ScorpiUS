@@ -37,6 +37,7 @@ ERROR_TEXT = {
     0x05: "Invalid COMMAND (0x00) received",
     0x06: "Tried to send invalid command",
     0x07: "Invalid servo ID",
+    0x08: "Invalid state received",
 }
 
 # States
@@ -91,14 +92,27 @@ class CommNode(Node):
             self.ser.close()
         super().destroy_node()
 
+    def serial_ready(self) -> bool:
+        return self.ser and self.ser.is_open
+
     def send_state(self, request: ControllerState.Request, response: ControllerState.Response) -> ControllerState.Response:
-        if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
+        if not self.serial_ready():
             self.get_logger().warning(
                 "Serial not open — dropping state controller message")
-            return
+            response.success = False
+            response.message = "Serial port not open"
+            return response
+
+        if request.state not in (HOME, RUNNING, REBOOT):
+            response.success = False
+            response.message = f"Invalid state {request.state}"
+            return response
         try:
-            self.ser.write(self.build_state_packet(bytes(request.state)))
+            state_byte = int(request.state).to_bytes(
+                1, byteorder='little', signed=True)
+            self.ser.write(self.build_state_packet(state_byte))
             response.success = True
+            response.message = f"Serial write successful"
         except Exception as e:
             self.get_logger().error(str(e))
             response.success = False
@@ -106,7 +120,7 @@ class CommNode(Node):
         return response
 
     def CB_teleop(self, msg: ServoAngles) -> None:
-        if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
+        if self.serial_ready():
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
             return
@@ -146,15 +160,12 @@ class CommNode(Node):
             data + bytes([checksum, TAIL])
         return packet
 
-    def build_state_packet(self, state : bytes) -> bytes:
-
-#Check if byte is ok for uint8
-#Check if state is valid 1-3
+    def build_state_packet(self, state: bytes) -> bytes:
         packet_type = STATE
 
-        checksum = (packet_type + state) & 0xFF
-
-        packet = bytes([HEAD, 2, packet_type]) + \
+        checksum = (packet_type + sum(state)) & 0xFF
+        length = 2 # 1 msg type + 1 msg content
+        packet = bytes([HEAD, length, packet_type]) + \
             state + bytes([checksum, TAIL])
         return packet
 
