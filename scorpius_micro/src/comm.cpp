@@ -182,7 +182,14 @@ eSerialMsgType comm_consume(sAngles& angles_)
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
-            controllerStateMachine = (eStates)packet[index++];
+
+            uint8_t uState = packet[index++]
+            if (uState >= eStates::eLast)
+            {
+                // Add new error code here
+                return type
+            }
+            controllerStateMachine = (eStates);
             type = eSerialMsgType::STATE;
             break;
         default:
