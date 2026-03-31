@@ -8,7 +8,7 @@
 #endif
 
 #if ENABLE_DEBUG
-#define COMM_DEBUG(x) comm_debug_impl(x)
+#define COMM_DEBUG(x) commDebug_impl(x)
 #else
 #define COMM_DEBUG(x) ((void)0)
 #endif
@@ -57,13 +57,13 @@ enum class eInfoCode : uint8_t
     SERVOS_HOMED = 0x02
 };
 
-void comm_init(HardwareSerial& serial);
-void comm_process();
-eSerialMsgType comm_consume(sAngles& angles_);
-bool comm_send(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
-void comm_heartbeat(void);
+void commInit(HardwareSerial& serial_);
+void commProcess();
+eSerialMsgType commConsume(sAngles& angles_);
+bool commSend(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
+void commHeartbeat(void);
 
-void comm_debug_impl(const char* msg);
-void comm_debug_impl(int v);
+void commDebug_impl(const char* msg_);
+void commDebug_impl(int v_);
 
 #endif  // COMM_H
