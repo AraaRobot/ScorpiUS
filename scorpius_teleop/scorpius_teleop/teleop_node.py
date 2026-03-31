@@ -22,6 +22,7 @@ class TeleopNode(Node):
         self.front_angle = 90 # front degrees in witch the hexapod goes directly in the wanted direction
         self.movement_state = 0 # 0 -> idle, 1 -> forward, 2 -> backward, 3 -> turn right, 4 -> turn left
         self.position_state = 0 # 0 -> neutral, 1 -> left neutral, 2 -> right down, 3 -> right neutral, 4 -> left down
+        self.output_counter = 0 # counter for the output callback
 
         # limits
         self.MAX_SPEED = self.position_count / 0.3 # maximum speed in positions / second
@@ -46,13 +47,14 @@ class TeleopNode(Node):
         self.step = self.MAX_STEP / 2 # step of the hexapod in mm
 
         # callbacks
+        self.OUTPUT_RATE = 160 # rate of the output callback in Hz
         self.input_timer = self.create_timer(0.5, self.input_callback) # dummy timer to set the period of the subscriber callback
-        self.output_timer = self.create_timer(1/self.speed , self.output_callback)
+        self.output_timer = self.create_timer(1/self.OUTPUT_RATE, self.output_callback)
 
         # publish members
         self.angles = HexapodAngles() # leg A is left from head, rest goes counterclockwise
 
-    def subscriber_callback(self, msg):
+    def subscriber_callback(self, msg: Joy) -> None:
         # read msg
         data : Joy = msg
 
@@ -68,8 +70,6 @@ class TeleopNode(Node):
             self.speed = self.MIN_SPEED
         else:
             self.speed = data.joy_data[Joy.R2] * (self.MAX_SPEED - self.MIN_SPEED) + self.MIN_SPEED
-        self.output_timer.destroy()
-        self.output_timer = self.create_timer(1/self.speed , self.output_callback)
 
         # update step
         if data.joy_data[Joy.CROSS_UP]:
@@ -82,11 +82,11 @@ class TeleopNode(Node):
             self.step = self.MAX_STEP
 
         # debug
-        self.get_logger().debug(f"Received : {data.joy_data[Joy.JOYSTICK_LEFT_HORIZ]} "
-                                f"{data.joy_data[Joy.JOYSTICK_LEFT_VERT]} "
-                                f"{data.joy_data[Joy.R2]} "
-                                f"{data.joy_data[Joy.CROSS_UP]} " 
-                                f"{data.joy_data[Joy.CROSS_DOWN]}")
+        # self.get_logger().debug(f"Received : {data.joy_data[Joy.JOYSTICK_LEFT_HORIZ]} "
+        #                         f"{data.joy_data[Joy.JOYSTICK_LEFT_VERT]} "
+        #                         f"{data.joy_data[Joy.R2]} "
+        #                         f"{data.joy_data[Joy.CROSS_UP]} " 
+        #                         f"{data.joy_data[Joy.CROSS_DOWN]}")
         
     def input_callback(self):
         # update movement method
@@ -386,34 +386,39 @@ class TeleopNode(Node):
                     return
         
         # interpolate angles towards target angles based on speed
-        self.get_logger().info("Updating angles to next position.")
-        self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
+        if self.output_counter * 1/self.OUTPUT_RATE >= 1/self.speed:
+            # self.get_logger().info("Updating angles to next position.")
+            self.angles.interpolate(self.start_angles, self.target_angles, 1 / self.position_count)
 
-        # Debug
-        # msg = self.angles.to_servo_angles_msg()
-        # self.get_logger().info(
-        #     f"\n================ Angles ================\n"
-        #     f"       vertical        horizontal\n"
-        #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
-        #     f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
-        #     f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
-        #     f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
-        #     f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
-        #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
-        #     f"========================================"
-        # )
-        # msg = self.target_angles.to_servo_angles_msg()
-        # self.get_logger().info(
-        #     f"\n============= Target angles =============\n"
-        #     f"       vertical        horizontal\n"
-        #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
-        #     f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
-        #     f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
-        #     f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
-        #     f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
-        #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
-        #     f"========================================="
-        # )
+            # Debug
+            # msg = self.angles.to_servo_angles_msg()
+            # self.get_logger().info(
+            #     f"\n================ Angles ================\n"
+            #     f"       vertical        horizontal\n"
+            #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
+            #     f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
+            #     f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
+            #     f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
+            #     f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
+            #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
+            #     f"========================================"
+            # )
+            # msg = self.target_angles.to_servo_angles_msg()
+            # self.get_logger().info(
+            #     f"\n============= Target angles =============\n"
+            #     f"       vertical        horizontal\n"
+            #     f"A :    {msg.vert_a:8.3f}      {msg.horiz_a:8.3f}\n"
+            #     f"B :    {msg.vert_b:8.3f}      {msg.horiz_b:8.3f}\n"
+            #     f"C :    {msg.vert_c:8.3f}      {msg.horiz_c:8.3f}\n"
+            #     f"D :    {msg.vert_d:8.3f}      {msg.horiz_d:8.3f}\n"
+            #     f"E :    {msg.vert_e:8.3f}      {msg.horiz_e:8.3f}\n"
+            #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
+            #     f"========================================="
+            # )
+
+            self.output_counter = 0
+        else:
+            self.output_counter += 1
 
     def update_movement_state(self):
         # get normalized input
