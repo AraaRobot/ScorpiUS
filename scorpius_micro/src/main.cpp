@@ -4,6 +4,7 @@
 
 #include "comm.h"
 #include "control.h"
+#include "state_machine.h"
 
 void testLegJoints();
 void executeDebug();
@@ -18,20 +19,30 @@ void setup()
     delay(100);
 
     controlInit();
-    comm_init(Serial);
+    commInit(Serial);
     COMM_DEBUG("Initialization complete. Entering main loop.");
 
     static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::INIT_COMPLETE)};
-    comm_send(eSerialMsgType::INFO, infoPayload, 1);
+    commSend(eSerialMsgType::INFO, infoPayload, 1);
 }
 
 void loop()
 {
-    comm_process();
+    commProcess();
     sAngles angles;
-    if (comm_consume(angles))
+    eSerialMsgType type = commConsume(angles);
+
+    if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
     {
         processAngles(angles);
+    }
+    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
+    {
+        goHome();
+    }
+    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
+    {
+        // TODO: Implement reboot logic
     }
 
     static unsigned long lastUpdate = 0;
@@ -48,7 +59,7 @@ void loop()
     // Heartbeat at 2 Hz (every 500 ms)
     if (now - lastHeartbeat >= 500)
     {
-        comm_heartbeat();
+        commHeartbeat();
         lastHeartbeat = now;
     }
 }
