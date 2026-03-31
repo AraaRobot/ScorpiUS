@@ -9,15 +9,20 @@ from scorpius_main.msg import SerialStatus
 from scorpius_main.msg import SerialHeartbeat
 from scorpius_main.srv import SerialConfig
 from scorpius_main.srv import SerialPorts
+from scorpius_main.srv import ControllerState
 import serial
 import serial.tools.list_ports
 
+# Packet
 HEAD = 0xAA
 TAIL = 0xBB
+
+# Msg types
 COMMAND = 0x00
 ERROR = 0x02
 INFO = 0x01
 HEARTBEAT = 0x03
+STATE = 0x04
 
 INFO_TEXT = {
     0x01: "Init complete",
@@ -32,7 +37,13 @@ ERROR_TEXT = {
     0x05: "Invalid COMMAND (0x00) received",
     0x06: "Tried to send invalid command",
     0x07: "Invalid servo ID",
+    0x08: "Invalid state received",
 }
+
+# States
+HOME = 0x01
+RUNNING = 0x02
+REBOOT = 0x03
 
 
 class CommNode(Node):
@@ -70,6 +81,9 @@ class CommNode(Node):
         self.heartbeat_ok: bool = False
         self.heartbeat_sequence: int = 0
 
+        self.state_controller = self.create_service(
+            ControllerState, '/scorpius/state_controller', self.send_state)
+
         self.ser = None
         self.rx_buffer = bytearray()
 
@@ -78,13 +92,40 @@ class CommNode(Node):
             self.ser.close()
         super().destroy_node()
 
+    def serial_ready(self) -> bool:
+        return self.ser is not None and self.ser.is_open
+
+    def send_state(self, request: ControllerState.Request, response: ControllerState.Response) -> ControllerState.Response:
+        if not self.serial_ready():
+            self.get_logger().warning(
+                "Serial not open — dropping state controller message")
+            response.success = False
+            response.message = "Serial port not open"
+            return response
+
+        if request.state not in (HOME, RUNNING, REBOOT):
+            response.success = False
+            response.message = f"Invalid state {request.state}"
+            return response
+        try:
+            state_byte = int(request.state).to_bytes(
+                1, byteorder='little', signed=True)
+            self.ser.write(self.build_state_packet(state_byte))
+            response.success = True
+            response.message = f"Serial write successful"
+        except Exception as e:
+            self.get_logger().error(str(e))
+            response.success = False
+            response.message = str(e)
+        return response
+
     def CB_teleop(self, msg: ServoAngles) -> None:
-        if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
+        if not self.serial_ready():
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
             return
         try:
-            self.ser.write(self.build_packet(msg))
+            self.ser.write(self.build_command_packet(msg))
         except Exception as e:
             self.get_logger().error(str(e))
 
@@ -93,7 +134,7 @@ class CommNode(Node):
         angle = int(max(-90, min(90, angle)))
         return angle & 0xFF
 
-    def build_packet(self, msg: ServoAngles) -> bytes:
+    def build_command_packet(self, msg: ServoAngles) -> bytes:
         angles = [
             msg.vert_a,
             msg.vert_b,
@@ -117,6 +158,15 @@ class CommNode(Node):
 
         packet = bytes([HEAD, length, packet_type]) + \
             data + bytes([checksum, TAIL])
+        return packet
+
+    def build_state_packet(self, state: bytes) -> bytes:
+        packet_type = STATE
+
+        checksum = (packet_type + sum(state)) & 0xFF
+        length = 2 # 1 msg type + 1 msg content
+        packet = bytes([HEAD, length, packet_type]) + \
+            state + bytes([checksum, TAIL])
         return packet
 
     def handle_serial_config(self, request: SerialConfig.Request, response: SerialConfig.Response) -> SerialConfig.Response:
