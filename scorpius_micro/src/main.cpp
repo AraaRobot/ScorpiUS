@@ -46,7 +46,7 @@ void loop()
 
     static unsigned long lastUpdate = 0;
     unsigned long now = millis();
-    if (now - lastUpdate >= 20)  // ~50 Hz
+    if (now - lastUpdate >= 50)  // ~50 Hz
     {
         updatePosition();
         lastUpdate = now;

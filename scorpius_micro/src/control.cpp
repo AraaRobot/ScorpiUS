@@ -2,9 +2,14 @@
 #include <Adafruit_PWMServoDriver.h>
 
 // PCA9685 default address: 0x40
-static Adafruit_PWMServoDriver _driverModule;
+namespace
+{
+    Adafruit_PWMServoDriver _driverModule;
+    constexpr uint8_t DRIVER_ADRESS = 0x40;
 
-static sAngles _lastAngles;
+    sAngles _lastAngles;
+
+}  // namespace
 
 static constexpr eServo _servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eServo::VERT_A,
                                                                              eServo::VERT_B,
@@ -21,7 +26,7 @@ static constexpr eServo _servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eSe
 
 void controlInit()
 {
-    _driverModule = Adafruit_PWMServoDriver(0x40);
+    _driverModule = Adafruit_PWMServoDriver(DRIVER_ADRESS);
     _driverModule.begin();
     delay(100);
 
