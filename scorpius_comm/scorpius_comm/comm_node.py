@@ -93,7 +93,7 @@ class CommNode(Node):
         super().destroy_node()
 
     def serial_ready(self) -> bool:
-        return self.ser and self.ser.is_open
+        return self.ser is not None and self.ser.is_open
 
     def send_state(self, request: ControllerState.Request, response: ControllerState.Response) -> ControllerState.Response:
         if not self.serial_ready():

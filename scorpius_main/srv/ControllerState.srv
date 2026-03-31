@@ -1,4 +1,4 @@
-int8 state
+uint8 state
 
 ---
 bool success

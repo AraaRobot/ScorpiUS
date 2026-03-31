@@ -13,4 +13,4 @@ enum class eStates : uint8_t
 
 extern eStates controllerStateMachine;
 
-#endif  // define STATE_MACHINE_H
+#endif  // STATE_MACHINE_H
