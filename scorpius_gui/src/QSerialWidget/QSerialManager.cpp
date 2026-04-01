@@ -5,7 +5,7 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _node(node_)
 {
     _grid = new QGridLayout(this);
-    _button = new QPushButton("Connecter", this);
+    _button = new QPushButton("Connect", this);
     _refresh = new QPushButton(this);
     _label = new QLabel(this);
     _box = new QComboBox(this);
@@ -21,7 +21,7 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     _button->setFixedHeight(50);
 
-    _grid->setColumnStretch(0, 0.1);
+    _grid->setColumnStretch(0, 0);
     _grid->setColumnStretch(1, 4);
     _grid->setColumnStretch(2, 2);
     _grid->setRowStretch(0, 0);
@@ -89,6 +89,8 @@ void QSerialManager::serialPortsSlot(const std::vector<std::string>& port_name)
     _box->addItem("Choisir un port série");
     _box->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
 
+    RCLCPP_ERROR(_node->get_logger(), "The ports");
+
     if (!port_name.empty())
     {
         for (size_t s = 0; s < port_name.size(); s++)
@@ -140,24 +142,25 @@ void QSerialManager::connectButtonClicked()
         return;
     }
 
+    std::string selectedPort = _box->currentText().toStdString();
+
     rclcpp::Client<scorpius_main::srv::SerialConfig>::WeakPtr weakClient = _srv_config;
 
-    std::weak_ptr<QSerialManager> weakThis = weak_from_this();
+    QPointer<QSerialManager> thisPtr = this;
 
     _executor.addTask(
-        [weakClient, weakThis]()
+        [weakClient, thisPtr, selectedPort]()
         {
             rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr client = weakClient.lock();
-            std::shared_ptr widget = weakThis.lock();
 
             std::shared_ptr<scorpius_main::srv::SerialConfig::Request> request
                 = std::make_shared<scorpius_main::srv::SerialConfig::Request>();
 
-            request->port = widget->_box->currentText().toStdString();
+            request->port = selectedPort;
             request->timeout = 1;
             request->baud = 115200;
 
-            if (!client || !widget)
+            if (!client || !thisPtr)
             {
                 return;
             }
@@ -170,16 +173,16 @@ void QSerialManager::connectButtonClicked()
                 auto response = future.get();
                 if (response->result)
                 {
-                    emit widget->buttonFinishedSignal("Serial port connected with success\n");
+                    emit thisPtr->buttonFinishedSignal("Serial port connected with success\n");
                 }
                 else
                 {
-                    emit widget->buttonFinishedSignal("Serial port connection failed\n");
+                    emit thisPtr->buttonFinishedSignal("Serial port connection failed\n");
                 }
             }
             else
             {
-                emit widget->buttonFinishedSignal("Connect button service failed to respond in time\n");
+                emit thisPtr->buttonFinishedSignal("Connect button service failed to respond in time\n");
             }
         });
 }
@@ -193,18 +196,17 @@ void QSerialManager::buttonFinishedSlot(const std::string& message)
 void QSerialManager::refreshButtonClicked()
 {
     rclcpp::Client<scorpius_main::srv::SerialPorts>::WeakPtr weakClient = _srv_ports;
-    std::weak_ptr<QSerialManager> weakThis = weak_from_this();
+    QPointer<QSerialManager> thisPtr = this;
 
     _executor.addTask(
-        [weakClient, weakThis]()
+        [weakClient, thisPtr]()
         {
             rclcpp::Client<scorpius_main::srv::SerialPorts>::SharedPtr client = weakClient.lock();
-            std::shared_ptr widget = weakThis.lock();
 
             std::shared_ptr<scorpius_main::srv::SerialPorts::Request> request
                 = std::make_shared<scorpius_main::srv::SerialPorts::Request>();
 
-            if (!client || !widget)
+            if (!client || !thisPtr)
             {
                 return;
             }
@@ -213,17 +215,20 @@ void QSerialManager::refreshButtonClicked()
 
             std::future<std::shared_ptr<scorpius_main::srv::SerialPorts::Response>> future = std::move(futureAndRequest.future);
 
-            if (future.wait_for(std::chrono::milliseconds(1000)) == std::future_status::ready)
+            if (future.wait_for(std::chrono::milliseconds(2000)) == std::future_status::ready)
             {
                 auto response = future.get();
 
                 const std::vector<std::string> ports = response->ports;
 
-                emit widget->serialPortsSignal(ports);
+                emit thisPtr->serialPortsSignal(ports);
+
+                RCLCPP_INFO(thisPtr->_node->get_logger(), "Ports refreshed succesfully");
             }
             else
             {
-                emit widget->buttonFinishedSignal("Refresh button service failed to respond in time\n");
+                emit thisPtr->buttonFinishedSignal("Refresh button service failed to respond in time\n");
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "The server did not respond in time");
             }
         });
 }

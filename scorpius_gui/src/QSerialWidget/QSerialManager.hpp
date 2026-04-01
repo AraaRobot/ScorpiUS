@@ -6,9 +6,10 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QLabel>
-#include <QLineEdit>
 #include <QString>
 #include <QScrollArea>
+#include <QPointer>
+#include <array>
 
 #include <rclcpp/rclcpp.hpp>
 #include "scorpius_main/srv/serial_config.hpp"
@@ -17,16 +18,13 @@
 #include "scorpius_main/srv/serial_ports.hpp"
 #include "helpers/asyncExecutor.hpp"
 
-class QSerialManager : public QWidget, public std::enable_shared_from_this<QSerialManager>
+class QSerialManager : public QWidget
 {
     Q_OBJECT
 
-    static constexpr int ROWS = 2;
-    static constexpr int COLS = 3;
-
   public:
-  QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent);
-  ~QSerialManager();
+    QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent);
+    ~QSerialManager();
 
   private:
     void CB_subStatus(const scorpius_main::msg::SerialStatus& msg_);
@@ -35,8 +33,6 @@ class QSerialManager : public QWidget, public std::enable_shared_from_this<QSeri
 
     std::array<QString, 32> last_message;
     int current_status_index = 0;
-    int current_port_index = 0;
-    bool change_connection = false;
 
     std::shared_ptr<rclcpp::Node> _node;
 
@@ -56,17 +52,17 @@ class QSerialManager : public QWidget, public std::enable_shared_from_this<QSeri
     rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _srv_config;
 
   signals:
-        void serialPortsSignal(const std::vector<std::string>& port_name);
-        void serialStatusSignal(const std::string& message, bool is_connected);
-        void buttonFinishedSignal(const std::string& message);
-    
+    void serialPortsSignal(const std::vector<std::string>& port_name);
+    void serialStatusSignal(const std::string& message, bool is_connected);
+    void buttonFinishedSignal(const std::string& message);
+
   private slots:
-        void serialPortsSlot(const std::vector<std::string>& port_name);
-        void serialStatusSlot(const std::string& message, bool is_connected);
-        void comboBoxIndexChanged(int index);
-        void connectButtonClicked();
-        void refreshButtonClicked();
-        void buttonFinishedSlot(const std::string& message);
+    void serialPortsSlot(const std::vector<std::string>& port_name);
+    void serialStatusSlot(const std::string& message, bool is_connected);
+    void comboBoxIndexChanged(int index);
+    void connectButtonClicked();
+    void refreshButtonClicked();
+    void buttonFinishedSlot(const std::string& message);
 };
 
 #endif
