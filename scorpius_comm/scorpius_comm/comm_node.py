@@ -102,6 +102,13 @@ class CommNode(Node):
             response.success = False
             response.message = "Serial port not open"
             return response
+        
+        if not self.heartbeat_ok:
+            self.get_logger().warning(
+                "No heartbeat detected — dropping state controller message")
+            response.success = False
+            response.message = "No heartbeat detected"
+            return response
 
         if request.state not in (HOME, RUNNING, REBOOT):
             response.success = False
@@ -123,6 +130,10 @@ class CommNode(Node):
         if not self.serial_ready():
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
+            return
+        if not self.heartbeat_ok:
+            self.get_logger().warning(
+                "No heartbeat - dropping teleop message", throttle_duration_sec=30)
             return
         try:
             self.ser.write(self.build_command_packet(msg))
