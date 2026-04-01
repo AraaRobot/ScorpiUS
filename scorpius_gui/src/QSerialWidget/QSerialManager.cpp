@@ -56,23 +56,23 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     setLayout(_grid);
 
-    connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot);
-    connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot);
+    connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot, Qt::QueuedConnection);
+    connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot, Qt::QueuedConnection);
     connect(_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::comboBoxIndexChanged);
     connect(_button, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_refresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
-    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot);
+    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot, Qt::QueuedConnection);
 
-    _srv_ports = _node->create_client<scorpius_main::srv::SerialPorts>("/scorpius/serial/ports");
+    _srv_ports = _node->create_client<scorpius_main::srv::SerialPorts>("/scorpius/serial_ports");
     _sub_status
-        = _node->create_subscription<scorpius_main::msg::SerialStatus>("/scorpius/serial/status",
+        = _node->create_subscription<scorpius_main::msg::SerialStatus>("/scorpius/serial_status",
                                                                        10,
                                                                        [this](const scorpius_main::msg::SerialStatus& msg_)
                                                                        {
                                                                            this->CB_subStatus(msg_);
                                                                        });
 
-    _srv_config = _node->create_client<scorpius_main::srv::SerialConfig>("/scorpius/serial/config");
+    _srv_config = _node->create_client<scorpius_main::srv::SerialConfig>("/scorpius/serial_config");
 }
 
 QSerialManager::~QSerialManager() {}
