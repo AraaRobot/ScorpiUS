@@ -4,6 +4,7 @@ import math
 
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import Joy
+from scorpius_main.msg import Step
 
 from .Vector2 import Vector2
 from .HexapodAngles import HexapodAngles
@@ -39,17 +40,19 @@ class TeleopNode(Node):
 
         # publisher/subscriber
         self.publisher_angles = self.create_publisher(ServoAngles, '/scorpius/teleop', 10)
+        self.publisher_step = self.create_publisher(Step, '/scorpius/teleop/step', 10)
         self.subscriber_input = self.create_subscription(Joy, '/scorpius/joy', self.subscriber_callback, 10)
 
         # subscribe members
         self.input_vector = Vector2(0, 0)
-        self.speed = self.MAX_SPEED / 2 # speed in positions / second
+        self.speed = self.MIN_SPEED # speed in positions / second
         self.step = self.MAX_STEP / 2 # step of the hexapod in mm
 
         # callbacks
         self.OUTPUT_RATE = 160 # rate of the output callback in Hz
         self.input_timer = self.create_timer(0.5, self.input_callback) # dummy timer to set the period of the subscriber callback
         self.output_timer = self.create_timer(1/self.OUTPUT_RATE, self.output_callback)
+        self.step_output_timer = self.create_timer(0.1, self.step_output_callback)
 
         # publish members
         self.angles = HexapodAngles() # leg A is left from head, rest goes counterclockwise
@@ -99,6 +102,11 @@ class TeleopNode(Node):
         # publish calculations
         self.publisher_callback()
 
+    def step_output_callback(self):
+        msg = Step()
+        msg.step = self.step
+        self.publisher_step.publish(msg)
+        
     def publisher_callback(self):
         # send msg
         #self.angles.clamp(self.MIN_VERT_ANGLE, self.MAX_VERT_ANGLE, -self.MAX_ABS_HORIZ_ANGLE, self.MAX_ABS_HORIZ_ANGLE)
@@ -384,6 +392,11 @@ class TeleopNode(Node):
                 case _:
                     self.get_logger().error(f"Movement state: {state} not found.")
                     return
+            self.get_logger().info(f"Movement state: {self.movement_state}, new position state: {self.position_state}")
+                
+        # returning to neutral position, set speed to max
+        if self.movement_state == 0:
+            self.speed = self.MAX_SPEED
         
         # interpolate angles towards target angles based on speed
         if self.output_counter * 1/self.OUTPUT_RATE >= 1/self.speed:
