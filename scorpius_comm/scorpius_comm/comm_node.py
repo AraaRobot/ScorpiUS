@@ -88,12 +88,25 @@ class CommNode(Node):
         self.rx_buffer = bytearray()
 
     def destroy_node(self):
-        if getattr(self, 'ser', None) and getattr(self.ser, 'is_open', False):
+        if self.serial_ready():
             self.ser.close()
         super().destroy_node()
 
     def serial_ready(self) -> bool:
         return self.ser is not None and self.ser.is_open
+
+    def _disable_heartbeat_and_flush(self) -> None:
+        if self.serial_ready():
+            try:
+                self.ser.reset_input_buffer()
+                self.ser.flush()
+                self.ser.reset_output_buffer()
+            except Exception as e:
+                self.get_logger().warning(f"Serial flush failed: {e}")        
+        self.heartbeat_ok = False
+        self.publish_heartbeat(False)
+        self.rx_buffer.clear()
+        self.get_logger().info("Heartbeat disabled and serial buffer flushed")
 
     def send_state(self, request: ControllerState.Request, response: ControllerState.Response) -> ControllerState.Response:
         if not self.serial_ready():
@@ -102,7 +115,7 @@ class CommNode(Node):
             response.success = False
             response.message = "Serial port not open"
             return response
-        
+
         if not self.heartbeat_ok:
             self.get_logger().warning(
                 "No heartbeat detected — dropping state controller message")
@@ -118,6 +131,8 @@ class CommNode(Node):
             state_byte = int(request.state).to_bytes(
                 1, byteorder='little', signed=True)
             self.ser.write(self.build_state_packet(state_byte))
+            if (request.state is REBOOT):
+                self._disable_heartbeat_and_flush()
             response.success = True
             response.message = f"Serial write successful"
         except Exception as e:
@@ -175,32 +190,45 @@ class CommNode(Node):
         packet_type = STATE
 
         checksum = (packet_type + sum(state)) & 0xFF
-        length = 2 # 1 msg type + 1 msg content
+        length = 2  # 1 msg type + 1 msg content
         packet = bytes([HEAD, length, packet_type]) + \
             state + bytes([checksum, TAIL])
         return packet
 
     def handle_serial_config(self, request: SerialConfig.Request, response: SerialConfig.Response) -> SerialConfig.Response:
-        try:
-            if getattr(self, 'ser', None) and self.ser.is_open:
-                self.get_logger().info("Serial already open; reopening with new config")
+
+        if request.command == 0:
+            try:
+                if self.serial_ready():
+                    self.get_logger().info("Serial already open; reopening with new config")
+                    self.ser.close()
+
+                self.ser = serial.Serial(
+                    request.port,
+                    int(request.baud),
+                    timeout=float(request.timeout)
+                )
+                self.ser.reset_input_buffer()
+
+                response.result = True
+                response.response = f"Opened {request.port} @ {request.baud}"
+                self.get_logger().info(response.response)
+
+            except (serial.SerialException, FileNotFoundError) as e:
+                response.result = False
+                response.response = str(e)
+                self.get_logger().error(response.response)
+        elif request.command == 1:
+            if self.serial_ready():
                 self.ser.close()
-
-            self.ser = serial.Serial(
-                request.port,
-                int(request.baud),
-                timeout=float(request.timeout)
-            )
-            self.ser.reset_input_buffer()
-
-            response.result = True
-            response.response = f"Opened {request.port} @ {request.baud}"
-            self.get_logger().info(response.response)
-
-        except (serial.SerialException, FileNotFoundError) as e:
+                response.result = True
+                response.response = "Closed port"
+            else:
+                response.result = False
+                response.response = "Port was already closed"
+        else:
             response.result = False
-            response.response = str(e)
-            self.get_logger().error(response.response)
+            response.response = "Wrong command type"
 
         return response
 
