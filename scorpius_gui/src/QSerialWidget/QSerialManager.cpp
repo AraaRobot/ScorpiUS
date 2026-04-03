@@ -214,7 +214,7 @@ void QSerialManager::refreshButtonClicked()
             if (future.wait_for(std::chrono::milliseconds(2 * WAIT_TIME)) == std::future_status::ready)
             {
                 auto response = future.get();
-                
+
                 QStringList portList;
 
                 for (const std::string& p : response->ports)
