@@ -1,13 +1,13 @@
 #include "QSerialManager.hpp"
 
-QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent):
-    QWidget(parent),
+QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
+    QWidget(parent_),
     _node(node_)
 {
     _grid = new QGridLayout(this);
     _pb_connect = new QPushButton("Connect", this);
     _pb_refresh = new QPushButton(this);
-    _label = new QLabel(this);
+    _message_display = new QTextEdit(this);
     _combo_box = new QComboBox(this);
     _scroll_area = new QScrollArea(this);
 
@@ -21,6 +21,10 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     _pb_connect->setFixedHeight(50);
 
+    _message_display->setReadOnly(true);
+    _message_display->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    _message_display->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     _grid->setColumnStretch(0, 0);
     _grid->setColumnStretch(1, 4);
     _grid->setColumnStretch(2, 2);
@@ -30,109 +34,89 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _grid->addWidget(_pb_refresh, 0, 0);
     _grid->addWidget(_combo_box, 0, 1);
     _grid->addWidget(_pb_connect, 0, 2);
-    _grid->addWidget(_scroll_area, 1, 0, 1, 3);
-
-    _label->setText(" ");
-
-    _scroll_area->setWidget(_label);
-    _scroll_area->setWidgetResizable(true);
-    _scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    _grid->addWidget(_message_display, 1, 0, 1, 3);
 
     QFont boxFont = _combo_box->font();
-    boxFont.setPointSize(24);
+    boxFont.setPointSize(BOX_FONT_SIZE);
     _combo_box->setFont(boxFont);
 
     QFont buttonFont = _pb_connect->font();
-    buttonFont.setPointSize(24);
+    buttonFont.setPointSize(BUTTON_FONT_SIZE);
     _pb_connect->setFont(buttonFont);
 
     QFont refreshFont = _pb_refresh->font();
-    refreshFont.setPointSize(24);
+    refreshFont.setPointSize(BUTTON_FONT_SIZE);
     _pb_refresh->setFont(refreshFont);
 
-    QFont labelFont = _label->font();
-    labelFont.setPointSize(12);
-    _label->setFont(labelFont);
+    QFont displayFont = _message_display->font();
+    displayFont.setPointSize(DISPLAY_FONT_SIZE);
+    _message_display->setFont(displayFont);
 
     setLayout(_grid);
 
     connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot, Qt::QueuedConnection);
     connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot, Qt::QueuedConnection);
-    connect(_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::comboBoxIndexChanged);
     connect(_pb_connect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_pb_refresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
     connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot, Qt::QueuedConnection);
 
-    _srv_ports = _node->create_client<scorpius_main::srv::SerialPorts>("/scorpius/serial_ports");
     _sub_status
-        = _node->create_subscription<scorpius_main::msg::SerialStatus>("/scorpius/serial_status",
+        = _node->create_subscription<scorpius_main::msg::SerialStatus>(STATUS_MESSAGE_NAME,
                                                                        10,
                                                                        [this](const scorpius_main::msg::SerialStatus& msg_)
                                                                        {
                                                                            this->CB_subStatus(msg_);
                                                                        });
 
-    _srv_config = _node->create_client<scorpius_main::srv::SerialConfig>("/scorpius/serial_config");
+    _srv_ports = _node->create_client<scorpius_main::srv::SerialPorts>(PORTS_SERVICE_NAME);
+    _srv_config = _node->create_client<scorpius_main::srv::SerialConfig>(CONFIG_SERVICE_NAME);
 }
-
-QSerialManager::~QSerialManager() {}
 
 void QSerialManager::CB_subStatus(const scorpius_main::msg::SerialStatus& msg_)
 {
-    emit this->serialStatusSignal(msg_.message, msg_.ok);
+    emit this->serialStatusSignal(msg_);
 }
 
-void QSerialManager::serialPortsSlot(const std::vector<std::string>& port_name)
+void QSerialManager::serialPortsSlot(const std::vector<std::string>& portName_)
 {
     _combo_box->clear();
+    _combo_box->addItem("Select a port");
 
-    _combo_box->addItem("Choisir un port série");
-    _combo_box->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
+    for (const std::string& port : portName_)
+        _combo_box->addItem(QString::fromStdString(port));
 
-    RCLCPP_ERROR(_node->get_logger(), "The ports");
+    _combo_box->setEditable(true);
+    _combo_box->lineEdit()->setAlignment(Qt::AlignCenter);
+    _combo_box->setEditable(false);
+}
 
-    if (!port_name.empty())
+void QSerialManager::serialStatusSlot(const scorpius_main::msg::SerialStatus& message_)
+{
+    const QString portMessage = QString::fromStdString(message_.message);
+
+    if (message_.ok)
     {
-        for (size_t s = 0; s < port_name.size(); s++)
-        {
-            _combo_box->addItem(QString::fromStdString(port_name.at(s)));
-            _combo_box->setItemData(s + 1, Qt::AlignCenter, Qt::TextAlignmentRole);
-        }
+        emit this->writeMessage(portMessage);
     }
 }
 
-void QSerialManager::serialStatusSlot(const std::string& message, bool is_connected)
+void QSerialManager::writeMessage(const QString& message_)
 {
-    const QString port_message = QString::fromStdString(message);
+    QTextCursor cursor = _message_display->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    _message_display->setTextCursor(cursor);
+    _message_display->insertPlainText(message_ + "\n");
 
-    if (is_connected)
+    QTextDocument* doc = _message_display->document();
+    while (doc->blockCount() > ARRAY_SIZE)
     {
-        emit this->writeMessage(port_message);
+        cursor.movePosition(QTextCursor::End);
+        cursor.select(QTextCursor::BlockUnderCursor);
+        cursor.removeSelectedText();
+        cursor.deletePreviousChar();
     }
-}
 
-void QSerialManager::writeMessage(const QString& message)
-{
-    last_message[current_status_index] = message;
-    current_status_index = (current_status_index + 1) % last_message.size();
-
-    _label->setText(message + "\n");
-    _label->setAlignment(Qt::AlignLeft);
-}
-
-void QSerialManager::comboBoxIndexChanged(int index)
-{
-    if (index == 0)
-    {
-        _label->setText(" ");
-        _label->setAlignment(Qt::AlignCenter);
-    }
-    else
-    {
-        _pb_connect->show();
-
-        _label->setAlignment(Qt::AlignLeft);
-    }
+    _message_display->moveCursor(QTextCursor::Start);
 }
 
 void QSerialManager::connectButtonClicked()
@@ -153,6 +137,18 @@ void QSerialManager::connectButtonClicked()
         {
             rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr client = weakClient.lock();
 
+            if (!client || !thisPtr)
+            {
+                return;
+            }
+
+            if (!client->wait_for_service(std::chrono::milliseconds(WAIT_TIME)))
+            {
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "SerialConnfig's service is not available");
+                emit thisPtr->buttonFinishedSignal("Serial config service not available\n");
+                return;
+            }
+
             std::shared_ptr<scorpius_main::srv::SerialConfig::Request> request
                 = std::make_shared<scorpius_main::srv::SerialConfig::Request>();
 
@@ -160,15 +156,10 @@ void QSerialManager::connectButtonClicked()
             request->timeout = 1;
             request->baud = 115200;
 
-            if (!client || !thisPtr)
-            {
-                return;
-            }
-
             auto futureAndRequest = client->async_send_request(request);
             std::future<std::shared_ptr<scorpius_main::srv::SerialConfig::Response>> future = std::move(futureAndRequest.future);
 
-            if (future.wait_for(std::chrono::milliseconds(1000)) == std::future_status::ready)
+            if (future.wait_for(std::chrono::milliseconds(WAIT_TIME)) == std::future_status::ready)
             {
                 auto response = future.get();
                 if (response->result)
@@ -187,10 +178,10 @@ void QSerialManager::connectButtonClicked()
         });
 }
 
-void QSerialManager::buttonFinishedSlot(const std::string& message)
+void QSerialManager::buttonFinishedSlot(const std::string& message_)
 {
-    const QString port_message = QString::fromStdString(message);
-    emit this->writeMessage(port_message);
+    const QString portMessage = QString::fromStdString(message_);
+    emit this->writeMessage(portMessage);
 }
 
 void QSerialManager::refreshButtonClicked()
@@ -203,25 +194,30 @@ void QSerialManager::refreshButtonClicked()
         {
             rclcpp::Client<scorpius_main::srv::SerialPorts>::SharedPtr client = weakClient.lock();
 
-            std::shared_ptr<scorpius_main::srv::SerialPorts::Request> request
-                = std::make_shared<scorpius_main::srv::SerialPorts::Request>();
-
             if (!client || !thisPtr)
             {
                 return;
             }
 
+            if (!client->wait_for_service(std::chrono::milliseconds(WAIT_TIME)))
+            {
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "SerialPort's service is not available");
+                emit thisPtr->buttonFinishedSignal("Serial ports service not available\n");
+                return;
+            }
+
+            std::shared_ptr<scorpius_main::srv::SerialPorts::Request> request
+                = std::make_shared<scorpius_main::srv::SerialPorts::Request>();
+
             auto futureAndRequest = client->async_send_request(request);
 
             std::future<std::shared_ptr<scorpius_main::srv::SerialPorts::Response>> future = std::move(futureAndRequest.future);
 
-            if (future.wait_for(std::chrono::milliseconds(2000)) == std::future_status::ready)
+            if (future.wait_for(std::chrono::milliseconds(2 * WAIT_TIME)) == std::future_status::ready)
             {
                 auto response = future.get();
 
-                const std::vector<std::string> ports = response->ports;
-
-                emit thisPtr->serialPortsSignal(ports);
+                emit thisPtr->serialPortsSignal(std::move(response->ports));
 
                 RCLCPP_INFO(thisPtr->_node->get_logger(), "Ports refreshed succesfully");
             }

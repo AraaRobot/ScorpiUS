@@ -1,47 +1,60 @@
 #ifndef QSERIAL_MANAGER_HPP
 #define QSERIAL_MANAGER_HPP
 
-#include <QWidget>
-#include <QGridLayout>
-#include <QComboBox>
-#include <QPushButton>
-#include <QLabel>
-#include <QString>
-#include <QScrollArea>
-#include <QPointer>
-#include <array>
-
-#include <rclcpp/rclcpp.hpp>
+#include "helpers/asyncExecutor.hpp"
 #include "scorpius_main/srv/serial_config.hpp"
 #include "scorpius_main/msg/serial_heartbeat.hpp"
 #include "scorpius_main/msg/serial_status.hpp"
 #include "scorpius_main/srv/serial_ports.hpp"
-#include "helpers/asyncExecutor.hpp"
+
+#include <rclcpp/rclcpp.hpp>
+
+#include <array>
+#include <QComboBox>
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QPointer>
+#include <QPushButton>
+#include <QString>
+#include <QScrollArea>
+#include <QTextEdit>
+#include <QWidget>
 
 class QSerialManager : public QWidget
 {
     Q_OBJECT
 
   public:
-    QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent);
-    ~QSerialManager();
+    QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_ = nullptr);
 
   private:
+    static constexpr int ARRAY_SIZE = 32;
+
+    static constexpr int BOX_FONT_SIZE = 24;
+    static constexpr int BUTTON_FONT_SIZE = 24;
+    static constexpr int DISPLAY_FONT_SIZE = 12;
+
+    static constexpr int WAIT_TIME = 1000;
+
+    static constexpr const char* STATUS_MESSAGE_NAME = "/scorpius/serial_status";
+    static constexpr const char* PORTS_SERVICE_NAME = "/scorpius/serial_ports";
+    static constexpr const char* CONFIG_SERVICE_NAME = "/scorpius/serial_config";
+
     void CB_subStatus(const scorpius_main::msg::SerialStatus& msg_);
 
-    void writeMessage(const QString& message);
+    void writeMessage(const QString& message_);
 
-    std::array<QString, 32> last_message;
-    int current_status_index = 0;
+    std::array<QString, ARRAY_SIZE> _last_message;
+    int _current_status_index = 0;
 
     std::shared_ptr<rclcpp::Node> _node;
 
-    QGridLayout* _grid;
-    QComboBox* _combo_box;
-    QPushButton* _pb_connect;
-    QPushButton* _pb_refresh;
-    QLabel* _label;
-    QScrollArea* _scroll_area;
+    QGridLayout* _grid{nullptr};
+    QComboBox* _combo_box{nullptr};
+    QPushButton* _pb_connect{nullptr};
+    QPushButton* _pb_refresh{nullptr};
+    QTextEdit* _message_display{nullptr};
+    QScrollArea* _scroll_area{nullptr};
 
     AsyncExecutor _executor = AsyncExecutor();
 
@@ -52,17 +65,16 @@ class QSerialManager : public QWidget
     rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _srv_config;
 
   signals:
-    void serialPortsSignal(const std::vector<std::string>& port_name);
-    void serialStatusSignal(const std::string& message, bool is_connected);
-    void buttonFinishedSignal(const std::string& message);
+    void serialPortsSignal(const std::vector<std::string>& port_name_);
+    void serialStatusSignal(const scorpius_main::msg::SerialStatus& message_);
+    void buttonFinishedSignal(const std::string& message_);
 
   private slots:
-    void serialPortsSlot(const std::vector<std::string>& port_name);
-    void serialStatusSlot(const std::string& message, bool is_connected);
-    void comboBoxIndexChanged(int index);
+    void serialPortsSlot(const std::vector<std::string>& port_name_);
+    void serialStatusSlot(const scorpius_main::msg::SerialStatus& message_);
     void connectButtonClicked();
     void refreshButtonClicked();
-    void buttonFinishedSlot(const std::string& message);
+    void buttonFinishedSlot(const std::string& message_);
 };
 
 #endif
