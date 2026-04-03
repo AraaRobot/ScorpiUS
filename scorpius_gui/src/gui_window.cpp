@@ -21,7 +21,6 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     this->addTab(_controllerManager, "Controller");
     this->addTab(_serialManager, "Serial");
 
-
     QApplication::instance()->installEventFilter(this);
 }
 
