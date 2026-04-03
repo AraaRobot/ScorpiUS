@@ -56,21 +56,12 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     setLayout(_grid);
 
-<<<<<<< Updated upstream
     connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot, Qt::QueuedConnection);
     connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot, Qt::QueuedConnection);
-    connect(_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::comboBoxIndexChanged);
-    connect(_button, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
-    connect(_refresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
-    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot, Qt::QueuedConnection);
-=======
-    connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot);
-    connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot);
     connect(_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::comboBoxIndexChanged);
     connect(_pb_connect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_pb_refresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
-    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot);
->>>>>>> Stashed changes
+    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot, Qt::QueuedConnection);
 
     _srv_ports = _node->create_client<scorpius_main::srv::SerialPorts>("/scorpius/serial_ports");
     _sub_status
