@@ -5,21 +5,21 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _node(node_)
 {
     _grid = new QGridLayout(this);
-    _button = new QPushButton("Connect", this);
-    _refresh = new QPushButton(this);
+    _pb_connect = new QPushButton("Connect", this);
+    _pb_refresh = new QPushButton(this);
     _label = new QLabel(this);
-    _box = new QComboBox(this);
-    _scroll = new QScrollArea(this);
+    _combo_box = new QComboBox(this);
+    _scroll_area = new QScrollArea(this);
 
-    _box->addItem("Choose a serial port");
+    _combo_box->addItem("Choose a serial port");
 
-    _box->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
-    _box->setFixedHeight(50);
+    _combo_box->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
+    _combo_box->setFixedHeight(50);
 
-    _refresh->setText("\u21BB");
-    _refresh->setFixedHeight(50);
+    _pb_refresh->setText("\u21BB");
+    _pb_refresh->setFixedHeight(50);
 
-    _button->setFixedHeight(50);
+    _pb_connect->setFixedHeight(50);
 
     _grid->setColumnStretch(0, 0);
     _grid->setColumnStretch(1, 4);
@@ -27,28 +27,28 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _grid->setRowStretch(0, 0);
     _grid->setRowStretch(1, 1);
 
-    _grid->addWidget(_refresh, 0, 0);
-    _grid->addWidget(_box, 0, 1);
-    _grid->addWidget(_button, 0, 2);
-    _grid->addWidget(_scroll, 1, 0, 1, 3);
+    _grid->addWidget(_pb_refresh, 0, 0);
+    _grid->addWidget(_combo_box, 0, 1);
+    _grid->addWidget(_pb_connect, 0, 2);
+    _grid->addWidget(_scroll_area, 1, 0, 1, 3);
 
     _label->setText(" ");
 
-    _scroll->setWidget(_label);
-    _scroll->setWidgetResizable(true);
-    _scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    _scroll_area->setWidget(_label);
+    _scroll_area->setWidgetResizable(true);
+    _scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    QFont boxFont = _box->font();
+    QFont boxFont = _combo_box->font();
     boxFont.setPointSize(24);
-    _box->setFont(boxFont);
+    _combo_box->setFont(boxFont);
 
-    QFont buttonFont = _button->font();
+    QFont buttonFont = _pb_connect->font();
     buttonFont.setPointSize(24);
-    _button->setFont(buttonFont);
+    _pb_connect->setFont(buttonFont);
 
-    QFont refreshFont = _refresh->font();
+    QFont refreshFont = _pb_refresh->font();
     refreshFont.setPointSize(24);
-    _refresh->setFont(refreshFont);
+    _pb_refresh->setFont(refreshFont);
 
     QFont labelFont = _label->font();
     labelFont.setPointSize(12);
@@ -56,12 +56,21 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     setLayout(_grid);
 
+<<<<<<< Updated upstream
     connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot, Qt::QueuedConnection);
     connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot, Qt::QueuedConnection);
     connect(_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::comboBoxIndexChanged);
     connect(_button, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_refresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
     connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot, Qt::QueuedConnection);
+=======
+    connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot);
+    connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot);
+    connect(_combo_box, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::comboBoxIndexChanged);
+    connect(_pb_connect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
+    connect(_pb_refresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
+    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::buttonFinishedSlot);
+>>>>>>> Stashed changes
 
     _srv_ports = _node->create_client<scorpius_main::srv::SerialPorts>("/scorpius/serial_ports");
     _sub_status
@@ -84,10 +93,10 @@ void QSerialManager::CB_subStatus(const scorpius_main::msg::SerialStatus& msg_)
 
 void QSerialManager::serialPortsSlot(const std::vector<std::string>& port_name)
 {
-    _box->clear();
+    _combo_box->clear();
 
-    _box->addItem("Choisir un port série");
-    _box->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
+    _combo_box->addItem("Choisir un port série");
+    _combo_box->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
 
     RCLCPP_ERROR(_node->get_logger(), "The ports");
 
@@ -95,8 +104,8 @@ void QSerialManager::serialPortsSlot(const std::vector<std::string>& port_name)
     {
         for (size_t s = 0; s < port_name.size(); s++)
         {
-            _box->addItem(QString::fromStdString(port_name.at(s)));
-            _box->setItemData(s + 1, Qt::AlignCenter, Qt::TextAlignmentRole);
+            _combo_box->addItem(QString::fromStdString(port_name.at(s)));
+            _combo_box->setItemData(s + 1, Qt::AlignCenter, Qt::TextAlignmentRole);
         }
     }
 }
@@ -129,7 +138,7 @@ void QSerialManager::comboBoxIndexChanged(int index)
     }
     else
     {
-        _button->show();
+        _pb_connect->show();
 
         _label->setAlignment(Qt::AlignLeft);
     }
@@ -137,12 +146,12 @@ void QSerialManager::comboBoxIndexChanged(int index)
 
 void QSerialManager::connectButtonClicked()
 {
-    if (_box->currentIndex() == 0)
+    if (_combo_box->currentIndex() == 0)
     {
         return;
     }
 
-    std::string selectedPort = _box->currentText().toStdString();
+    std::string selectedPort = _combo_box->currentText().toStdString();
 
     rclcpp::Client<scorpius_main::srv::SerialConfig>::WeakPtr weakClient = _srv_config;
 

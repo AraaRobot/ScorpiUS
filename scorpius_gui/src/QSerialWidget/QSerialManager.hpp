@@ -37,11 +37,11 @@ class QSerialManager : public QWidget
     std::shared_ptr<rclcpp::Node> _node;
 
     QGridLayout* _grid;
-    QComboBox* _box;
-    QPushButton* _button;
-    QPushButton* _refresh;
+    QComboBox* _combo_box;
+    QPushButton* _pb_connect;
+    QPushButton* _pb_refresh;
     QLabel* _label;
-    QScrollArea* _scroll;
+    QScrollArea* _scroll_area;
 
     AsyncExecutor _executor = AsyncExecutor();
 
