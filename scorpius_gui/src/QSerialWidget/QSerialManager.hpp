@@ -9,16 +9,18 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <array>
 #include <QComboBox>
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QPointer>
 #include <QPushButton>
 #include <QString>
-#include <QScrollArea>
 #include <QTextEdit>
 #include <QWidget>
+
+#include <array>
+#include <string>
+#include <vector>
 
 class QSerialManager : public QWidget
 {
@@ -44,9 +46,6 @@ class QSerialManager : public QWidget
 
     void writeMessage(const QString& message_);
 
-    std::array<QString, ARRAY_SIZE> _last_message;
-    int _current_status_index = 0;
-
     std::shared_ptr<rclcpp::Node> _node;
 
     QGridLayout* _grid{nullptr};
@@ -54,7 +53,6 @@ class QSerialManager : public QWidget
     QPushButton* _pb_connect{nullptr};
     QPushButton* _pb_refresh{nullptr};
     QTextEdit* _message_display{nullptr};
-    QScrollArea* _scroll_area{nullptr};
 
     AsyncExecutor _executor = AsyncExecutor();
 
@@ -65,16 +63,16 @@ class QSerialManager : public QWidget
     rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _srv_config;
 
   signals:
-    void serialPortsSignal(const std::vector<std::string>& port_name_);
+    void serialPortsSignal(const QStringList& port_name_);
     void serialStatusSignal(const scorpius_main::msg::SerialStatus& message_);
-    void buttonFinishedSignal(const std::string& message_);
+    void buttonFinishedSignal(const QString& message_);
 
   private slots:
-    void serialPortsSlot(const std::vector<std::string>& port_name_);
+    void serialPortsSlot(const QStringList& port_name_);
     void serialStatusSlot(const scorpius_main::msg::SerialStatus& message_);
     void connectButtonClicked();
     void refreshButtonClicked();
-    void buttonFinishedSlot(const std::string& message_);
+    void buttonFinishedSlot(const QString& message_);
 };
 
 #endif

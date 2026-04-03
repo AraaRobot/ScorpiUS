@@ -9,7 +9,6 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _pb_refresh = new QPushButton(this);
     _message_display = new QTextEdit(this);
     _combo_box = new QComboBox(this);
-    _scroll_area = new QScrollArea(this);
 
     _combo_box->addItem("Choose a serial port");
 
@@ -54,6 +53,8 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     setLayout(_grid);
 
+    qRegisterMetaType<scorpius_main::msg::SerialStatus>("scorpius_main::msg::SerialStatus");
+
     connect(this, &QSerialManager::serialPortsSignal, this, &QSerialManager::serialPortsSlot, Qt::QueuedConnection);
     connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot, Qt::QueuedConnection);
     connect(_pb_connect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
@@ -77,13 +78,13 @@ void QSerialManager::CB_subStatus(const scorpius_main::msg::SerialStatus& msg_)
     emit this->serialStatusSignal(msg_);
 }
 
-void QSerialManager::serialPortsSlot(const std::vector<std::string>& portName_)
+void QSerialManager::serialPortsSlot(const QStringList& portName_)
 {
     _combo_box->clear();
     _combo_box->addItem("Select a port");
 
-    for (const std::string& port : portName_)
-        _combo_box->addItem(QString::fromStdString(port));
+    for (const QString& port : portName_)
+        _combo_box->addItem(port);
 
     _combo_box->setEditable(true);
     _combo_box->lineEdit()->setAlignment(Qt::AlignCenter);
@@ -94,10 +95,7 @@ void QSerialManager::serialStatusSlot(const scorpius_main::msg::SerialStatus& me
 {
     const QString portMessage = QString::fromStdString(message_.message);
 
-    if (message_.ok)
-    {
-        emit this->writeMessage(portMessage);
-    }
+    emit this->writeMessage(portMessage);
 }
 
 void QSerialManager::writeMessage(const QString& message_)
@@ -144,7 +142,7 @@ void QSerialManager::connectButtonClicked()
 
             if (!client->wait_for_service(std::chrono::milliseconds(WAIT_TIME)))
             {
-                RCLCPP_ERROR(thisPtr->_node->get_logger(), "SerialConnfig's service is not available");
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "SerialConfig's service is not available");
                 emit thisPtr->buttonFinishedSignal("Serial config service not available\n");
                 return;
             }
@@ -178,9 +176,9 @@ void QSerialManager::connectButtonClicked()
         });
 }
 
-void QSerialManager::buttonFinishedSlot(const std::string& message_)
+void QSerialManager::buttonFinishedSlot(const QString& message_)
 {
-    const QString portMessage = QString::fromStdString(message_);
+    const QString portMessage = message_;
     emit this->writeMessage(portMessage);
 }
 
@@ -216,10 +214,16 @@ void QSerialManager::refreshButtonClicked()
             if (future.wait_for(std::chrono::milliseconds(2 * WAIT_TIME)) == std::future_status::ready)
             {
                 auto response = future.get();
+                
+                QStringList portList;
 
-                emit thisPtr->serialPortsSignal(std::move(response->ports));
+                for (const std::string& p : response->ports)
+                    portList.append(QString::fromStdString(p));
 
-                RCLCPP_INFO(thisPtr->_node->get_logger(), "Ports refreshed succesfully");
+                emit thisPtr->serialPortsSignal(portList);
+                emit thisPtr->serialPortsSignal(std::move(portList));
+
+                RCLCPP_INFO(thisPtr->_node->get_logger(), "Ports refreshed successfully");
             }
             else
             {
