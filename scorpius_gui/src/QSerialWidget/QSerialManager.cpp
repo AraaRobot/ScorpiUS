@@ -93,9 +93,7 @@ void QSerialManager::serialPortsSlot(const QStringList& portName_)
 
 void QSerialManager::serialStatusSlot(const scorpius_main::msg::SerialStatus& message_)
 {
-    const QString portMessage = QString::fromStdString(message_.message);
-
-    emit this->writeMessage(portMessage);
+    writeMessage(QString::fromStdString(message_.message));
 }
 
 void QSerialManager::writeMessage(const QString& message_)
@@ -221,7 +219,6 @@ void QSerialManager::refreshButtonClicked()
                     portList.append(QString::fromStdString(p));
 
                 emit thisPtr->serialPortsSignal(portList);
-                emit thisPtr->serialPortsSignal(std::move(portList));
 
                 RCLCPP_INFO(thisPtr->_node->get_logger(), "Ports refreshed successfully");
             }
