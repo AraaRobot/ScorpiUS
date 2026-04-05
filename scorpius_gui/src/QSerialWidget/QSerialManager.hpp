@@ -37,6 +37,8 @@ class QSerialManager : public QWidget
     static constexpr int DISPLAY_FONT_SIZE = 12;
 
     static constexpr int WAIT_TIME = 1000;
+    static constexpr int TIMEOUT = 1;
+    static constexpr int BAUD_RATE = 115200;
 
     static constexpr const char* STATUS_MESSAGE_NAME = "/scorpius/serial_status";
     static constexpr const char* PORTS_SERVICE_NAME = "/scorpius/serial_ports";
@@ -48,19 +50,19 @@ class QSerialManager : public QWidget
 
     std::shared_ptr<rclcpp::Node> _node;
 
+    QComboBox* _cbPorts{nullptr};
     QGridLayout* _grid{nullptr};
-    QComboBox* _combo_box{nullptr};
-    QPushButton* _pb_connect{nullptr};
-    QPushButton* _pb_refresh{nullptr};
-    QTextEdit* _message_display{nullptr};
+    QPushButton* _pbConnect{nullptr};
+    QPushButton* _pbRefresh{nullptr};
+    QTextEdit* _messageDisplay{nullptr};
 
     AsyncExecutor _executor = AsyncExecutor();
 
-    rclcpp::Client<scorpius_main::srv::SerialPorts>::SharedPtr _srv_ports;
+    rclcpp::Client<scorpius_main::srv::SerialPorts>::SharedPtr _client_ports;
     rclcpp::Subscription<scorpius_main::msg::SerialStatus>::SharedPtr _sub_status;
     rclcpp::Publisher<scorpius_main::msg::SerialHeartbeat>::SharedPtr _pub_heartbeat;
     rclcpp::Publisher<scorpius_main::msg::SerialStatus>::SharedPtr _pub_status;
-    rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _srv_config;
+    rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _client_config;
 
   signals:
     void serialPortsSignal(const QStringList& port_name_);
@@ -68,11 +70,10 @@ class QSerialManager : public QWidget
     void buttonFinishedSignal(const QString& message_);
 
   private slots:
-    void serialPortsSlot(const QStringList& port_name_);
+    void serialPortsSlot(const QStringList& portName_);
     void serialStatusSlot(const scorpius_main::msg::SerialStatus& message_);
     void connectButtonClicked();
     void refreshButtonClicked();
-    void buttonFinishedSlot(const QString& message_);
 };
 
 #endif
