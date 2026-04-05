@@ -59,7 +59,7 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     connect(this, &QSerialManager::serialStatusSignal, this, &QSerialManager::serialStatusSlot, Qt::QueuedConnection);
     connect(_pbConnect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_pbRefresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
-   connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::writeMessage, Qt::QueuedConnection);
+    connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::writeMessage, Qt::QueuedConnection);
 
     _sub_status
         = _node->create_subscription<scorpius_main::msg::SerialStatus>(STATUS_MESSAGE_NAME,
