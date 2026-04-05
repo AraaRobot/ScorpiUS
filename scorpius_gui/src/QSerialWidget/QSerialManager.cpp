@@ -212,7 +212,7 @@ void QSerialManager::refreshButtonClicked()
                 for (const std::string& p : response->ports)
                     portList.append(QString::fromStdString(p));
 
-                emit thisPtr->serialPortsSignal(std::move(portList));
+                emit thisPtr->serialPortsSignal(portList);
 
                 RCLCPP_INFO(thisPtr->_node->get_logger(), "Ports refreshed successfully");
             }
