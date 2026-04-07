@@ -1,28 +1,20 @@
 #include "control.h"
 #include <Adafruit_PWMServoDriver.h>
 
-// PCA9685 default address: 0x40
 namespace
 {
     Adafruit_PWMServoDriver _driverModule;
+    // PCA9685 default address: 0x40
     constexpr uint8_t DRIVER_ADRESS = 0x40;
 
     sAngles _lastAngles;
 
-}  // namespace
+    constexpr eServo _servosVert[static_cast<uint8_t>(eServo::NUM_SERVOS) / 2U]
+        = {eServo::VERT_A, eServo::VERT_B, eServo::VERT_C, eServo::VERT_D, eServo::VERT_E, eServo::VERT_F};
 
-static constexpr eServo _servos[static_cast<uint8_t>(eServo::NUM_SERVOS)] = {eServo::VERT_A,
-                                                                             eServo::VERT_B,
-                                                                             eServo::VERT_C,
-                                                                             eServo::VERT_D,
-                                                                             eServo::VERT_E,
-                                                                             eServo::VERT_F,
-                                                                             eServo::HORIZ_A,
-                                                                             eServo::HORIZ_B,
-                                                                             eServo::HORIZ_C,
-                                                                             eServo::HORIZ_D,
-                                                                             eServo::HORIZ_E,
-                                                                             eServo::HORIZ_F};
+    constexpr eServo _servosHoriz[static_cast<uint8_t>(eServo::NUM_SERVOS) / 2U]
+        = {eServo::HORIZ_A, eServo::HORIZ_B, eServo::HORIZ_C, eServo::HORIZ_D, eServo::HORIZ_E, eServo::HORIZ_F};
+}  // namespace
 
 void controlInit()
 {
@@ -75,7 +67,14 @@ void processAngles(const sAngles& angles_)
 
 void updatePosition()
 {
-    for (eServo servo : _servos)
+    for (eServo servo : _servosVert)
+    {
+        servoGoTo(servo, getAngleForServo(_lastAngles, servo));
+    }
+
+    delay(50);
+
+    for (eServo servo : _servosHoriz)
     {
         servoGoTo(servo, getAngleForServo(_lastAngles, servo));
     }
@@ -131,10 +130,16 @@ void servoGoTo(eServo servoId_, int angle_)
 
 void goHome()
 {
-    for (eServo s : _servos)
+    for (eServo s : _servosVert)
     {
         servoGoTo(s, HOME_ANGLE);
-        delay(50);
+    }
+
+    delay(50);
+
+    for (eServo s : _servosHoriz)
+    {
+        servoGoTo(s, HOME_ANGLE);
     }
 
     static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::SERVOS_HOMED)};

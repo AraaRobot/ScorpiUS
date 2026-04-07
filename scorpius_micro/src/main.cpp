@@ -6,14 +6,8 @@
 #include "control.h"
 #include "state_machine.h"
 
-#ifndef ENABLE_DEBUG
-#define ENABLE_DEBUG 0
-#endif
-
-void testLegJoints();
-
 #if ENABLE_DEBUG
-void executeDebug();
+#include "debug.h"
 #endif
 
 void setup()
@@ -36,7 +30,7 @@ void setup()
 void loop()
 {
 #if ENABLE_DEBUG
-    executeDebug();
+    debug();
 #else
     commProcess();
     sAngles angles;
@@ -63,141 +57,11 @@ void loop()
         updatePosition();
         lastUpdate = now;
     }
-#endif  // ENABLE_DEBUG
-
     // Heartbeat at 2 Hz (every 500 ms)
     if (now - lastHeartbeat >= 500)
     {
         commHeartbeat();
         lastHeartbeat = now;
     }
-}
-
-#if ENABLE_DEBUG
-void testLegJoints()
-{
-    int angle0 = 0;
-    int angle1 = 0;
-    servoGoTo(eServo::VERT_A, angle0);
-    servoGoTo(eServo::HORIZ_A, angle1);
-    delay(500);
-
-    while (true)
-    {
-        if (angle0 <= -90)
-            break;
-        if (angle1 > -45)
-            angle1 -= 2;
-        angle0 -= 5;
-
-        servoGoTo(eServo::VERT_A, angle0);
-        servoGoTo(eServo::HORIZ_A, angle1);
-        delay(50);
-    }
-
-    while (angle1 < 45)
-    {
-        angle1 += 5;
-        servoGoTo(eServo::HORIZ_A, angle1);
-        delay(50);
-    }
-
-    while (true)
-    {
-        if (angle0 < 0)
-        {
-            angle0 += 5;
-            if (angle0 > 0)
-                angle0 = 0;
-        }
-        if (angle1 > 0)
-        {
-            angle1 -= 2;
-            if (angle1 < 0)
-                angle1 = 0;
-        }
-        servoGoTo(eServo::VERT_A, angle0);
-        servoGoTo(eServo::HORIZ_A, angle1);
-        delay(50);
-        if (angle0 == 0 && angle1 == 0)
-            break;
-    }
-}
-
-void executeDebug()
-{
-    static int angle = 0;
-    static int servo = 0;
-    char c = Serial.read();
-
-    if (c == 'e')
-    {
-        while (c != 'q')
-        {
-            testLegJoints();
-            c = Serial.read();
-        }
-    }
-    else if (c == 'w')
-    {
-        if (servo % 2 == 0)
-        {
-            if (angle < 30)
-                angle += 5;
-        }
-        else if (servo % 2 == 1)
-        {
-            if (angle < 45)
-                angle += 5;
-        }
-        servoGoTo(static_cast<eServo>(servo), angle);
-        COMM_DEBUG("Current angle: ");
-        COMM_DEBUG(angle);
-    }
-    else if (c == 's')
-    {
-        if (servo % 2 == 0)
-        {
-            if (angle > -90)
-                angle -= 5;
-        }
-        else if (servo % 2 == 1)
-        {
-            if (angle > -45)
-                angle -= 5;
-        }
-        servoGoTo(static_cast<eServo>(servo), angle);
-        COMM_DEBUG("Current angle: ");
-        COMM_DEBUG(angle);
-    }
-    else if (c == 'a')
-    {
-        if (servo > 0)
-        {
-            servo--;
-            angle = 0;
-        }
-        COMM_DEBUG("Current servo: ");
-        COMM_DEBUG(servo);
-    }
-    else if (c == 'd')
-    {
-        if (servo < 11)
-        {
-            servo++;
-            angle = 0;
-        }
-        COMM_DEBUG("Current servo: ");
-        COMM_DEBUG(servo);
-    }
-    else if (c == 'z')
-    {
-        goHome();
-        angle = 0;
-        COMM_DEBUG("Homed");
-    }
-
-    delay(50);
-}
-
 #endif  // ENABLE_DEBUG
+}
