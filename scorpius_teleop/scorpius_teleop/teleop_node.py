@@ -43,8 +43,8 @@ class TeleopNode(Node):
         self.subscriber_input = self.create_subscription(Joy, '/scorpius/joy', self.subscriber_callback, 10)
 
         # subscribe members
-        self.input_vector = Vector2(0, 1)
-        self.speed = self.MAX_SPEED # speed in positions / second
+        self.input_vector = Vector2(0, 0)
+        self.speed = self.MIN_SPEED # speed in positions / second
         self.step = self.MAX_STEP / 2 # step of the hexapod in mm
 
         # callbacks
