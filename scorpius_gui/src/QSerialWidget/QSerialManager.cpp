@@ -158,14 +158,7 @@ void QSerialManager::connectButtonClicked()
             if (future.wait_for(std::chrono::milliseconds(WAIT_TIME)) == std::future_status::ready)
             {
                 auto response = future.get();
-                if (response->result)
-                {
-                    emit thisPtr->buttonFinishedSignal(QString::fromStdString(response->response));
-                }
-                else
-                {
-                    emit thisPtr->buttonFinishedSignal(QString::fromStdString(response->response));
-                }
+                emit thisPtr->buttonFinishedSignal(QString::fromStdString(response->response));
             }
             else
             {
