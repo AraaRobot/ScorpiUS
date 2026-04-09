@@ -18,7 +18,7 @@ ControllerSim::ControllerSim():
 {
     this->_pub_controllerSim = this->create_publisher<scorpius_main::msg::Joy>(this->TOPIC_JOY_SIM, 10);
 
-    this->_timer_pub = this->create_wall_timer(std::chrono::milliseconds(static_cast<int64_t>(1000 / this->PUB_FREQ)),
+    this->_timer_pub = this->create_wall_timer(std::chrono::milliseconds(static_cast<int64_t>(5000 / this->PUB_FREQ)),
                                                [this]()
                                                {
                                                    this->simControllerPub_CB();

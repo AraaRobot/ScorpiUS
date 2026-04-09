@@ -8,9 +8,10 @@ class HexapodLegAngles:
     def __init__(self, verticalAngle:float=0, horizontalAngle:float=0):
         self.vAngle = verticalAngle
         self.hAngle = horizontalAngle
+        self.epsilon = 1e-6 # Epsilon based float comparison
 
     def __eq__(self, other):
-        return isinstance(other, HexapodLegAngles) and self.vAngle == other.vAngle and self.hAngle == other.hAngle
+        return isinstance(other, HexapodLegAngles) and math.isclose(self.vAngle, other.vAngle, abs_tol=self.epsilon) and math.isclose(self.hAngle, other.hAngle, abs_tol=self.epsilon)
         
 
 class HexapodAngles:
@@ -21,6 +22,8 @@ class HexapodAngles:
         self.legD = HexapodLegAngles(0, 0)
         self.legE = HexapodLegAngles(0, 0)
         self.legF = HexapodLegAngles(0, 0)
+
+        self.epsilon = 1e-6
 
     def set(self, vA:float=0, hA:float=0, vB:float=0, hB:float=0, vC:float=0, hC:float=0, 
                    vD:float=0, hD:float=0, vE:float=0, hE:float=0, vF:float=0, hF:float=0):
@@ -85,26 +88,38 @@ class HexapodAngles:
         if ratio <= 0 or ratio > 1:
             raise ValueError("Ratio must be between 0 and 1. 0 is exclusive.")
 
-        def next_angle(start_angle, target_angle, current_angle, exponent: float = 2):
-            if start_angle == target_angle:
-                return target_angle
-            k = max(target_angle, start_angle, key=abs)
-            h = 1/ratio * (target_angle != 0)
-            last_ratio = math.pow(abs((current_angle - k) / (ratio * abs(target_angle - start_angle))), 1/exponent) + h * ratio
-            return math.copysign(k, abs(target_angle - start_angle) * math.pow(ratio, exponent) * math.pow(last_ratio + ratio - h, exponent)) + k
+        def power_increment(start_angle : float, target_angle : float, current_angle : float, exponent: float = 2):
+            if math.isclose(target_angle, start_angle, abs_tol=self.epsilon):
+                return target_angle - current_angle
+            if math.isclose(target_angle, 0, abs_tol=self.epsilon):
+                k = max(target_angle, start_angle, key=abs)
+                r = 1/ratio
+                a = -k / math.pow(r, exponent)
+                root = (current_angle-k)/a
+                last_pos = math.pow(abs(root), 1/exponent)
+                return a * math.pow(last_pos+1, exponent) + k - current_angle
+            else:
+                (h, k) = 1/ratio, max(target_angle, start_angle, key=abs)
+                a = -k / math.pow(-h, exponent)
+                root = (current_angle-k)/a
+                last_pos = math.copysign(math.pow(abs(root), 1/exponent), -root) + h
+                return a * math.pow(last_pos+1 - h, exponent) + k - current_angle
         
-        self.legA.vAngle += min(next_angle(start.legA.vAngle, target.legA.vAngle, self.legA.vAngle) - self.legA.vAngle, self.legA.vAngle - start.legA.vAngle)
-        self.legA.hAngle += min((target.legA.hAngle - start.legA.hAngle) * ratio, self.legA.hAngle - start.legA.hAngle)
-        self.legB.vAngle += min(next_angle(start.legB.vAngle, target.legB.vAngle, self.legB.vAngle) - self.legB.vAngle, self.legB.vAngle - start.legB.vAngle)
-        self.legB.hAngle += min((target.legB.hAngle - start.legB.hAngle) * ratio, self.legB.hAngle - start.legB.hAngle)
-        self.legC.vAngle += min(next_angle(start.legC.vAngle, target.legC.vAngle, self.legC.vAngle) - self.legC.vAngle, self.legC.vAngle - start.legC.vAngle)
-        self.legC.hAngle += min((target.legC.hAngle - start.legC.hAngle) * ratio, self.legC.hAngle - start.legC.hAngle)
-        self.legD.vAngle += min(next_angle(start.legD.vAngle, target.legD.vAngle, self.legD.vAngle) - self.legD.vAngle, self.legD.vAngle - start.legD.vAngle)
-        self.legD.hAngle += min((target.legD.hAngle - start.legD.hAngle) * ratio, self.legD.hAngle - start.legD.hAngle)
-        self.legE.vAngle += min(next_angle(start.legE.vAngle, target.legE.vAngle, self.legE.vAngle) - self.legE.vAngle, self.legE.vAngle - start.legE.vAngle)
-        self.legE.hAngle += min((target.legE.hAngle - start.legE.hAngle) * ratio, self.legE.hAngle - start.legE.hAngle)
-        self.legF.vAngle += min(next_angle(start.legF.vAngle, target.legF.vAngle, self.legF.vAngle) - self.legF.vAngle, self.legF.vAngle - start.legF.vAngle)
-        self.legF.hAngle += min((target.legF.hAngle - start.legF.hAngle) * ratio, self.legF.hAngle - start.legF.hAngle)
+        # Interpolate horizontal angles linearly.
+        self.legA.hAngle += min((target.legA.hAngle - start.legA.hAngle) * ratio, target.legA.hAngle - self.legA.hAngle, key=abs)
+        self.legB.hAngle += min((target.legB.hAngle - start.legB.hAngle) * ratio, target.legB.hAngle - self.legB.hAngle, key=abs)
+        self.legC.hAngle += min((target.legC.hAngle - start.legC.hAngle) * ratio, target.legC.hAngle - self.legC.hAngle, key=abs)
+        self.legD.hAngle += min((target.legD.hAngle - start.legD.hAngle) * ratio, target.legD.hAngle - self.legD.hAngle, key=abs)
+        self.legE.hAngle += min((target.legE.hAngle - start.legE.hAngle) * ratio, target.legE.hAngle - self.legE.hAngle, key=abs)
+        self.legF.hAngle += min((target.legF.hAngle - start.legF.hAngle) * ratio, target.legF.hAngle - self.legF.hAngle, key=abs)
+
+        # Interpolate vertical angles with a custom non linear function to make the movement more natural.
+        self.legA.vAngle += min(power_increment(start.legA.vAngle, target.legA.vAngle, self.legA.vAngle), target.legA.vAngle - self.legA.vAngle, key=abs)
+        self.legB.vAngle += min(power_increment(start.legB.vAngle, target.legB.vAngle, self.legB.vAngle), target.legB.vAngle - self.legB.vAngle, key=abs)
+        self.legC.vAngle += min(power_increment(start.legC.vAngle, target.legC.vAngle, self.legC.vAngle), target.legC.vAngle - self.legC.vAngle, key=abs)
+        self.legD.vAngle += min(power_increment(start.legD.vAngle, target.legD.vAngle, self.legD.vAngle), target.legD.vAngle - self.legD.vAngle, key=abs)
+        self.legE.vAngle += min(power_increment(start.legE.vAngle, target.legE.vAngle, self.legE.vAngle), target.legE.vAngle - self.legE.vAngle, key=abs)
+        self.legF.vAngle += min(power_increment(start.legF.vAngle, target.legF.vAngle, self.legF.vAngle), target.legF.vAngle - self.legF.vAngle, key=abs)
 
     def __eq__(self, other):
         return isinstance(other, HexapodAngles) and self.legA == other.legA and self.legB == other.legB and self.legC == other.legC and self.legD == other.legD and self.legE == other.legE and self.legF == other.legF
