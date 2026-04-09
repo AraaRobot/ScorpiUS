@@ -1,0 +1,3 @@
+[submodule "scorpius_tcp"]
+	path = scorpius_tcp
+	url = https://github.com/AraaRobot/scorpius_tcp.git
