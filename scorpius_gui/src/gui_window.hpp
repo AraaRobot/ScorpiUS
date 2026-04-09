@@ -20,6 +20,7 @@ class GuiWindow : public QMainWindow
     explicit GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
 
     int addTab(QWidget* page, const QString& label);
+    void setBackground();
 
   private:
     bool eventFilter(QObject* obj, QEvent* event);

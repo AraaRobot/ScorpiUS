@@ -21,12 +21,59 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     this->addTab(_controllerManager, "Controller");
     this->addTab(_serialManager, "Serial");
 
+    this->setBackground();
+
     QApplication::instance()->installEventFilter(this);
 }
 
 int GuiWindow::addTab(QWidget* page, const QString& label)
 {
     return _tabs->addTab(page, label);
+}
+
+void GuiWindow::setBackground()
+{
+    _tabs->setStyleSheet(
+        "QTabWidget::pane { background: transparent; }"
+        "QTabBar::tab { background: transparent; }"
+    );
+
+    QString _bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert.png) 0 0 0 0 round round;";
+    if (std::rand() % 10 == 1)
+    {
+        _bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert_easter_egg.png) 0 0 0 0 round round;";
+    }
+    _debugWidgetManager->setObjectName("debugWidgetManager");
+    _debugWidgetManager->setAttribute(Qt::WA_StyledBackground, true);
+    _controllerManager->setObjectName("controllerManager");
+    _controllerManager->setAttribute(Qt::WA_StyledBackground, true);
+    _serialManager->setObjectName("serialManager");
+    _serialManager->setAttribute(Qt::WA_StyledBackground, true);
+
+    _debugWidgetManager->setStyleSheet(
+        "#debugWidgetManager {"
+        + _bgImageStyle +
+        "}"
+        "#debugWidgetManager * {"
+        "    background: rgba(255, 255, 255, 0.7);"
+        "}"
+    );
+    _controllerManager->setStyleSheet(
+        "#controllerManager {"
+        + _bgImageStyle +
+        "}"
+        "#controllerManager * {"
+        "    background: rgba(255, 255, 255, 0.7);"
+        "}"
+    );
+    _serialManager->setStyleSheet(
+        "#serialManager {"
+        + _bgImageStyle +
+        "}"
+        "#serialManager * {"
+        "    background: rgba(255, 255, 255, 0.7);"
+        "}"
+    );
 }
 
 bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
@@ -47,6 +94,9 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
                     return true;
                 case Qt::Key_S:
                     _tabs->setCurrentIndex(2);
+                    return true;
+                case Qt::Key_Space:
+                    this->setBackground();
                     return true;
                 default:
                     break;
