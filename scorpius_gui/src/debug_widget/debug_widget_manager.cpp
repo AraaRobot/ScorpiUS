@@ -18,6 +18,18 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
         }
     }
 
+    _stepLabel = new QLabel(this);
+    _stepLabel->setAlignment(Qt::AlignHCenter);
+    _stepLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
+    _stepLabel->setText(QStringLiteral("Step:    ?    mm"));
+    
+    QFont labelFont = _stepLabel->font();
+    labelFont.setPointSize(LABEL_FONT_SIZE);
+    _stepLabel->setFont(labelFont);
+
+    _grid->setRowStretch(4, 8);
+    _grid->addWidget(_stepLabel, 4, 0, 1, 2);
+
     setLayout(_grid);
 
     _sub_teleop = _node->create_subscription<scorpius_main::msg::ServoAngles>("/scorpius/teleop",
@@ -26,11 +38,18 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
                                                                               {
                                                                                   this->CB_subTeleop(msg_);
                                                                               });
+    _sub_step = _node->create_subscription<scorpius_main::msg::Step>("/scorpius/teleop/step",
+                                                                       10,
+                                                                       [this](const scorpius_main::msg::Step& msg_)
+                                                                       {
+                                                                           this->CB_subStep(msg_);
+                                                                       });
 }
 
 DebugWidgetManager::~DebugWidgetManager()
 {
     _sub_teleop.reset();
+    _sub_step.reset();
 }
 
 void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_)
@@ -47,4 +66,9 @@ void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg
     emit _debugWidgets[letterToIndex('E')]->setAngleVerticalSignal(msg_.vert_e);
     emit _debugWidgets[letterToIndex('F')]->setAngleHorizontalSignal(msg_.horiz_f);
     emit _debugWidgets[letterToIndex('F')]->setAngleVerticalSignal(msg_.vert_f);
+}
+
+void DebugWidgetManager::CB_subStep(const scorpius_main::msg::Step& msg_)
+{
+    _stepLabel->setText(QStringLiteral("Step:    ") + QString::number(msg_.step) + QStringLiteral("    mm"));
 }
