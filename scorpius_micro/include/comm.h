@@ -8,7 +8,7 @@
 #endif
 
 #if ENABLE_DEBUG
-#define COMM_DEBUG(x) comm_debug_impl(x)
+#define COMM_DEBUG(x) commDebug_impl(x)
 #else
 #define COMM_DEBUG(x) ((void)0)
 #endif
@@ -34,7 +34,9 @@ enum class eSerialMsgType : uint8_t
     COMMAND = 0x00,
     INFO = 0x01,
     ERROR = 0x02,
-    HEARTBEAT = 0x03
+    HEARTBEAT = 0x03,
+    STATE = 0x04,
+    UNKNOWN = 0xFF
 };
 
 enum class eErrorCode : uint8_t
@@ -45,7 +47,8 @@ enum class eErrorCode : uint8_t
     INVALID_MSG_TYPE_RECEIVED = 0x04,
     INVALID_COMMAND_RECEIVED = 0x05,
     TRIED_TO_SEND_INVALID_COMMAND = 0x06,
-    INVALID_SERVO_ID = 0x07
+    INVALID_SERVO_ID = 0x07,
+    INVALID_STATE_RECEIVED = 0x08
 };
 
 enum class eInfoCode : uint8_t
@@ -54,12 +57,13 @@ enum class eInfoCode : uint8_t
     SERVOS_HOMED = 0x02
 };
 
-void comm_init(HardwareSerial& serial);
-void comm_process();
-bool comm_consume(sAngles& angles_);
-bool comm_send(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
+void commInit(HardwareSerial& serial_);
+void commProcess();
+eSerialMsgType commConsume(sAngles& angles_);
+bool commSend(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
+void commHeartbeat(void);
 
-void comm_debug_impl(const char* msg);
-void comm_debug_impl(int v);
+void commDebug_impl(const char* msg_);
+void commDebug_impl(int v_);
 
 #endif  // COMM_H

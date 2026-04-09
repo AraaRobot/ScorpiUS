@@ -2,19 +2,27 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy, LivelinessPolicy
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import SerialStatus
+from scorpius_main.msg import SerialHeartbeat
 from scorpius_main.srv import SerialConfig
 from scorpius_main.srv import SerialPorts
+from scorpius_main.srv import ControllerState
 import serial
 import serial.tools.list_ports
 
+# Packet
 HEAD = 0xAA
 TAIL = 0xBB
+
+# Msg types
 COMMAND = 0x00
 ERROR = 0x02
 INFO = 0x01
 HEARTBEAT = 0x03
+STATE = 0x04
 
 INFO_TEXT = {
     0x01: "Init complete",
@@ -29,7 +37,13 @@ ERROR_TEXT = {
     0x05: "Invalid COMMAND (0x00) received",
     0x06: "Tried to send invalid command",
     0x07: "Invalid servo ID",
+    0x08: "Invalid state received",
 }
+
+# States
+HOME = 0x01
+RUNNING = 0x02
+REBOOT = 0x03
 
 
 class CommNode(Node):
@@ -42,12 +56,33 @@ class CommNode(Node):
         self.srv = self.create_service(
             SerialConfig, '/scorpius/serial_config', self.handle_serial_config)
 
-        self.port_srv = self.create_service(SerialPorts, '/scorpius/serial_ports', self.handle_serial_ports)
+        self.port_srv = self.create_service(
+            SerialPorts, '/scorpius/serial_ports', self.handle_serial_ports)
 
         self.status_pub = self.create_publisher(
             SerialStatus, '/scorpius/serial_status', 10)
 
         self.read_timer = self.create_timer(0.05, self.read_serial)
+
+        heartbeat_qos = QoSProfile(
+            depth=1,
+            history=HistoryPolicy.KEEP_LAST,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            deadline=Duration(seconds=1.0),
+            lifespan=Duration(seconds=1.5),
+            liveliness=LivelinessPolicy.AUTOMATIC,
+            liveliness_lease_duration=Duration(seconds=1.5),
+        )
+
+        self.heartbeat_pub = self.create_publisher(
+            SerialHeartbeat, '/scorpius/serial_heartbeat', heartbeat_qos)
+        self.heartbeat_timer = self.create_timer(1.0, self.heartbeat_check)
+        self.heartbeat_ok: bool = False
+        self.heartbeat_sequence: int = 0
+
+        self.state_controller = self.create_service(
+            ControllerState, '/scorpius/state_controller', self.send_state)
 
         self.ser = None
         self.rx_buffer = bytearray()
@@ -57,22 +92,60 @@ class CommNode(Node):
             self.ser.close()
         super().destroy_node()
 
-    def CB_teleop(self, msg : ServoAngles) -> None:
-        if not getattr(self, 'ser', None) or not getattr(self.ser, 'is_open', False):
+    def serial_ready(self) -> bool:
+        return self.ser is not None and self.ser.is_open
+
+    def send_state(self, request: ControllerState.Request, response: ControllerState.Response) -> ControllerState.Response:
+        if not self.serial_ready():
+            self.get_logger().warning(
+                "Serial not open — dropping state controller message")
+            response.success = False
+            response.message = "Serial port not open"
+            return response
+        
+        if not self.heartbeat_ok:
+            self.get_logger().warning(
+                "No heartbeat detected — dropping state controller message")
+            response.success = False
+            response.message = "No heartbeat detected"
+            return response
+
+        if request.state not in (HOME, RUNNING, REBOOT):
+            response.success = False
+            response.message = f"Invalid state {request.state}"
+            return response
+        try:
+            state_byte = int(request.state).to_bytes(
+                1, byteorder='little', signed=True)
+            self.ser.write(self.build_state_packet(state_byte))
+            response.success = True
+            response.message = f"Serial write successful"
+        except Exception as e:
+            self.get_logger().error(str(e))
+            response.success = False
+            response.message = str(e)
+        return response
+
+    def CB_teleop(self, msg: ServoAngles) -> None:
+        if not self.serial_ready():
             self.get_logger().warning(
                 "Serial not open — dropping teleop message", throttle_duration_sec=30)
             return
+        if not self.heartbeat_ok:
+            self.get_logger().warning(
+                "No heartbeat - dropping teleop message", throttle_duration_sec=30)
+            return
         try:
-            self.ser.write(self.build_packet(msg))
+            self.ser.write(self.build_command_packet(msg))
         except Exception as e:
             self.get_logger().error(str(e))
 
-    def angle_to_uint8(self, angle : float) -> int:
+    def angle_to_uint8(self, angle: float) -> int:
         # map [-90,90] to uint8 by two's complement representation for signed int8 receiver
         angle = int(max(-90, min(90, angle)))
         return angle & 0xFF
 
-    def build_packet(self, msg : ServoAngles) -> bytes:
+    def build_command_packet(self, msg: ServoAngles) -> bytes:
         angles = [
             msg.vert_a,
             msg.vert_b,
@@ -94,10 +167,20 @@ class CommNode(Node):
 
         checksum = (packet_type + sum(data)) & 0xFF
 
-        packet = bytes([HEAD, length, packet_type]) + data + bytes([checksum, TAIL])
+        packet = bytes([HEAD, length, packet_type]) + \
+            data + bytes([checksum, TAIL])
         return packet
 
-    def handle_serial_config(self, request : SerialConfig.Request, response : SerialConfig.Response) -> SerialConfig.Response:
+    def build_state_packet(self, state: bytes) -> bytes:
+        packet_type = STATE
+
+        checksum = (packet_type + sum(state)) & 0xFF
+        length = 2 # 1 msg type + 1 msg content
+        packet = bytes([HEAD, length, packet_type]) + \
+            state + bytes([checksum, TAIL])
+        return packet
+
+    def handle_serial_config(self, request: SerialConfig.Request, response: SerialConfig.Response) -> SerialConfig.Response:
         try:
             if getattr(self, 'ser', None) and self.ser.is_open:
                 self.get_logger().info("Serial already open; reopening with new config")
@@ -120,9 +203,10 @@ class CommNode(Node):
             self.get_logger().error(response.response)
 
         return response
-    
-    def handle_serial_ports(self, request : SerialPorts.Request, response : SerialPorts.Response) -> SerialPorts.Response:
-        ports = [p for p in serial.tools.list_ports.comports() if p.description.lower() != 'n/a']
+
+    def handle_serial_ports(self, request: SerialPorts.Request, response: SerialPorts.Response) -> SerialPorts.Response:
+        ports = [p for p in serial.tools.list_ports.comports()
+                 if p.description.lower() != 'n/a']
         response.ports = [p.device for p in ports]
         response.descriptions = [p.description for p in ports]
         return response
@@ -222,7 +306,8 @@ class CommNode(Node):
 
         elif packet_type == HEARTBEAT:
             self.get_logger().debug("Received HEARTBEAT packet")
-            # self.publish_heartbeat(True) next PR
+            self.publish_heartbeat(True)
+            self.heartbeat_ok = True
 
         else:
             self.get_logger().warning(
@@ -237,6 +322,20 @@ class CommNode(Node):
     def get_error_text(self, code: int) -> str:
         return ERROR_TEXT.get(code, f"Unknown ERROR code 0x{code:02X}")
 
+    def publish_heartbeat(self, ok: bool) -> None:
+        msg = SerialHeartbeat()
+        msg.alive = ok
+        msg.seq = self.heartbeat_sequence
+        self.heartbeat_sequence = self.heartbeat_sequence + 1
+        msg.stamp = self.get_clock().now().to_msg()
+        self.heartbeat_pub.publish(msg)
+
+    def heartbeat_check(self) -> None:
+        if (not self.heartbeat_ok):
+            self.publish_heartbeat(False)
+        else:
+            self.heartbeat_ok = False
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -245,7 +344,7 @@ def main(args=None):
 
     # Try/Except here because ROS doesn't catch it as well on Python as on C++
     try:
-        rclpy.spin(Comm_Node)    
+        rclpy.spin(Comm_Node)
     except KeyboardInterrupt:
         pass
     finally:

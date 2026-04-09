@@ -21,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Joy.msg"
   "msg/Step.msg"
 
+  "srv/ControllerState.srv"
   "srv/JoyConfig.srv"
   "srv/SerialConfig.srv"
   "srv/SerialPorts.srv"
