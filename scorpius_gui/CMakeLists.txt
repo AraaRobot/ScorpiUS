@@ -36,6 +36,7 @@ add_executable(gui src/gui.cpp
   src/QControllerWidget/QControllerManager.cpp
   src/QControllerWidget/QControllerWidget.cpp
   src/QControllerWidget/QControllerProfile.cpp
+  src/QSerialWidget/QSerialManager.cpp
   src/helpers/asyncExecutor.cpp
   ui/DebugWidget.ui
   resources.qrc)
