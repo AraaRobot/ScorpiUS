@@ -218,7 +218,7 @@ class TeleopNode(Node):
                     self.position_state = 1
                 
                 # turn right / turn left states
-                case (3, 1) | (4, 3): # turn right, left neutral or turn left, right neutral
+                case (4, 1) | (3, 3): # turn right, left neutral or turn left, right neutral
                     self.target_angles.set(self.VERT_DOWN_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE + half_angle_step, 
                                             self.VERT_DOWN_ANGLE, 
@@ -232,7 +232,7 @@ class TeleopNode(Node):
                                             self.VERT_DOWN_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE - half_angle_step) # right down, 2
                     self.position_state = 2
-                case (3, 2) | (4, 4): # turn right, right down or turn left, left down
+                case (4, 2) | (3, 4): # turn right, right down or turn left, left down
                     self.target_angles.set(self.VERT_UP_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE, 
                                             self.VERT_DOWN_ANGLE, 
@@ -246,7 +246,7 @@ class TeleopNode(Node):
                                             self.VERT_DOWN_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE) # right neutral, 3  
                     self.position_state = 3
-                case (3, 3) | (4, 1): # turn right, right neutral or turn left, left neutral
+                case (4, 3) | (3, 1): # turn right, right neutral or turn left, left neutral
                     self.target_angles.set(self.VERT_DOWN_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE - half_angle_step, 
                                             self.VERT_DOWN_ANGLE, 
@@ -260,7 +260,7 @@ class TeleopNode(Node):
                                             self.VERT_DOWN_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE + half_angle_step) # left down, 4
                     self.position_state = 4
-                case (3, 4) | (4, 2) | (3, 0) | (4, 0): # turn right, left down or turn left, right down or from idle
+                case (4, 4) | (3, 2) | (3, 0) | (4, 0): # turn right, left down or turn left, right down or from idle
                     self.target_angles.set(self.VERT_DOWN_ANGLE, 
                                             self.HORIZ_NEUTRAL_ANGLE, 
                                             self.VERT_UP_ANGLE, 
