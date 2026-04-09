@@ -4,6 +4,7 @@
 namespace
 {
     Adafruit_PWMServoDriver _driverModule;
+
     // PCA9685 default address: 0x40
     constexpr uint8_t DRIVER_ADRESS = 0x40;
 
@@ -11,9 +12,17 @@ namespace
 
     constexpr eServo _servosVert[static_cast<uint8_t>(eServo::NUM_SERVOS) / 2U]
         = {eServo::VERT_A, eServo::VERT_B, eServo::VERT_C, eServo::VERT_D, eServo::VERT_E, eServo::VERT_F};
-
     constexpr eServo _servosHoriz[static_cast<uint8_t>(eServo::NUM_SERVOS) / 2U]
         = {eServo::HORIZ_A, eServo::HORIZ_B, eServo::HORIZ_C, eServo::HORIZ_D, eServo::HORIZ_E, eServo::HORIZ_F};
+
+    enum class eControllerState : uint8_t
+    {
+        IDLE = 0U,
+        VERT,
+        HORIZ
+    } controllerState;
+
+    constexpr uint8_t DELAY_BETWEEN_UPDATE_MS = 60U;
 }  // namespace
 
 void controlInit()
@@ -67,16 +76,49 @@ void processAngles(const sAngles& angles_)
 
 void updatePosition()
 {
-    for (eServo servo : _servosVert)
-    {
-        servoGoTo(servo, getAngleForServo(_lastAngles, servo));
-    }
+    static unsigned long lastLoopTime = 0U;
+    static eControllerState lastState = eControllerState::HORIZ;
 
-    delay(50);
-
-    for (eServo servo : _servosHoriz)
+    switch (controllerState)
     {
-        servoGoTo(servo, getAngleForServo(_lastAngles, servo));
+        case eControllerState::IDLE:
+            if (millis() - lastLoopTime > DELAY_BETWEEN_UPDATE_MS)
+            {
+                if (lastState == eControllerState::HORIZ)
+                {
+                    controllerState = eControllerState::VERT;
+                }
+                else if (lastState == eControllerState::VERT)
+                {
+                    controllerState = eControllerState::HORIZ;
+                }
+
+                lastLoopTime = millis();
+            }
+            break;
+            
+        case eControllerState::HORIZ:
+            for (eServo servo : _servosHoriz)
+            {
+                servoGoTo(servo, getAngleForServo(_lastAngles, servo));
+            }
+            lastState = controllerState;
+            controllerState = eControllerState::IDLE;
+            break;
+
+        case eControllerState::VERT:
+            for (eServo servo : _servosVert)
+            {
+                servoGoTo(servo, getAngleForServo(_lastAngles, servo));
+            }
+            lastState = controllerState;
+            controllerState = eControllerState::IDLE;
+            break;
+
+        default:
+            COMM_DEBUG("Invalid controller state");
+            controllerState = eControllerState::HORIZ;
+            break;
     }
 }
 
@@ -135,7 +177,7 @@ void goHome()
         servoGoTo(s, HOME_ANGLE);
     }
 
-    delay(50);
+    delay(60);
 
     for (eServo s : _servosHoriz)
     {

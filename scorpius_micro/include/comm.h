@@ -3,6 +3,11 @@
 
 #include <Arduino.h>
 
+#ifndef ENABLE_DEBUG
+#define ENABLE_DEBUG 0
+#endif
+
+
 #if ENABLE_DEBUG
 #define COMM_DEBUG(x) commDebug_impl(x)
 #else

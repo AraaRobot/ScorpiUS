@@ -39,6 +39,7 @@ void loop()
     if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
     {
         processAngles(angles);
+        updatePosition();
     }
     else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
     {
@@ -49,14 +50,8 @@ void loop()
         // TODO: Implement reboot logic
     }
 
-    static unsigned long lastUpdate = 0;
     static unsigned long lastHeartbeat = 0;
     unsigned long now = millis();
-    if (now - lastUpdate >= 50)  // ~50 Hz
-    {
-        updatePosition();
-        lastUpdate = now;
-    }
     // Heartbeat at 2 Hz (every 500 ms)
     if (now - lastHeartbeat >= 500)
     {
