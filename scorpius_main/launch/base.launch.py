@@ -12,5 +12,8 @@ def generate_launch_description():
             PythonLaunchDescriptionSource([PathJoinSubstitution([FindPackageShare('scorpius_joy'), 'launch', 'joy.launch.py'])])),
             
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([PathJoinSubstitution([FindPackageShare('scorpius_gui'), 'launch', 'gui.launch.py'])]))
+            PythonLaunchDescriptionSource([PathJoinSubstitution([FindPackageShare('scorpius_gui'), 'launch', 'gui.launch.py'])])),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([PathJoinSubstitution([FindPackageShare('ros_tcp_endpoint'), 'launch', 'endpoint.py'])]))
     ])

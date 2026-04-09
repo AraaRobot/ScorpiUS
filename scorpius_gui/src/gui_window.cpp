@@ -9,6 +9,7 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _debugWidgetManager = new DebugWidgetManager(node_, _tabs);
     _controllerManager = new QControllerManager(node_, _tabs);
     _controllerManager->update();
+    _serialManager = new QSerialManager(node_, _tabs);
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
@@ -18,6 +19,7 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     setCentralWidget(_central);
     this->addTab(_debugWidgetManager, "Debug");
     this->addTab(_controllerManager, "Controller");
+    this->addTab(_serialManager, "Serial");
 
     QApplication::instance()->installEventFilter(this);
 }
@@ -37,11 +39,14 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
         {
             switch (keyEvent->key())
             {
+                case Qt::Key_D:
+                    _tabs->setCurrentIndex(0);
+                    return true;
                 case Qt::Key_C:
                     _tabs->setCurrentIndex(1);
                     return true;
-                case Qt::Key_D:
-                    _tabs->setCurrentIndex(0);
+                case Qt::Key_S:
+                    _tabs->setCurrentIndex(2);
                     return true;
                 default:
                     break;
