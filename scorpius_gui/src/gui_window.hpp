@@ -11,6 +11,7 @@
 
 #include "debug_widget/debug_widget_manager.hpp"
 #include "QControllerWidget/QControllerManager.hpp"
+#include "QSerialWidget/QSerialManager.hpp"
 
 class GuiWindow : public QMainWindow
 {
@@ -28,6 +29,7 @@ class GuiWindow : public QMainWindow
     QTabWidget* _tabs{nullptr};
     DebugWidgetManager* _debugWidgetManager{nullptr};
     QControllerManager* _controllerManager{nullptr};
+    QSerialManager* _serialManager{nullptr};
 };
 
 #endif  // define GUI_WINDOW_HPP
