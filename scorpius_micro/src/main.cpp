@@ -6,8 +6,8 @@
 #include "control.h"
 #include "state_machine.h"
 
-#if ENABLE_DEBUG
-#include "debug.h"
+#if ENABLE_MANUAL
+#include "manual.h"
 #endif
 
 void setup()
@@ -29,8 +29,8 @@ void setup()
 
 void loop()
 {
-#if ENABLE_DEBUG
-    debug();
+#if ENABLE_MANUAL
+    manual();
 #else
     commProcess();
     sAngles angles;
@@ -58,5 +58,5 @@ void loop()
         commHeartbeat();
         lastHeartbeat = now;
     }
-#endif  // ENABLE_DEBUG
+#endif  // ENABLE_MANUAL
 }

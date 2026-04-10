@@ -18,9 +18,12 @@ namespace
     enum class eControllerState : uint8_t
     {
         IDLE = 0U,
-        VERT,
-        HORIZ
+        VERTICAL,
+        HORIZONTAL
     } controllerState;
+
+    unsigned long _lastLoopTime = 0U;
+    eControllerState _lastState = eControllerState::HORIZONTAL;
 
     constexpr uint8_t DELAY_BETWEEN_UPDATE_MS = 60U;
 }  // namespace
@@ -76,49 +79,63 @@ void processAngles(const sAngles& angles_)
 
 void updatePosition()
 {
-    static unsigned long lastLoopTime = 0U;
-    static eControllerState lastState = eControllerState::HORIZ;
-
     switch (controllerState)
     {
         case eControllerState::IDLE:
-            if (millis() - lastLoopTime > DELAY_BETWEEN_UPDATE_MS)
+            if (millis() - _lastLoopTime > DELAY_BETWEEN_UPDATE_MS)
             {
-                if (lastState == eControllerState::HORIZ)
+                if (_lastState == eControllerState::HORIZONTAL)
                 {
-                    controllerState = eControllerState::VERT;
+                    controllerState = eControllerState::VERTICAL;
                 }
-                else if (lastState == eControllerState::VERT)
+                else if (_lastState == eControllerState::VERTICAL)
                 {
-                    controllerState = eControllerState::HORIZ;
+                    controllerState = eControllerState::HORIZONTAL;
                 }
-
-                lastLoopTime = millis();
             }
             break;
             
-        case eControllerState::HORIZ:
+        case eControllerState::HORIZONTAL:
             for (eServo servo : _servosHoriz)
             {
                 servoGoTo(servo, getAngleForServo(_lastAngles, servo));
             }
-            lastState = controllerState;
+            _lastLoopTime = millis();
+            _lastState = controllerState;
             controllerState = eControllerState::IDLE;
             break;
 
-        case eControllerState::VERT:
+        case eControllerState::VERTICAL:
             for (eServo servo : _servosVert)
             {
                 servoGoTo(servo, getAngleForServo(_lastAngles, servo));
             }
-            lastState = controllerState;
+            _lastLoopTime = millis();
+            _lastState = controllerState;
             controllerState = eControllerState::IDLE;
             break;
 
         default:
             COMM_DEBUG("Invalid controller state");
-            controllerState = eControllerState::HORIZ;
+            controllerState = eControllerState::HORIZONTAL;
             break;
+    }
+}
+
+void updatePositionForce(uint8_t steps_)
+{
+    // Ensure we always start from IDLE so the first call selects a group.
+    controllerState = eControllerState::IDLE;
+
+    for (uint8_t i = 0U; i < steps_; i++)
+    {
+        // Bypass the normal time gating by making the elapsed time check pass.
+        _lastLoopTime = 0U;
+
+        // First call: IDLE -> choose next group.
+        updatePosition();
+        // Second call: perform chosen group update.
+        updatePosition();
     }
 }
 
