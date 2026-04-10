@@ -1,8 +1,72 @@
-#if ENABLE_DEBUG
+#if ENABLE_MANUAL
 
-#include "debug.h"
+#include "manual.h"
 
-void debug()
+namespace
+{
+    bool isVerticalServo(eServo servo_)
+    {
+        return (static_cast<uint8_t>(servo_) % 2U) == 0U;
+    }
+
+    int getServoMinAngle(eServo servo_)
+    {
+        return isVerticalServo(servo_) ? MIN_ANGLE_VERTICAL : MIN_ANGLE_HORIZONTAL;
+    }
+
+    int getServoMaxAngle(eServo servo_)
+    {
+        return isVerticalServo(servo_) ? MAX_ANGLE_VERTICAL : MAX_ANGLE_HORIZONTAL;
+    }
+
+    void setAngleForServo(sAngles& angles_, eServo servoId_, int angle_)
+    {
+        const int8_t a = static_cast<int8_t>(angle_);
+        switch (servoId_)
+        {
+            case eServo::VERT_A:
+                angles_.vert_a = a;
+                break;
+            case eServo::VERT_B:
+                angles_.vert_b = a;
+                break;
+            case eServo::VERT_C:
+                angles_.vert_c = a;
+                break;
+            case eServo::VERT_D:
+                angles_.vert_d = a;
+                break;
+            case eServo::VERT_E:
+                angles_.vert_e = a;
+                break;
+            case eServo::VERT_F:
+                angles_.vert_f = a;
+                break;
+            case eServo::HORIZ_A:
+                angles_.hori_a = a;
+                break;
+            case eServo::HORIZ_B:
+                angles_.hori_b = a;
+                break;
+            case eServo::HORIZ_C:
+                angles_.hori_c = a;
+                break;
+            case eServo::HORIZ_D:
+                angles_.hori_d = a;
+                break;
+            case eServo::HORIZ_E:
+                angles_.hori_e = a;
+                break;
+            case eServo::HORIZ_F:
+                angles_.hori_f = a;
+                break;
+            default:
+                break;
+        }
+    }
+}  // namespace
+
+void manual()
 {
     COMM_DEBUG("Choose state:\ns: single servo\t\tm: multiple servos\t\tv: validation demonstration");
 
@@ -33,12 +97,12 @@ void debug()
         }
     }
 
-    executeDebugFunc();
+    executeManualFunc();
 
     delay(50);
 }
 
-void executeDebugFunc()
+void executeManualFunc()
 {
     switch (debugStateMachine)
     {
@@ -60,41 +124,41 @@ void jogServo()
 {
     char c = Serial.read();
     COMM_DEBUG("Entering single servo mode");
+
+    static sAngles angles;
+
     while (c != 'q')
     {
         c = Serial.read();
         static int angle = 0;
         static int servo = 0;
+        const eServo servoId = static_cast<eServo>(servo);
+        const int minAngle = getServoMinAngle(servoId);
+        const int maxAngle = getServoMaxAngle(servoId);
 
         if (c == 'w')
         {
-            if (servo % 2 == 0)
-            {
-                if (angle < 30)
-                    angle += 5;
-            }
-            else if (servo % 2 == 1)
-            {
-                if (angle < 45)
-                    angle += 5;
-            }
-            servoGoTo(static_cast<eServo>(servo), angle);
+            if (angle < maxAngle)
+                angle += 5;
+            if (angle > maxAngle)
+                angle = maxAngle;
+
+            setAngleForServo(angles, servoId, angle);
+            processAngles(angles);
+            updatePositionForce(2U);
             COMM_DEBUG("Current angle: ");
             COMM_DEBUG(angle);
         }
         else if (c == 's')
         {
-            if (servo % 2 == 0)
-            {
-                if (angle > -90)
-                    angle -= 5;
-            }
-            else if (servo % 2 == 1)
-            {
-                if (angle > -45)
-                    angle -= 5;
-            }
-            servoGoTo(static_cast<eServo>(servo), angle);
+            if (angle > minAngle)
+                angle -= 5;
+            if (angle < minAngle)
+                angle = minAngle;
+
+            setAngleForServo(angles, servoId, angle);
+            processAngles(angles);
+            updatePositionForce(2U);
             COMM_DEBUG("Current angle: ");
             COMM_DEBUG(angle);
         }
@@ -110,7 +174,7 @@ void jogServo()
         }
         else if (c == 'd')
         {
-            if (servo < 11)
+            if (servo < static_cast<int>(eServo::NUM_SERVOS) - 1)
             {
                 servo++;
                 angle = 0;
@@ -122,6 +186,7 @@ void jogServo()
         {
             goHome();
             COMM_DEBUG("Homed");
+            angles = {};
             angle = 0;
         }
 
@@ -136,29 +201,36 @@ void jogMultiple()
     char c = Serial.read();
     COMM_DEBUG("Entering multiple servos mode");
 
+    static sAngles angles;
+
     while (c != 'q')
     {
         c = Serial.read();
         static int angle = 0;
-        static uint8_t numberOfServos = 12U;
+        static uint8_t numberOfServos = 1U;
 
         if (c == 'z')
         {
             goHome();
             COMM_DEBUG("Homed");
+            angles = {};
             angle = 0;
         }
         else if (c == 'w')
         {
-            if (angle < 90)
+            if (angle < MAX_ANGLE_VERTICAL)
                 angle += 5;
+            if (angle > MAX_ANGLE_VERTICAL)
+                angle = MAX_ANGLE_VERTICAL;
             COMM_DEBUG("Current angle: ");
             COMM_DEBUG(angle);
         }
         else if (c == 's')
         {
-            if (angle > -90)
+            if (angle > MIN_ANGLE_VERTICAL)
                 angle -= 5;
+            if (angle < MIN_ANGLE_VERTICAL)
+                angle = MIN_ANGLE_VERTICAL;
             COMM_DEBUG("Current angle: ");
             COMM_DEBUG(angle);
         }
@@ -183,9 +255,12 @@ void jogMultiple()
 
         for (uint8_t i = 0U; i < numberOfServos; i++)
         {
-            servoGoTo(static_cast<eServo>(i), angle);
+            setAngleForServo(angles, static_cast<eServo>(i), angle);
         }
-        delay(50);
+
+        processAngles(angles);
+        updatePositionForce(2U);
+        delay(100);
     }
 
     COMM_DEBUG("Quitting multiple servos mode");
@@ -193,6 +268,7 @@ void jogMultiple()
 
 void testLegJoints()
 {
+    sAngles angles;
     while (true)
     {
         char c = Serial.read();
@@ -204,27 +280,34 @@ void testLegJoints()
 
         int angle0 = 0;
         int angle1 = 0;
-        servoGoTo(eServo::VERT_A, angle0);
-        servoGoTo(eServo::HORIZ_A, angle1);
+
+        setAngleForServo(angles, eServo::VERT_A, angle0);
+        setAngleForServo(angles, eServo::HORIZ_A, angle1);
+        processAngles(angles);
+        updatePositionForce(2U);
         delay(500);
 
         while (true)
         {
-            if (angle0 <= -90)
+            if (angle0 <= MIN_ANGLE_VERTICAL)
                 break;
-            if (angle1 > -45)
+            if (angle1 > MIN_ANGLE_HORIZONTAL)
                 angle1 -= 2;
             angle0 -= 5;
 
-            servoGoTo(eServo::VERT_A, angle0);
-            servoGoTo(eServo::HORIZ_A, angle1);
+            setAngleForServo(angles, eServo::VERT_A, angle0);
+            setAngleForServo(angles, eServo::HORIZ_A, angle1);
+            processAngles(angles);
+            updatePositionForce(2U);
             delay(50);
         }
 
-        while (angle1 < 45)
+        while (angle1 < MAX_ANGLE_HORIZONTAL)
         {
             angle1 += 5;
-            servoGoTo(eServo::HORIZ_A, angle1);
+            setAngleForServo(angles, eServo::HORIZ_A, angle1);
+            processAngles(angles);
+            updatePositionForce(2U);
             delay(50);
         }
 
@@ -242,8 +325,10 @@ void testLegJoints()
                 if (angle1 < 0)
                     angle1 = 0;
             }
-            servoGoTo(eServo::VERT_A, angle0);
-            servoGoTo(eServo::HORIZ_A, angle1);
+            setAngleForServo(angles, eServo::VERT_A, angle0);
+            setAngleForServo(angles, eServo::HORIZ_A, angle1);
+            processAngles(angles);
+            updatePositionForce(2U);
             delay(50);
             if (angle0 == 0 && angle1 == 0)
                 break;
@@ -252,4 +337,4 @@ void testLegJoints()
     COMM_DEBUG("Quitting single validation mode");
 }
 
-#endif  // ENABLE_DEBUG
+#endif  // ENABLE_MANUAL            
