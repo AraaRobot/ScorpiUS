@@ -131,7 +131,7 @@ class CommNode(Node):
             state_byte = int(request.state).to_bytes(
                 1, byteorder='little', signed=True)
             self.ser.write(self.build_state_packet(state_byte))
-            if (request.state is REBOOT):
+            if (request.state == REBOOT):
                 self._disable_heartbeat_and_flush()
             response.success = True
             response.message = f"Serial write successful"
@@ -197,7 +197,7 @@ class CommNode(Node):
 
     def handle_serial_config(self, request: SerialConfig.Request, response: SerialConfig.Response) -> SerialConfig.Response:
 
-        if request.command == 0:
+        if request.command == SerialConfig.Request.CONNECT:
             try:
                 if self.serial_ready():
                     self.get_logger().info("Serial already open; reopening with new config")
@@ -218,17 +218,18 @@ class CommNode(Node):
                 response.result = False
                 response.response = str(e)
                 self.get_logger().error(response.response)
-        elif request.command == 1:
+        elif request.command == SerialConfig.Request.DISCONNECT:
             if self.serial_ready():
                 self.ser.close()
                 response.result = True
                 response.response = "Closed port"
+                self._disable_heartbeat_and_flush();
             else:
                 response.result = False
                 response.response = "Port was already closed"
         else:
             response.result = False
-            response.response = "Wrong command type"
+            response.response = f"Wrong command type {request.command}"
 
         return response
 
