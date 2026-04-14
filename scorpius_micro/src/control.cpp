@@ -31,6 +31,11 @@ void controlInit()
     goHome();
 }
 
+void controlReset()
+{
+    _driverModule.reset();
+}
+
 static int8_t getAngleForServo(sAngles& angles_, eServo servoId_)
 {
     switch (servoId_)

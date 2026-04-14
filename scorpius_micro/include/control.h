@@ -36,5 +36,6 @@ void processAngles(const sAngles& angles_);
 void updatePosition();
 void servoGoTo(eServo servoId_, int angle_);
 void goHome();
+void controlReset();
 
 #endif  // CONTROL_H
