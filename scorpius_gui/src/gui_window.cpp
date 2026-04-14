@@ -1,5 +1,8 @@
 #include "gui_window.hpp"
 
+#include <rclcpp/qos.hpp>
+#include <rclcpp/duration.hpp>
+
 GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     QMainWindow(parent_),
     _node(node_)

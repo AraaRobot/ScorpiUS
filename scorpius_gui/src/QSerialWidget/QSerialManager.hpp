@@ -6,12 +6,14 @@
 #include "scorpius_main/msg/serial_heartbeat.hpp"
 #include "scorpius_main/msg/serial_status.hpp"
 #include "scorpius_main/srv/serial_ports.hpp"
+#include "scorpius_main/srv/controller_state.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
 #include <QComboBox>
 #include <QGridLayout>
 #include <QLineEdit>
+#include <QLabel>
 #include <QPointer>
 #include <QPushButton>
 #include <QString>
@@ -43,6 +45,7 @@ class QSerialManager : public QWidget
     static constexpr const char* STATUS_MESSAGE_NAME = "/scorpius/serial_status";
     static constexpr const char* PORTS_SERVICE_NAME = "/scorpius/serial_ports";
     static constexpr const char* CONFIG_SERVICE_NAME = "/scorpius/serial_config";
+    static constexpr const char* CONTROLLER_STATE_SERVICE_NAME = "/scorpius/state_controller";
 
     void CB_subStatus(const scorpius_main::msg::SerialStatus& msg_);
 
@@ -51,6 +54,8 @@ class QSerialManager : public QWidget
     std::shared_ptr<rclcpp::Node> _node;
 
     QComboBox* _cbPorts{nullptr};
+    QComboBox* _cbStates{nullptr};
+    QLabel* _lbState{nullptr};
     QGridLayout* _grid{nullptr};
     QPushButton* _pbConnect{nullptr};
     QPushButton* _pbRefresh{nullptr};
@@ -63,6 +68,7 @@ class QSerialManager : public QWidget
     rclcpp::Publisher<scorpius_main::msg::SerialHeartbeat>::SharedPtr _pub_heartbeat;
     rclcpp::Publisher<scorpius_main::msg::SerialStatus>::SharedPtr _pub_status;
     rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _client_config;
+    rclcpp::Client<scorpius_main::srv::ControllerState>::SharedPtr _client_state;
 
   signals:
     void serialPortsSignal(const QStringList& port_name_);
@@ -74,6 +80,7 @@ class QSerialManager : public QWidget
     void serialStatusSlot(const scorpius_main::msg::SerialStatus& message_);
     void connectButtonClicked();
     void refreshButtonClicked();
+    void changeState(int index_);
 };
 
 #endif

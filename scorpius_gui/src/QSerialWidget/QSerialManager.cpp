@@ -5,15 +5,27 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _node(node_)
 {
     _cbPorts = new QComboBox(this);
+    _cbStates = new QComboBox(this);
     _grid = new QGridLayout(this);
     _pbConnect = new QPushButton("Connect", this);
     _pbRefresh = new QPushButton(this);
     _messageDisplay = new QTextEdit(this);
+    _lbState = new QLabel(this);
 
     _cbPorts->addItem("Choose a serial port");
-
     _cbPorts->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
     _cbPorts->setFixedHeight(50);
+
+    _cbStates->addItem("Home");
+    _cbStates->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
+    _cbStates->addItem("Running");
+    _cbStates->setItemData(1, Qt::AlignCenter, Qt::TextAlignmentRole);
+    _cbStates->addItem("Reboot");
+    _cbStates->setItemData(2, Qt::AlignCenter, Qt::TextAlignmentRole);
+    _cbStates->setFixedHeight(50);
+
+    _lbState->setText("State: ");
+    _lbState->setAlignment(Qt::AlignCenter);
 
     _pbRefresh->setText("\u21BB");
     _pbRefresh->setFixedHeight(50);
@@ -33,11 +45,15 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _grid->addWidget(_pbRefresh, 0, 0);
     _grid->addWidget(_cbPorts, 0, 1);
     _grid->addWidget(_pbConnect, 0, 2);
-    _grid->addWidget(_messageDisplay, 1, 0, 1, 3);
+    _grid->addWidget(_lbState, 1, 0);
+    _grid->addWidget(_cbStates, 1, 1, 1, 2);
+    _grid->addWidget(_messageDisplay, 2, 0, 1, 3);
 
     QFont boxFont = _cbPorts->font();
     boxFont.setPointSize(BOX_FONT_SIZE);
     _cbPorts->setFont(boxFont);
+    _cbStates->setFont(boxFont);
+    _lbState->setFont(boxFont);
 
     QFont buttonFont = _pbConnect->font();
     buttonFont.setPointSize(BUTTON_FONT_SIZE);
@@ -60,6 +76,7 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     connect(_pbConnect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_pbRefresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
     connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::writeMessage, Qt::QueuedConnection);
+    connect(_cbStates, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::changeState);
 
     _sub_status
         = _node->create_subscription<scorpius_main::msg::SerialStatus>(STATUS_MESSAGE_NAME,
@@ -71,6 +88,7 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
 
     _client_ports = _node->create_client<scorpius_main::srv::SerialPorts>(PORTS_SERVICE_NAME);
     _client_config = _node->create_client<scorpius_main::srv::SerialConfig>(CONFIG_SERVICE_NAME);
+    _client_state = _node->create_client<scorpius_main::srv::ControllerState>(CONTROLLER_STATE_SERVICE_NAME);
 }
 
 void QSerialManager::CB_subStatus(const scorpius_main::msg::SerialStatus& msg_)
@@ -213,6 +231,70 @@ void QSerialManager::refreshButtonClicked()
             {
                 emit thisPtr->buttonFinishedSignal("Refresh button service failed to respond in time\n");
                 RCLCPP_ERROR(thisPtr->_node->get_logger(), "The server did not respond in time");
+            }
+        });
+}
+
+void QSerialManager::changeState(int idx_)
+{
+    rclcpp::Client<scorpius_main::srv::ControllerState>::WeakPtr weakClient = _client_state;
+    QPointer<QSerialManager> thisPtr = this;
+    idx_++;  // Bring back between 1 and 3
+
+    _executor.addTask(
+        [weakClient, thisPtr, idx_]()
+        {
+            rclcpp::Client<scorpius_main::srv::ControllerState>::SharedPtr client = weakClient.lock();
+
+            if (!client || !thisPtr)
+            {
+                return;
+            }
+
+            if (!client->wait_for_service(std::chrono::milliseconds(WAIT_TIME)))
+            {
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "ControllerState's service is not available");
+                emit thisPtr->buttonFinishedSignal("Controller State service unavailable\n");
+                return;
+            }
+
+            std::shared_ptr<scorpius_main::srv::ControllerState::Request> request
+                = std::make_shared<scorpius_main::srv::ControllerState::Request>();
+
+            if (idx_ <= scorpius_main::srv::ControllerState::Request::FIRST
+                || idx_ >= scorpius_main::srv::ControllerState::Request::LAST)
+            {
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "Invalid controller state");
+                emit thisPtr->buttonFinishedSignal("Invalid controller state\n");
+                return;
+            }
+
+            request->state = idx_;
+
+            auto futureAndRequest = client->async_send_request(request);
+
+            std::future<std::shared_ptr<scorpius_main::srv::ControllerState::Response>> future
+                = std::move(futureAndRequest.future);
+
+            if (future.wait_for(std::chrono::milliseconds(WAIT_TIME)) == std::future_status::ready)
+            {
+                auto response = future.get();
+
+                emit thisPtr->buttonFinishedSignal(QString::fromStdString(response->message));
+
+                if (response->success)
+                {
+                    RCLCPP_INFO(thisPtr->_node->get_logger(), "Change state successfull");
+                }
+                else
+                {
+                    RCLCPP_ERROR(thisPtr->_node->get_logger(), "Change state failed");
+                }
+            }
+            else
+            {
+                emit thisPtr->buttonFinishedSignal("Controller state service failed to respond in time\n");
+                RCLCPP_ERROR(thisPtr->_node->get_logger(), "The controller state server did not respond in time");
             }
         });
 }
