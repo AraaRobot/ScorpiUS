@@ -59,6 +59,7 @@ enum class eInfoCode : uint8_t
 };
 
 void commInit(HardwareSerial& serial_);
+// void commInit(HardwareSerial& serial_, HardwareSerial& serial2_);
 void commProcess();
 eSerialMsgType commConsume(sAngles& angles_);
 bool commSend(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);

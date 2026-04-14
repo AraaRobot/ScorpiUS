@@ -13,21 +13,28 @@ constexpr int8_t MAX_ANGLE_HORIZONTAL = 45;
 constexpr int8_t MIN_ANGLE_HORIZONTAL = -45;
 constexpr int8_t HOME_ANGLE = 0;
 
-enum class eServo : uint8_t
+enum class eServo1 : uint8_t
 {
+    // Servos on first driver
     VERT_A = 0,
     HORIZ_A,
     VERT_B,
     HORIZ_B,
     VERT_C,
     HORIZ_C,
-    VERT_D,
+    // Add servos here...
+    NUM_SERVOS,
+};
+
+// Servos on second driver
+enum class eServo2 : uint8_t
+{
+    VERT_D = 0U,
     HORIZ_D,
     VERT_E,
     HORIZ_E,
     VERT_F,
     HORIZ_F,
-    // Add servos here...
     NUM_SERVOS
 };
 
@@ -38,7 +45,8 @@ void updatePosition();
 // without waiting for the normal time-based gating. Each step updates one servo group
 // (vertical or horizontal), so use 2 steps to update both groups.
 void updatePositionForce(uint8_t steps_);
-void servoGoTo(eServo servoId_, int angle_);
+void servoGoTo1(eServo1 servoId_, int angle_);
+void servoGoTo2(eServo2 servoId_, int angle_);
 void goHome();
 
 #endif  // CONTROL_H

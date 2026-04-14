@@ -4,61 +4,80 @@
 
 namespace
 {
-    bool isVerticalServo(eServo servo_)
+    constexpr uint8_t NUM_SERVOS_BOARD_1 = static_cast<uint8_t>(eServo1::NUM_SERVOS);
+    constexpr uint8_t NUM_SERVOS_BOARD_2 = static_cast<uint8_t>(eServo2::NUM_SERVOS);
+    constexpr uint8_t NUM_SERVOS_TOTAL = NUM_SERVOS_BOARD_1 + NUM_SERVOS_BOARD_2;
+
+    uint8_t getServoIndexWithinBoard(uint8_t servoIndex_)
     {
-        return (static_cast<uint8_t>(servo_) % 2U) == 0U;
+        return (servoIndex_ < NUM_SERVOS_BOARD_1) ? servoIndex_ : (servoIndex_ - NUM_SERVOS_BOARD_1);
     }
 
-    int getServoMinAngle(eServo servo_)
+    bool isVerticalServo(uint8_t servoIndex_)
     {
-        return isVerticalServo(servo_) ? MIN_ANGLE_VERTICAL : MIN_ANGLE_HORIZONTAL;
+        return (getServoIndexWithinBoard(servoIndex_) % 2U) == 0U;
     }
 
-    int getServoMaxAngle(eServo servo_)
+    int getServoMinAngle(uint8_t servoIndex_)
     {
-        return isVerticalServo(servo_) ? MAX_ANGLE_VERTICAL : MAX_ANGLE_HORIZONTAL;
+        return isVerticalServo(servoIndex_) ? MIN_ANGLE_VERTICAL : MIN_ANGLE_HORIZONTAL;
     }
 
-    void setAngleForServo(sAngles& angles_, eServo servoId_, int angle_)
+    int getServoMaxAngle(uint8_t servoIndex_)
     {
-        const int8_t a = static_cast<int8_t>(angle_);
-        switch (servoId_)
+        return isVerticalServo(servoIndex_) ? MAX_ANGLE_VERTICAL : MAX_ANGLE_HORIZONTAL;
+    }
+
+    void setAngleForServo(sAngles& angles_, uint8_t servoIndex_, const int8_t angle_)
+    {
+        if (servoIndex_ < NUM_SERVOS_BOARD_1)
         {
-            case eServo::VERT_A:
-                angles_.vert_a = a;
+            switch (static_cast<eServo1>(servoIndex_))
+            {
+                case eServo1::VERT_A:
+                    angles_.vert_a = angle_;
+                    break;
+                case eServo1::VERT_B:
+                    angles_.vert_b = angle_;
+                    break;
+                case eServo1::VERT_C:
+                    angles_.vert_c = angle_;
+                    break;
+                case eServo1::HORIZ_A:
+                    angles_.hori_a = angle_;
+                    break;
+                case eServo1::HORIZ_B:
+                    angles_.hori_b = angle_;
+                    break;
+                case eServo1::HORIZ_C:
+                    angles_.hori_c = angle_;
+                    break;
+                default:
+                    break;
+            }
+            return;
+        }
+
+        const uint8_t board2Index = getServoIndexWithinBoard(servoIndex_);
+        switch (static_cast<eServo2>(board2Index))
+        {
+            case eServo2::VERT_D:
+                angles_.vert_d = angle_;
                 break;
-            case eServo::VERT_B:
-                angles_.vert_b = a;
+            case eServo2::VERT_E:
+                angles_.vert_e = angle_;
                 break;
-            case eServo::VERT_C:
-                angles_.vert_c = a;
+            case eServo2::VERT_F:
+                angles_.vert_f = angle_;
                 break;
-            case eServo::VERT_D:
-                angles_.vert_d = a;
+            case eServo2::HORIZ_D:
+                angles_.hori_d = angle_;
                 break;
-            case eServo::VERT_E:
-                angles_.vert_e = a;
+            case eServo2::HORIZ_E:
+                angles_.hori_e = angle_;
                 break;
-            case eServo::VERT_F:
-                angles_.vert_f = a;
-                break;
-            case eServo::HORIZ_A:
-                angles_.hori_a = a;
-                break;
-            case eServo::HORIZ_B:
-                angles_.hori_b = a;
-                break;
-            case eServo::HORIZ_C:
-                angles_.hori_c = a;
-                break;
-            case eServo::HORIZ_D:
-                angles_.hori_d = a;
-                break;
-            case eServo::HORIZ_E:
-                angles_.hori_e = a;
-                break;
-            case eServo::HORIZ_F:
-                angles_.hori_f = a;
+            case eServo2::HORIZ_F:
+                angles_.hori_f = angle_;
                 break;
             default:
                 break;
@@ -131,10 +150,9 @@ void jogServo()
     {
         c = Serial.read();
         static int angle = 0;
-        static int servo = 0;
-        const eServo servoId = static_cast<eServo>(servo);
-        const int minAngle = getServoMinAngle(servoId);
-        const int maxAngle = getServoMaxAngle(servoId);
+        static uint8_t servo = 0U;
+        const int minAngle = getServoMinAngle(servo);
+        const int maxAngle = getServoMaxAngle(servo);
 
         if (c == 'w')
         {
@@ -143,7 +161,7 @@ void jogServo()
             if (angle > maxAngle)
                 angle = maxAngle;
 
-            setAngleForServo(angles, servoId, angle);
+            setAngleForServo(angles, servo, angle);
             processAngles(angles);
             updatePositionForce(2U);
             COMM_DEBUG("Current angle: ");
@@ -156,7 +174,7 @@ void jogServo()
             if (angle < minAngle)
                 angle = minAngle;
 
-            setAngleForServo(angles, servoId, angle);
+            setAngleForServo(angles, servo, angle);
             processAngles(angles);
             updatePositionForce(2U);
             COMM_DEBUG("Current angle: ");
@@ -174,7 +192,7 @@ void jogServo()
         }
         else if (c == 'd')
         {
-            if (servo < static_cast<int>(eServo::NUM_SERVOS) - 1)
+            if (servo < static_cast<int>(NUM_SERVOS_TOTAL) - 1)
             {
                 servo++;
                 angle = 0;
@@ -236,7 +254,7 @@ void jogMultiple()
         }
         else if (c == 'd')
         {
-            if (numberOfServos < static_cast<uint8_t>(eServo::NUM_SERVOS))
+            if (numberOfServos < NUM_SERVOS_TOTAL)
             {
                 numberOfServos++;
             }
@@ -255,7 +273,7 @@ void jogMultiple()
 
         for (uint8_t i = 0U; i < numberOfServos; i++)
         {
-            setAngleForServo(angles, static_cast<eServo>(i), angle);
+            setAngleForServo(angles, i, angle);
         }
 
         processAngles(angles);
@@ -281,8 +299,8 @@ void testLegJoints()
         int angle0 = 0;
         int angle1 = 0;
 
-        setAngleForServo(angles, eServo::VERT_A, angle0);
-        setAngleForServo(angles, eServo::HORIZ_A, angle1);
+        setAngleForServo(angles, static_cast<uint8_t>(eServo1::VERT_A), angle0);
+        setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
         processAngles(angles);
         updatePositionForce(2U);
         delay(500);
@@ -295,8 +313,8 @@ void testLegJoints()
                 angle1 -= 2;
             angle0 -= 5;
 
-            setAngleForServo(angles, eServo::VERT_A, angle0);
-            setAngleForServo(angles, eServo::HORIZ_A, angle1);
+            setAngleForServo(angles, static_cast<uint8_t>(eServo1::VERT_A), angle0);
+            setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
             processAngles(angles);
             updatePositionForce(2U);
             delay(50);
@@ -305,7 +323,7 @@ void testLegJoints()
         while (angle1 < MAX_ANGLE_HORIZONTAL)
         {
             angle1 += 5;
-            setAngleForServo(angles, eServo::HORIZ_A, angle1);
+            setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
             processAngles(angles);
             updatePositionForce(2U);
             delay(50);
@@ -325,8 +343,8 @@ void testLegJoints()
                 if (angle1 < 0)
                     angle1 = 0;
             }
-            setAngleForServo(angles, eServo::VERT_A, angle0);
-            setAngleForServo(angles, eServo::HORIZ_A, angle1);
+            setAngleForServo(angles, static_cast<uint8_t>(eServo1::VERT_A), angle0);
+            setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
             processAngles(angles);
             updatePositionForce(2U);
             delay(50);
