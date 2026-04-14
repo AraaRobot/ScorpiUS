@@ -48,5 +48,6 @@ void updatePositionForce(uint8_t steps_);
 void servoGoTo1(eServo1 servoId_, int angle_);
 void servoGoTo2(eServo2 servoId_, int angle_);
 void goHome();
+void controlReset();
 
 #endif  // CONTROL_H

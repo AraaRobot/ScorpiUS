@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
-
+#include <avr/wdt.h>
 #include "comm.h"
 #include "control.h"
 #include "state_machine.h"
@@ -10,8 +10,21 @@
 #include "manual.h"
 #endif
 
+void resetArduino()
+{
+    controlReset();
+    delay(20);
+
+    wdt_enable(WDTO_15MS);
+    while (1)
+    {
+        // Watchdog will trigger after 15 ms and reset the arduino
+    }
+}
+
 void setup()
 {
+    wdt_disable();
     Serial.begin(115200);
     delay(100);  // Give serial time to initialize
 
@@ -47,7 +60,7 @@ void loop()
     }
     else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
     {
-        // TODO: Implement reboot logic
+        resetArduino();
     }
 
     static unsigned long lastHeartbeat = 0;
