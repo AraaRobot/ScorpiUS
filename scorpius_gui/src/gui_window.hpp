@@ -1,6 +1,10 @@
 #ifndef GUI_WINDOW_HPP
 #define GUI_WINDOW_HPP
 
+#include "debug_widget/debug_widget_manager.hpp"
+#include "QControllerWidget/QControllerManager.hpp"
+#include "QSerialWidget/QSerialManager.hpp"
+
 #include <QApplication>
 #include <QGridLayout>
 #include <QKeyEvent>
@@ -10,9 +14,7 @@
 #include <QWidget>
 #include <rclcpp/rclcpp.hpp>
 
-#include "debug_widget/debug_widget_manager.hpp"
-#include "QControllerWidget/QControllerManager.hpp"
-#include "QSerialWidget/QSerialManager.hpp"
+#include <utility>
 
 class GuiWindow : public QMainWindow
 {
