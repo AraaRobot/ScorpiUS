@@ -172,7 +172,7 @@ void GuiWindow::setupSubHeartbeat()
     options.event_callbacks.message_lost_callback = [this](rclcpp::QOSMessageLostInfo& info_)
     {
         RCLCPP_ERROR(_node->get_logger(),
-                     "Heartbeat messages lost! total=%d delta=%d",
+                     "Heartbeat messages lost! total=%ld delta=%ld",
                      info_.total_count,
                      info_.total_count_change);
     };
