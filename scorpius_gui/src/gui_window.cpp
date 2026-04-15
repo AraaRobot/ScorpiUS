@@ -198,6 +198,9 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
                 case Qt::Key_S:
                     _tabs->setCurrentIndex(2);
                     return true;
+                case Qt::Key_A:
+                    _tabs->setCurrentIndex(3);
+                    return true;
                 case Qt::Key_Space:
                     this->setBackground();
                     return true;

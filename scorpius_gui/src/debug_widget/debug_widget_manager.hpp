@@ -48,9 +48,11 @@ class DebugWidgetManager : public QWidget
 
   signals:
     void CB_subStepSignal(const scorpius_main::msg::Step& msg_);
+    void CB_subTailSignal(float tail_angle_);
 
   private slots:
     void CB_subStepSlot(const scorpius_main::msg::Step& msg_);
+    void CB_subTailSlot(float tail_angle_);
 
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
@@ -58,6 +60,7 @@ class DebugWidgetManager : public QWidget
 
     QGridLayout* _grid;
     QLabel* _stepLabel{nullptr};
+    QLabel* _tailLabel{nullptr};
 
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Subscription<scorpius_main::msg::ServoAngles>::SharedPtr _sub_teleop;
