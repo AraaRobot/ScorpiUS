@@ -63,6 +63,11 @@ void loop()
         resetArduino();
     }
 
+    if (controllerStateMachine == eStates::RUNNING)
+    {
+        updatePosition();
+    }
+
     static unsigned long lastHeartbeat = 0;
     unsigned long now = millis();
     // Heartbeat at 2 Hz (every 500 ms)
