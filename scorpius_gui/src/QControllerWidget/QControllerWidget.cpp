@@ -58,7 +58,6 @@ void QControllerWidget::paintEvent(QPaintEvent*)
         return;
     }
 
-    
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     p.setRenderHint(QPainter::SmoothPixmapTransform);

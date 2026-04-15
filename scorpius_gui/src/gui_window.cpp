@@ -97,42 +97,46 @@ void GuiWindow::setBackground()
     _controllerManager->setObjectName("controllerManager");
     _serialManager->setObjectName("serialManager");
 
-    _debugTab->setStyleSheet("#debugTab {" + bgImageStyle + "}"
-                             "#debugWidgetManager, #debugWidgetManager * {"
-                             "    background-color: rgba(255, 255, 255, 0.8);"
-                             "    color: black;"
-                             "    border: 1px solid rgba(0, 0, 0, 0.12);"
-                             "}");
-    _controllerTab->setStyleSheet("#controllerTab {" + bgImageStyle + "}"
-                                  "#controllerManager {"
-                                  "    background: transparent;"
-                                  "}"
-                                  "#controllerManager * {"
-                                  "    color: black;"
-                                  "}");
-    _serialTab->setStyleSheet("#serialTab {" + bgImageStyle + "}"
-                               "#serialManager, #serialManager * {"
+    _debugTab->setStyleSheet("#debugTab {" + bgImageStyle
+                             + "}"
+                               "#debugWidgetManager, #debugWidgetManager * {"
                                "    background-color: rgba(255, 255, 255, 0.8);"
                                "    color: black;"
                                "    border: 1px solid rgba(0, 0, 0, 0.12);"
                                "}");
-    _dashboard->setStyleSheet("#dashboardTab {" + bgImageStyle + "}"
-                              "#debugWidgetManager, #debugWidgetManager * {"
-                              "    background-color: rgba(255, 255, 255, 0.8);"
-                              "    color: black;"
-                              "    border: 1px solid rgba(0, 0, 0, 0.12);"
-                              "}"
-                              "#controllerManager {"
-                              "    background: transparent;"
-                              "}"
-                              "#controllerManager * {"
-                              "    color: black;"
-                              "}"
-                              "#serialManager, #serialManager * {"
-                              "    background-color: rgba(255, 255, 255, 0.8);"
-                              "    color: black;"
-                              "    border: 1px solid rgba(0, 0, 0, 0.12);"
-                              "}");
+    _controllerTab->setStyleSheet("#controllerTab {" + bgImageStyle
+                                  + "}"
+                                    "#controllerManager {"
+                                    "    background: transparent;"
+                                    "}"
+                                    "#controllerManager * {"
+                                    "    color: black;"
+                                    "}");
+    _serialTab->setStyleSheet("#serialTab {" + bgImageStyle
+                              + "}"
+                                "#serialManager, #serialManager * {"
+                                "    background-color: rgba(255, 255, 255, 0.8);"
+                                "    color: black;"
+                                "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                                "}");
+    _dashboard->setStyleSheet("#dashboardTab {" + bgImageStyle
+                              + "}"
+                                "#debugWidgetManager, #debugWidgetManager * {"
+                                "    background-color: rgba(255, 255, 255, 0.8);"
+                                "    color: black;"
+                                "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                                "}"
+                                "#controllerManager {"
+                                "    background: transparent;"
+                                "}"
+                                "#controllerManager * {"
+                                "    color: black;"
+                                "}"
+                                "#serialManager, #serialManager * {"
+                                "    background-color: rgba(255, 255, 255, 0.8);"
+                                "    color: black;"
+                                "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                                "}");
 }
 
 void GuiWindow::onCurrentTabChanged(int index)
