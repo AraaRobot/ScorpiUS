@@ -12,9 +12,9 @@ namespace
     sAngles _lastAngles;
 
     constexpr eServo1 _servosBoard1[static_cast<uint8_t>(eServo1::NUM_SERVOS)]
-        = {eServo1::VERT_A, eServo1::VERT_B, eServo1::VERT_C, eServo1::HORIZ_A, eServo1::HORIZ_B, eServo1::HORIZ_C};
+        = {eServo1::VERT_A, eServo1::VERT_B, eServo1::VERT_F, eServo1::HORIZ_A, eServo1::HORIZ_B, eServo1::HORIZ_F};
     constexpr eServo2 _servosBoard2[static_cast<uint8_t>(eServo2::NUM_SERVOS)]
-        = {eServo2::VERT_D, eServo2::VERT_E, eServo2::VERT_F, eServo2::HORIZ_D, eServo2::HORIZ_E, eServo2::HORIZ_F};
+        = {eServo2::VERT_D, eServo2::VERT_E, eServo2::VERT_C, eServo2::HORIZ_D, eServo2::HORIZ_E, eServo2::HORIZ_C, eServo2::TAIL};
 
     enum class eControllerState : uint8_t
     {
@@ -59,13 +59,13 @@ static int8_t getAngleForServo1(sAngles& angles_, eServo1 servoId_)
             return angles_.vert_a;
         case eServo1::VERT_B:
             return angles_.vert_b;
-        case eServo1::VERT_C:
+        case eServo1::VERT_F:
             return angles_.vert_c;
         case eServo1::HORIZ_A:
             return angles_.hori_a;
         case eServo1::HORIZ_B:
             return angles_.hori_b;
-        case eServo1::HORIZ_C:
+        case eServo1::HORIZ_F:
             return angles_.hori_c;
         default:
             return angles_.vert_a;
@@ -80,14 +80,16 @@ static int8_t getAngleForServo2(sAngles& angles_, eServo2 servoId_)
             return angles_.vert_d;
         case eServo2::VERT_E:
             return angles_.vert_e;
-        case eServo2::VERT_F:
+        case eServo2::VERT_C:
             return angles_.vert_f;
         case eServo2::HORIZ_D:
             return angles_.hori_d;
         case eServo2::HORIZ_E:
             return angles_.hori_e;
-        case eServo2::HORIZ_F:
+        case eServo2::HORIZ_C:
             return angles_.hori_f;
+        // case eServo2::TAIL:
+        //     return angles_.tail;
         default:
             return angles_.vert_a;
     }
@@ -176,7 +178,7 @@ void servoGoTo1(eServo1 servoId_, int angle_)
             [[fallthrough]];
         case eServo1::VERT_B:
             [[fallthrough]];
-        case eServo1::VERT_C:
+        case eServo1::VERT_F:
             desiredAngle = constrain(angle_, MIN_ANGLE_VERTICAL, MAX_ANGLE_VERTICAL);
             _driverModule1.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
@@ -184,7 +186,7 @@ void servoGoTo1(eServo1 servoId_, int angle_)
             [[fallthrough]];
         case eServo1::HORIZ_B:
             [[fallthrough]];
-        case eServo1::HORIZ_C:
+        case eServo1::HORIZ_F:
             desiredAngle = constrain(angle_, MIN_ANGLE_HORIZONTAL, MAX_ANGLE_HORIZONTAL);
             _driverModule1.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
@@ -206,7 +208,7 @@ void servoGoTo2(eServo2 servoId_, int angle_)
             [[fallthrough]];
         case eServo2::VERT_E:
             [[fallthrough]];
-        case eServo2::VERT_F:
+        case eServo2::VERT_C:
             desiredAngle = constrain(angle_, MIN_ANGLE_VERTICAL, MAX_ANGLE_VERTICAL);
             _driverModule2.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
@@ -214,7 +216,9 @@ void servoGoTo2(eServo2 servoId_, int angle_)
             [[fallthrough]];
         case eServo2::HORIZ_E:
             [[fallthrough]];
-        case eServo2::HORIZ_F:
+        case eServo2::HORIZ_C:
+            [[fallthrough]];
+        case eServo2::TAIL:
             desiredAngle = constrain(angle_, MIN_ANGLE_HORIZONTAL, MAX_ANGLE_HORIZONTAL);
             _driverModule2.setPWM(static_cast<uint8_t>(servoId_), 0, angleToPulse(desiredAngle));
             break;
