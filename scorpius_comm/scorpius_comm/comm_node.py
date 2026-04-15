@@ -68,11 +68,11 @@ class CommNode(Node):
             depth=1,
             history=HistoryPolicy.KEEP_LAST,
             reliability=ReliabilityPolicy.RELIABLE,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
             deadline=Duration(seconds=1.0),
             lifespan=Duration(seconds=1.5),
             liveliness=LivelinessPolicy.AUTOMATIC,
-            liveliness_lease_duration=Duration(seconds=1.5),
+            liveliness_lease_duration=Duration(seconds=1.5),    
         )
 
         self.heartbeat_pub = self.create_publisher(
