@@ -4,11 +4,23 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
     QWidget(parent_),
     _node(node_)
 {
+    setAttribute(Qt::WA_StyledBackground, true);
+    setAutoFillBackground(false);
+
     _widget = new QControllerWidget(node_, ps4Profile(), this);
+    _widget->setObjectName("controllerWidget");
     _client = _node->create_client<scorpius_main::srv::JoyConfig>(SERVICE_NAME);
 
     this->setupUI();
     this->setupLayout();
+    this->setStyleSheet("QControllerManager { background: transparent; }"
+                        "#deadzoneLabel, #controllerSelectLabel, #deadzoneBox, #controllerSelectBox {"
+                        "    background-color: rgba(255, 255, 255, 0.7);"
+                        "    color: black;"
+                        "}"
+                        "#deadzoneBox, #controllerSelectBox {"
+                        "    border: 1px solid rgba(0, 0, 0, 0.15);"
+                        "}");
     this->setDeadzone();
 
     connect(_deadzoneBox, &QDoubleSpinBox::valueChanged, this, &QControllerManager::setDeadzone);
@@ -41,19 +53,23 @@ QControllerManager::~QControllerManager()
 void QControllerManager::setupUI()
 {
     _deadzoneBox = new QDoubleSpinBox(this);
+    _deadzoneBox->setObjectName("deadzoneBox");
     _deadzoneBox->setRange(0.0, 1.0);
     _deadzoneBox->setSingleStep(0.01);
     _deadzoneBox->setDecimals(2);
     _deadzoneBox->setValue(JOYSTICK_DEADZONE_DEFAULT);
 
     _deadzoneLabel = new QLabel(this);
+    _deadzoneLabel->setObjectName("deadzoneLabel");
     _deadzoneLabel->setText("Deadzone");
 
     _controllerSelectBox = new QComboBox(this);
+    _controllerSelectBox->setObjectName("controllerSelectBox");
     _controllerSelectBox->addItem("PS4", "PS4");
     _controllerSelectBox->addItem("Xbox", "Xbox");
 
-    _controllerSelectLabel = new QLabel;
+    _controllerSelectLabel = new QLabel(this);
+    _controllerSelectLabel->setObjectName("controllerSelectLabel");
     _controllerSelectLabel->setText("Controller");
 };
 
