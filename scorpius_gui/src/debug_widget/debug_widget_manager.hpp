@@ -2,11 +2,13 @@
 #define DEBUG_WIDGET_MANAGER
 
 #include <QWidget>
+#include <QLabel>
 #include <QGridLayout>
 #include <array>
 
 #include <rclcpp/rclcpp.hpp>
 #include "scorpius_main/msg/servo_angles.hpp"
+#include "scorpius_main/msg/step.hpp"
 #include "debug_widget.hpp"
 
 class DebugWidgetManager : public QWidget
@@ -15,6 +17,8 @@ class DebugWidgetManager : public QWidget
 
     static constexpr int ROWS = 3;
     static constexpr int COLS = 2;
+
+    static constexpr int LABEL_FONT_SIZE = 24;
 
     static constexpr std::array<char, ROWS * COLS> aNumberToLetter = {'A', 'F', 'B', 'E', 'C', 'D'};
 
@@ -42,13 +46,21 @@ class DebugWidgetManager : public QWidget
     DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
     ~DebugWidgetManager();
 
+  signals:
+    void CB_subStepSignal(const scorpius_main::msg::Step& msg_);
+
+  private slots:
+    void CB_subStepSlot(const scorpius_main::msg::Step& msg_);
+
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
 
     QGridLayout* _grid;
+    QLabel* _stepLabel{nullptr};
 
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Subscription<scorpius_main::msg::ServoAngles>::SharedPtr _sub_teleop;
+    rclcpp::Subscription<scorpius_main::msg::Step>::SharedPtr _sub_step;
 
     std::array<std::unique_ptr<DebugWidget>, ROWS * COLS> _debugWidgets;
 };

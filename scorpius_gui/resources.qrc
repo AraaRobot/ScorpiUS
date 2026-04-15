@@ -2,5 +2,7 @@
     <qresource prefix="/images">
         <file>images/Dualshock_4_Layout.svg</file>
         <file>images/xbox-series-x.svg</file>
+        <file>images/gui_wallpaper_vert.png</file>
+        <file>images/gui_wallpaper_vert_easter_egg.png</file>
     </qresource>
 </RCC>

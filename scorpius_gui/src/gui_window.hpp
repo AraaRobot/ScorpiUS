@@ -40,6 +40,7 @@ class GuiWindow : public QMainWindow
     explicit GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
 
     int addTab(QWidget* page, const QString& label);
+    void setBackground();
 
   signals:
     void toggleBlink(HeartbeatBlinker::eState state_);

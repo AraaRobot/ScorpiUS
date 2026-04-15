@@ -11,6 +11,11 @@ QControllerWidget::QControllerWidget(std::shared_ptr<rclcpp::Node> node_, sContr
         RCLCPP_ERROR(_node->get_logger(), "SVG was not loaded");
     }
 
+    setAttribute(Qt::WA_StyledBackground, true);
+    setAutoFillBackground(false);  // Critical: stops Qt from filling bg with palette color
+    // Single stylesheet, no duplicate
+    setStyleSheet("QControllerWidget { background: transparent; }");
+
     connect(this, &QControllerWidget::signal_joyMsg, this, &QControllerWidget::slot_joyMsg);
 
     _sub_joy = _node->create_subscription<scorpius_main::msg::Joy>(TOPIC_JOY,
