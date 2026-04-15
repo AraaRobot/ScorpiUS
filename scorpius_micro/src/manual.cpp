@@ -81,7 +81,7 @@ namespace
                 angles_.vert_b = angle_;
                 break;
             case eServo1::VERT_F:
-                angles_.vert_c = angle_;
+                angles_.vert_f = angle_;
                 break;
             case eServo1::HORIZ_A:
                 angles_.hori_a = angle_;
@@ -90,7 +90,7 @@ namespace
                 angles_.hori_b = angle_;
                 break;
             case eServo1::HORIZ_F:
-                angles_.hori_c = angle_;
+                angles_.hori_f = angle_;
                 break;
             default:
                 break;
@@ -108,7 +108,7 @@ namespace
                 angles_.vert_e = angle_;
                 break;
             case eServo2::VERT_C:
-                angles_.vert_f = angle_;
+                angles_.vert_c = angle_;
                 break;
             case eServo2::HORIZ_D:
                 angles_.hori_d = angle_;
@@ -117,7 +117,7 @@ namespace
                 angles_.hori_e = angle_;
                 break;
             case eServo2::HORIZ_C:
-                angles_.hori_f = angle_;
+                angles_.hori_c = angle_;
                 break;
             // case eServo2::TAIL:
             //     angles_.tail = angle_;

@@ -43,8 +43,9 @@ void controlInit();
 void processAngles(const sAngles& angles_);
 void updatePosition();
 // Forces immediate position updates by stepping the internal update state machine
-// without waiting for the normal time-based gating. Each step updates one servo group
-// (vertical or horizontal), so use 2 steps to update both groups.
+// without waiting for the normal time-based gating. Each step updates one driver
+// board (BOARD1 or BOARD2), alternating between them, so use 2 steps to update
+// both boards.
 void updatePositionForce(uint8_t steps_);
 void servoGoTo1(eServo1 servoId_, int angle_);
 void servoGoTo2(eServo2 servoId_, int angle_);

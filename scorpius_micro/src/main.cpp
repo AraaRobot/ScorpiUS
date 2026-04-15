@@ -52,7 +52,6 @@ void loop()
     if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
     {
         processAngles(angles);
-        updatePosition();
     }
     else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
     {
@@ -61,6 +60,11 @@ void loop()
     else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
     {
         resetArduino();
+    }
+
+    if (controllerStateMachine == eStates::RUNNING)
+    {
+        updatePosition();
     }
 
     static unsigned long lastHeartbeat = 0;
