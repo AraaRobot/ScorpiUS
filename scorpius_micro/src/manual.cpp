@@ -7,15 +7,58 @@ namespace
     constexpr uint8_t NUM_SERVOS_BOARD_1 = static_cast<uint8_t>(eServo1::NUM_SERVOS);
     constexpr uint8_t NUM_SERVOS_BOARD_2 = static_cast<uint8_t>(eServo2::NUM_SERVOS);
     constexpr uint8_t NUM_SERVOS_TOTAL = NUM_SERVOS_BOARD_1 + NUM_SERVOS_BOARD_2;
+    constexpr uint8_t NUM_LEGS = 6U;
+
+    constexpr eServo1 SERVO_ORDER_BOARD_1[NUM_SERVOS_BOARD_1]
+        = {eServo1::VERT_A, eServo1::VERT_B, eServo1::VERT_F, eServo1::HORIZ_A, eServo1::HORIZ_B, eServo1::HORIZ_F};
+    constexpr eServo2 SERVO_ORDER_BOARD_2[NUM_SERVOS_BOARD_2] = {eServo2::VERT_D,
+                                                                 eServo2::VERT_E,
+                                                                 eServo2::VERT_C,
+                                                                 eServo2::HORIZ_D,
+                                                                 eServo2::HORIZ_E,
+                                                                 eServo2::HORIZ_C,
+                                                                 eServo2::TAIL};
 
     uint8_t getServoIndexWithinBoard(uint8_t servoIndex_)
     {
         return (servoIndex_ < NUM_SERVOS_BOARD_1) ? servoIndex_ : (servoIndex_ - NUM_SERVOS_BOARD_1);
     }
 
+    bool isVerticalServo(const eServo1 servo_)
+    {
+        switch (servo_)
+        {
+            case eServo1::VERT_A:
+            case eServo1::VERT_B:
+            case eServo1::VERT_F:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    bool isVerticalServo(const eServo2 servo_)
+    {
+        switch (servo_)
+        {
+            case eServo2::VERT_D:
+            case eServo2::VERT_E:
+            case eServo2::VERT_C:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     bool isVerticalServo(uint8_t servoIndex_)
     {
-        return (getServoIndexWithinBoard(servoIndex_) % 2U) == 0U;
+        if (servoIndex_ < NUM_SERVOS_BOARD_1)
+        {
+            return isVerticalServo(SERVO_ORDER_BOARD_1[servoIndex_]);
+        }
+
+        const uint8_t board2Index = getServoIndexWithinBoard(servoIndex_);
+        return isVerticalServo(SERVO_ORDER_BOARD_2[board2Index]);
     }
 
     int getServoMinAngle(uint8_t servoIndex_)
@@ -28,38 +71,36 @@ namespace
         return isVerticalServo(servoIndex_) ? MAX_ANGLE_VERTICAL : MAX_ANGLE_HORIZONTAL;
     }
 
-    void setAngleForServo(sAngles& angles_, uint8_t servoIndex_, const int8_t angle_)
+    void setAngleForServoId(sAngles& angles_, const eServo1 servo_, const int8_t angle_)
     {
-        if (servoIndex_ < NUM_SERVOS_BOARD_1)
+        switch (servo_)
         {
-            switch (static_cast<eServo1>(servoIndex_))
-            {
-                case eServo1::VERT_A:
-                    angles_.vert_a = angle_;
-                    break;
-                case eServo1::VERT_B:
-                    angles_.vert_b = angle_;
-                    break;
-                case eServo1::VERT_C:
-                    angles_.vert_c = angle_;
-                    break;
-                case eServo1::HORIZ_A:
-                    angles_.hori_a = angle_;
-                    break;
-                case eServo1::HORIZ_B:
-                    angles_.hori_b = angle_;
-                    break;
-                case eServo1::HORIZ_C:
-                    angles_.hori_c = angle_;
-                    break;
-                default:
-                    break;
-            }
-            return;
+            case eServo1::VERT_A:
+                angles_.vert_a = angle_;
+                break;
+            case eServo1::VERT_B:
+                angles_.vert_b = angle_;
+                break;
+            case eServo1::VERT_F:
+                angles_.vert_f = angle_;
+                break;
+            case eServo1::HORIZ_A:
+                angles_.hori_a = angle_;
+                break;
+            case eServo1::HORIZ_B:
+                angles_.hori_b = angle_;
+                break;
+            case eServo1::HORIZ_F:
+                angles_.hori_f = angle_;
+                break;
+            default:
+                break;
         }
+    }
 
-        const uint8_t board2Index = getServoIndexWithinBoard(servoIndex_);
-        switch (static_cast<eServo2>(board2Index))
+    void setAngleForServoId(sAngles& angles_, const eServo2 servo_, const int8_t angle_)
+    {
+        switch (servo_)
         {
             case eServo2::VERT_D:
                 angles_.vert_d = angle_;
@@ -67,8 +108,8 @@ namespace
             case eServo2::VERT_E:
                 angles_.vert_e = angle_;
                 break;
-            case eServo2::VERT_F:
-                angles_.vert_f = angle_;
+            case eServo2::VERT_C:
+                angles_.vert_c = angle_;
                 break;
             case eServo2::HORIZ_D:
                 angles_.hori_d = angle_;
@@ -76,8 +117,76 @@ namespace
             case eServo2::HORIZ_E:
                 angles_.hori_e = angle_;
                 break;
-            case eServo2::HORIZ_F:
-                angles_.hori_f = angle_;
+            case eServo2::HORIZ_C:
+                angles_.hori_c = angle_;
+                break;
+            // case eServo2::TAIL:
+            //     angles_.tail = angle_;
+            default:
+                break;
+        }
+    }
+
+    void setAngleForServo(sAngles& angles_, uint8_t servoIndex_, const int8_t angle_)
+    {
+        if (servoIndex_ < NUM_SERVOS_BOARD_1)
+        {
+            setAngleForServoId(angles_, SERVO_ORDER_BOARD_1[servoIndex_], angle_);
+            return;
+        }
+
+        const uint8_t board2Index = getServoIndexWithinBoard(servoIndex_);
+        setAngleForServoId(angles_, SERVO_ORDER_BOARD_2[board2Index], angle_);
+    }
+
+    char getLegName(uint8_t legIndex_)
+    {
+        switch (legIndex_)
+        {
+            case 0U:
+                return 'A';
+            case 1U:
+                return 'B';
+            case 2U:
+                return 'C';
+            case 3U:
+                return 'D';
+            case 4U:
+                return 'E';
+            case 5U:
+                return 'F';
+            default:
+                return '?';
+        }
+    }
+
+    void setAngleForLeg(sAngles& angles_, uint8_t legIndex_, int8_t verticalAngle_, int8_t horizontalAngle_)
+    {
+        switch (legIndex_)
+        {
+            case 0U:
+                setAngleForServoId(angles_, eServo1::VERT_A, verticalAngle_);
+                setAngleForServoId(angles_, eServo1::HORIZ_A, horizontalAngle_);
+                break;
+            case 1U:
+                setAngleForServoId(angles_, eServo1::VERT_B, verticalAngle_);
+                setAngleForServoId(angles_, eServo1::HORIZ_B, horizontalAngle_);
+                break;
+            case 2U:
+                setAngleForServoId(angles_, eServo2::VERT_C, verticalAngle_);
+                setAngleForServoId(angles_, eServo2::HORIZ_C, horizontalAngle_);
+                break;
+            case 3U:
+                setAngleForServoId(angles_, eServo2::VERT_D, verticalAngle_);
+                setAngleForServoId(angles_, eServo2::HORIZ_D, horizontalAngle_);
+                break;
+            case 4U:
+                setAngleForServoId(angles_, eServo2::VERT_E, verticalAngle_);
+                setAngleForServoId(angles_, eServo2::HORIZ_E, horizontalAngle_);
+                break;
+            case 5U:
+                setAngleForServoId(angles_, eServo1::VERT_F, verticalAngle_);
+                setAngleForServoId(angles_, eServo1::HORIZ_F, horizontalAngle_);
                 break;
             default:
                 break;
@@ -286,21 +395,56 @@ void jogMultiple()
 
 void testLegJoints()
 {
-    sAngles angles;
-    while (true)
-    {
-        char c = Serial.read();
+    sAngles angles{};
+    char c = Serial.read();
+    static uint8_t selectedLeg = 0U;
 
-        if (c == 'q')
+    COMM_DEBUG("Entering leg validation mode");
+    COMM_DEBUG("Controls: a/d select leg, w run demo, z home, q quit");
+    COMM_DEBUG("Selected leg:");
+    COMM_DEBUG(getLegName(selectedLeg));
+
+    while (c != 'q')
+    {
+        c = Serial.read();
+
+        if (c == 'a')
         {
-            break;
+            if (selectedLeg > 0U)
+            {
+                selectedLeg--;
+            }
+            COMM_DEBUG("Selected leg:");
+            COMM_DEBUG(getLegName(selectedLeg));
+            continue;
+        }
+        else if (c == 'd')
+        {
+            if (selectedLeg + 1U < NUM_LEGS)
+            {
+                selectedLeg++;
+            }
+            COMM_DEBUG("Selected leg:");
+            COMM_DEBUG(getLegName(selectedLeg));
+            continue;
+        }
+        else if (c == 'z')
+        {
+            goHome();
+            angles = {};
+            COMM_DEBUG("Homed");
+            continue;
+        }
+        else if (c != 'w')
+        {
+            delay(50);
+            continue;
         }
 
         int angle0 = 0;
         int angle1 = 0;
 
-        setAngleForServo(angles, static_cast<uint8_t>(eServo1::VERT_A), angle0);
-        setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
+        setAngleForLeg(angles, selectedLeg, angle0, angle1);
         processAngles(angles);
         updatePositionForce(2U);
         delay(500);
@@ -313,8 +457,7 @@ void testLegJoints()
                 angle1 -= 2;
             angle0 -= 5;
 
-            setAngleForServo(angles, static_cast<uint8_t>(eServo1::VERT_A), angle0);
-            setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
+            setAngleForLeg(angles, selectedLeg, angle0, angle1);
             processAngles(angles);
             updatePositionForce(2U);
             delay(50);
@@ -323,7 +466,7 @@ void testLegJoints()
         while (angle1 < MAX_ANGLE_HORIZONTAL)
         {
             angle1 += 5;
-            setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
+            setAngleForLeg(angles, selectedLeg, angle0, angle1);
             processAngles(angles);
             updatePositionForce(2U);
             delay(50);
@@ -343,16 +486,18 @@ void testLegJoints()
                 if (angle1 < 0)
                     angle1 = 0;
             }
-            setAngleForServo(angles, static_cast<uint8_t>(eServo1::VERT_A), angle0);
-            setAngleForServo(angles, static_cast<uint8_t>(eServo1::HORIZ_A), angle1);
+            setAngleForLeg(angles, selectedLeg, angle0, angle1);
             processAngles(angles);
             updatePositionForce(2U);
             delay(50);
             if (angle0 == 0 && angle1 == 0)
                 break;
         }
+
+        COMM_DEBUG("Demo complete for leg:");
+        COMM_DEBUG(getLegName(selectedLeg));
     }
-    COMM_DEBUG("Quitting single validation mode");
+    COMM_DEBUG("Quitting leg validation mode");
 }
 
-#endif  // ENABLE_MANUAL            
+#endif  // ENABLE_MANUAL
