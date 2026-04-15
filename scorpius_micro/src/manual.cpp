@@ -10,8 +10,13 @@ namespace
 
     constexpr eServo1 SERVO_ORDER_BOARD_1[NUM_SERVOS_BOARD_1]
         = {eServo1::VERT_A, eServo1::VERT_B, eServo1::VERT_F, eServo1::HORIZ_A, eServo1::HORIZ_B, eServo1::HORIZ_F};
-    constexpr eServo2 SERVO_ORDER_BOARD_2[NUM_SERVOS_BOARD_2]
-        = {eServo2::VERT_D, eServo2::VERT_E, eServo2::VERT_C, eServo2::HORIZ_D, eServo2::HORIZ_E, eServo2::HORIZ_C, eServo2::TAIL};
+    constexpr eServo2 SERVO_ORDER_BOARD_2[NUM_SERVOS_BOARD_2] = {eServo2::VERT_D,
+                                                                 eServo2::VERT_E,
+                                                                 eServo2::VERT_C,
+                                                                 eServo2::HORIZ_D,
+                                                                 eServo2::HORIZ_E,
+                                                                 eServo2::HORIZ_C,
+                                                                 eServo2::TAIL};
 
     uint8_t getServoIndexWithinBoard(uint8_t servoIndex_)
     {
@@ -404,4 +409,4 @@ void testLegJoints()
     COMM_DEBUG("Quitting single validation mode");
 }
 
-#endif  // ENABLE_MANUAL            
+#endif  // ENABLE_MANUAL

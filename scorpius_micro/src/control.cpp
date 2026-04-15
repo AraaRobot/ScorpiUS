@@ -13,8 +13,13 @@ namespace
 
     constexpr eServo1 _servosBoard1[static_cast<uint8_t>(eServo1::NUM_SERVOS)]
         = {eServo1::VERT_A, eServo1::VERT_B, eServo1::VERT_F, eServo1::HORIZ_A, eServo1::HORIZ_B, eServo1::HORIZ_F};
-    constexpr eServo2 _servosBoard2[static_cast<uint8_t>(eServo2::NUM_SERVOS)]
-        = {eServo2::VERT_D, eServo2::VERT_E, eServo2::VERT_C, eServo2::HORIZ_D, eServo2::HORIZ_E, eServo2::HORIZ_C, eServo2::TAIL};
+    constexpr eServo2 _servosBoard2[static_cast<uint8_t>(eServo2::NUM_SERVOS)] = {eServo2::VERT_D,
+                                                                                  eServo2::VERT_E,
+                                                                                  eServo2::VERT_C,
+                                                                                  eServo2::HORIZ_D,
+                                                                                  eServo2::HORIZ_E,
+                                                                                  eServo2::HORIZ_C,
+                                                                                  eServo2::TAIL};
 
     enum class eControllerState : uint8_t
     {

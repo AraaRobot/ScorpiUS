@@ -7,12 +7,11 @@
 #include "control.h"
 #include "state_machine.h"
 
-
 void manual();
 void executeManualFunc();
 void jogServo();
 void jogMultiple();
 void testLegJoints();
 
-#endif // MANUAL_H
-#endif // ENABLE_MANUAL
+#endif  // MANUAL_H
+#endif  // ENABLE_MANUAL
