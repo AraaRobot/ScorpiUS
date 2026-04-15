@@ -6,8 +6,9 @@
 #include "control.h"
 #include "state_machine.h"
 
-void testLegJoints();
-void executeDebug();
+#if ENABLE_MANUAL
+#include "manual.h"
+#endif
 
 void resetArduino()
 {
@@ -41,6 +42,9 @@ void setup()
 
 void loop()
 {
+#if ENABLE_MANUAL
+    manual();
+#else
     commProcess();
     sAngles angles;
     eSerialMsgType type = commConsume(angles);
@@ -58,139 +62,18 @@ void loop()
         resetArduino();
     }
 
-    static unsigned long lastUpdate = 0;
-    static unsigned long lastHeartbeat = 0;
-    unsigned long now = millis();
-
-    // Position update at ~50 Hz
-    if (now - lastUpdate >= 20)
+    if (controllerStateMachine == eStates::RUNNING)
     {
         updatePosition();
-        lastUpdate = now;
     }
 
+    static unsigned long lastHeartbeat = 0;
+    unsigned long now = millis();
     // Heartbeat at 2 Hz (every 500 ms)
     if (now - lastHeartbeat >= 500)
     {
         commHeartbeat();
         lastHeartbeat = now;
     }
-}
-
-void testLegJoints()
-{
-    int angle0 = 0;
-    int angle1 = 0;
-    servoGoTo(eServo::VERT_A, angle0);
-    servoGoTo(eServo::HORIZ_A, angle1);
-    delay(500);
-
-    while (true)
-    {
-        if (angle0 <= -90)
-            break;
-        if (angle1 > -45)
-            angle1 -= 2;
-        angle0 -= 5;
-
-        servoGoTo(eServo::VERT_A, angle0);
-        servoGoTo(eServo::HORIZ_A, angle1);
-        delay(50);
-    }
-
-    while (angle1 < 45)
-    {
-        angle1 += 5;
-        servoGoTo(eServo::HORIZ_A, angle1);
-        delay(50);
-    }
-
-    while (true)
-    {
-        if (angle0 < 0)
-        {
-            angle0 += 5;
-            if (angle0 > 0)
-                angle0 = 0;
-        }
-        if (angle1 > 0)
-        {
-            angle1 -= 2;
-            if (angle1 < 0)
-                angle1 = 0;
-        }
-        servoGoTo(eServo::VERT_A, angle0);
-        servoGoTo(eServo::HORIZ_A, angle1);
-        delay(50);
-        if (angle0 == 0 && angle1 == 0)
-            break;
-    }
-}
-
-void executeDebug()
-{
-    static int angle = 0;
-    static int servo = 0;
-    COMM_DEBUG("Current servo: ");
-    COMM_DEBUG(servo);
-    COMM_DEBUG(" Current angle: ");
-    COMM_DEBUG(angle);
-    char c = Serial.read();
-
-    if (c == 'e')
-    {
-        while (c != 'q')
-        {
-            testLegJoints();
-            c = Serial.read();
-        }
-    }
-    else if (c == 'w')
-    {
-        if (servo % 2 == 0)
-        {
-            if (angle < 30)
-                angle += 5;
-        }
-        else if (servo % 2 == 1)
-        {
-            if (angle < 45)
-                angle += 5;
-        }
-        servoGoTo(static_cast<eServo>(servo), angle);
-    }
-    else if (c == 's')
-    {
-        if (servo % 2 == 0)
-        {
-            if (angle > -90)
-                angle -= 5;
-        }
-        else if (servo % 2 == 1)
-        {
-            if (angle > -45)
-                angle -= 5;
-        }
-        servoGoTo(static_cast<eServo>(servo), angle);
-    }
-    else if (c == 'a')
-    {
-        if (servo > 0)
-            servo--;
-    }
-    else if (c == 'd')
-    {
-        if (servo < 11)
-            servo++;
-    }
-    else if (c == 'z')
-    {
-        for (uint8_t sm = 0; sm < 12U; sm++)
-        {
-            servoGoTo(static_cast<eServo>(sm), 0);
-            angle = 0;
-        }
-    }
-
-    delay(50);
+#endif  // ENABLE_MANUAL
 }
