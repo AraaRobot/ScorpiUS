@@ -17,11 +17,6 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _controllerManager->update();
     _serialManager = new QSerialManager(node_, _central);
 
-    _debugTab = new QWidget(_tabs);
-    _debugTab->setObjectName("debugTab");
-    _debugTab->setAttribute(Qt::WA_StyledBackground, true);
-    _debugTabLayout = new QVBoxLayout(_debugTab);
-
     _controllerTab = new QWidget(_tabs);
     _controllerTab->setObjectName("controllerTab");
     _controllerTab->setAttribute(Qt::WA_StyledBackground, true);
@@ -36,10 +31,6 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _dashboard->setObjectName("dashboardTab");
     _dashboard->setAttribute(Qt::WA_StyledBackground, true);
     _dashboardLayout = new QGridLayout(_dashboard);
-
-    _debugTabLayout->setContentsMargins(0, 0, 0, 0);
-    _debugTabLayout->setSpacing(0);
-    _debugTab->setLayout(_debugTabLayout);
 
     _controllerTabLayout->setContentsMargins(0, 0, 0, 0);
     _controllerTabLayout->setSpacing(0);
@@ -64,12 +55,11 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
 
     _central->setLayout(_layout);
     setCentralWidget(_central);
-    this->addTab(_debugTab, "Debug");
+    this->addTab(_dashboard, "Dashboard");
     this->addTab(_controllerTab, "Controller");
     this->addTab(_serialTab, "Serial");
 
     this->setBackground();
-    this->addTab(_dashboard, "Dashboard");
 
     connect(_tabs, &QTabWidget::currentChanged, this, &GuiWindow::onCurrentTabChanged);
     onCurrentTabChanged(_tabs->currentIndex());
@@ -97,13 +87,6 @@ void GuiWindow::setBackground()
     _controllerManager->setObjectName("controllerManager");
     _serialManager->setObjectName("serialManager");
 
-    _debugTab->setStyleSheet("#debugTab {" + bgImageStyle
-                             + "}"
-                               "#debugWidgetManager, #debugWidgetManager * {"
-                               "    background-color: rgba(255, 255, 255, 0.8);"
-                               "    color: black;"
-                               "    border: 1px solid rgba(0, 0, 0, 0.12);"
-                               "}");
     _controllerTab->setStyleSheet("#controllerTab {" + bgImageStyle
                                   + "}"
                                     "#controllerManager {"
@@ -145,7 +128,6 @@ void GuiWindow::onCurrentTabChanged(int index)
     _controllerManager->hide();
     _serialManager->hide();
 
-    _debugTabLayout->removeWidget(_debugWidgetManager);
     _controllerTabLayout->removeWidget(_controllerManager);
     _serialTabLayout->removeWidget(_serialManager);
     _dashboardLayout->removeWidget(_debugWidgetManager);
@@ -154,9 +136,13 @@ void GuiWindow::onCurrentTabChanged(int index)
 
     switch (index)
     {
-        case std::to_underlying(eTabs::DEBUG):
-            _debugTabLayout->addWidget(_debugWidgetManager);
+        case std::to_underlying(eTabs::DASHBOARD):
+            _dashboardLayout->addWidget(_debugWidgetManager, 0, 0);
+            _dashboardLayout->addWidget(_controllerManager, 0, 1);
+            _dashboardLayout->addWidget(_serialManager, 1, 0, 1, 2);
             _debugWidgetManager->show();
+            _controllerManager->show();
+            _serialManager->show();
             break;
         case std::to_underlying(eTabs::CONTROLLER):
             _controllerTabLayout->addWidget(_controllerManager);
@@ -164,14 +150,6 @@ void GuiWindow::onCurrentTabChanged(int index)
             break;
         case std::to_underlying(eTabs::SERIAL):
             _serialTabLayout->addWidget(_serialManager);
-            _serialManager->show();
-            break;
-        case std::to_underlying(eTabs::DASHBOARD):
-            _dashboardLayout->addWidget(_debugWidgetManager, 0, 0);
-            _dashboardLayout->addWidget(_controllerManager, 0, 1);
-            _dashboardLayout->addWidget(_serialManager, 1, 0, 1, 2);
-            _debugWidgetManager->show();
-            _controllerManager->show();
             _serialManager->show();
             break;
         default:
@@ -197,9 +175,6 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
                     return true;
                 case Qt::Key_S:
                     _tabs->setCurrentIndex(2);
-                    return true;
-                case Qt::Key_A:
-                    _tabs->setCurrentIndex(3);
                     return true;
                 case Qt::Key_Space:
                     this->setBackground();
