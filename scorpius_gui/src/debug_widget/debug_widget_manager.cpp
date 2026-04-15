@@ -78,7 +78,7 @@ void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg
     emit _debugWidgets[letterToIndex('E')]->setAngleVerticalSignal(msg_.vert_e);
     emit _debugWidgets[letterToIndex('F')]->setAngleHorizontalSignal(msg_.horiz_f);
     emit _debugWidgets[letterToIndex('F')]->setAngleVerticalSignal(msg_.vert_f);
-   // _tailLabel->setText(QStringLiteral("Tail Angle:    ") + QString::number(msg_.))
+   // _tailLabel->setText(QStringLiteral("Tail Angle:    ") + QString::number(msg_.tail_angle) + QStringLiteral("    deg"));
 }
 
 void DebugWidgetManager::CB_subStep(const scorpius_main::msg::Step& msg_)
