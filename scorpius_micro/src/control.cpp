@@ -47,12 +47,8 @@ void controlInit()
 
 void controlReset()
 {
-    _driverModule.reset();
-}
-
-void controlReset()
-{
-    _driverModule.reset();
+    _driverModule1.reset();
+    _driverModule2.reset();
 }
 
 static int8_t getAngleForServo1(sAngles& angles_, eServo1 servoId_)

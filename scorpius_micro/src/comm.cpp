@@ -158,12 +158,12 @@ eSerialMsgType commConsume(sAngles& angles_)
                 return type;
             }
 
-            angles_.vert_a = (int8_t)packet[index++];
-            angles_.vert_b = (int8_t)packet[index++];
-            angles_.vert_c = (int8_t)packet[index++];
-            angles_.vert_d = (int8_t)packet[index++];
-            angles_.vert_e = (int8_t)packet[index++];
-            angles_.vert_f = (int8_t)packet[index++];
+            angles_.vert_a = -(int8_t)packet[index++];
+            angles_.vert_b = -(int8_t)packet[index++];
+            angles_.vert_c = -(int8_t)packet[index++];
+            angles_.vert_d = -(int8_t)packet[index++];
+            angles_.vert_e = -(int8_t)packet[index++];
+            angles_.vert_f = -(int8_t)packet[index++];
             angles_.hori_a = (int8_t)packet[index++];
             angles_.hori_b = (int8_t)packet[index++];
             angles_.hori_c = (int8_t)packet[index++];
