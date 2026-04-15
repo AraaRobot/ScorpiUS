@@ -60,13 +60,13 @@ static int8_t getAngleForServo1(sAngles& angles_, eServo1 servoId_)
         case eServo1::VERT_B:
             return angles_.vert_b;
         case eServo1::VERT_F:
-            return angles_.vert_c;
+            return angles_.vert_f;
         case eServo1::HORIZ_A:
             return angles_.hori_a;
         case eServo1::HORIZ_B:
             return angles_.hori_b;
         case eServo1::HORIZ_F:
-            return angles_.hori_c;
+            return angles_.hori_f;
         default:
             return angles_.vert_a;
     }
@@ -81,13 +81,13 @@ static int8_t getAngleForServo2(sAngles& angles_, eServo2 servoId_)
         case eServo2::VERT_E:
             return angles_.vert_e;
         case eServo2::VERT_C:
-            return angles_.vert_f;
+            return angles_.vert_c;
         case eServo2::HORIZ_D:
             return angles_.hori_d;
         case eServo2::HORIZ_E:
             return angles_.hori_e;
         case eServo2::HORIZ_C:
-            return angles_.hori_f;
+            return angles_.hori_c;
         // case eServo2::TAIL:
         //     return angles_.tail;
         default:

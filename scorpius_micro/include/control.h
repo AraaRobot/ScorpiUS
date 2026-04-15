@@ -16,12 +16,12 @@ constexpr int8_t HOME_ANGLE = 0;
 enum class eServo1 : uint8_t
 {
     // Servos on first driver
-    VERT_A = 0U,
-    HORIZ_A,
-    VERT_B = 4U,
-    HORIZ_B,
-    VERT_F = 8U,
+    VERT_F = 0U,
     HORIZ_F,
+    VERT_A = 4U,
+    HORIZ_A,
+    VERT_B = 8U,
+    HORIZ_B,
     // Add servos here...
     NUM_SERVOS = 6U
 };
@@ -31,10 +31,10 @@ enum class eServo2 : uint8_t
 {
     VERT_D = 0U,
     HORIZ_D,
-    VERT_E = 4U,
-    HORIZ_E,
-    VERT_C = 8U,
+    VERT_C = 4U,
     HORIZ_C,
+    VERT_E = 8U,
+    HORIZ_E,
     TAIL = 12U,
     NUM_SERVOS = 7U
 };
