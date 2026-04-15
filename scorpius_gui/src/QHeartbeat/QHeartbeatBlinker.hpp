@@ -43,4 +43,4 @@ class HeartbeatBlinker : public QWidget
     bool _blinkStep = false;
 };
 
-#endif  // HEARTBEAT_BLINKER
+#endif  // QHEARTBEAT_BLINKER

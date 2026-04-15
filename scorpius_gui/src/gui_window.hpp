@@ -70,7 +70,6 @@ class GuiWindow : public QMainWindow
 
     rclcpp::Subscription<scorpius_main::msg::SerialHeartbeat>::SharedPtr _sub_heartbeat{nullptr};
     rclcpp::Node::SharedPtr _node;
-    bool _blinkAlive = false;
 };
 
 #endif  // define GUI_WINDOW_HPP
