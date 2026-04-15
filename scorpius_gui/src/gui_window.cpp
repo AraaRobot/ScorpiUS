@@ -156,6 +156,7 @@ void GuiWindow::setupSubHeartBeat()
     {
         if (info_.alive_count == 0)
         {
+            RCLCPP_WARN(_node->get_logger(), "Publisher lost liveliness");
             emit toggleBlink(HeartbeatBlinker::eState::DISCONNECTED);
         }
     };
@@ -163,6 +164,14 @@ void GuiWindow::setupSubHeartBeat()
     options.event_callbacks.incompatible_qos_callback = [this](rclcpp::QOSRequestedIncompatibleQoSInfo& event_)
     {
         RCLCPP_FATAL(_node->get_logger(), "Incompatible QoS detected! Last policy kind: %d", event_.last_policy_kind);
+    };
+
+    options.event_callbacks.message_lost_callback = [this](rclcpp::QOSMessageLostInfo& info_)
+    {
+        RCLCPP_ERROR(_node->get_logger(),
+                     "Heartbeat messages lost! total=%d delta=%d",
+                     info_.total_count,
+                     info_.total_count_change);
     };
 
     _sub_heartbeat = _node->create_subscription<scorpius_main::msg::SerialHeartbeat>(
@@ -173,4 +182,9 @@ void GuiWindow::setupSubHeartBeat()
             emit this->toggleBlink(msg_.alive ? HeartbeatBlinker::eState::ALIVE : HeartbeatBlinker::eState::DEAD);
         },
         options);
+
+    if (_sub_heartbeat->get_publisher_count() == 0)
+    {
+        RCLCPP_WARN(_node->get_logger(), "No publishers on heartbeat topic");
+    }
 }
