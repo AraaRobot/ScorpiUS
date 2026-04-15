@@ -10,3 +10,4 @@ float32 horiz_c
 float32 horiz_d
 float32 horiz_e
 float32 horiz_f
+float32 tail_angle
