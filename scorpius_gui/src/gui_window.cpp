@@ -93,16 +93,19 @@ void GuiWindow::setBackground()
                                        + "}"
                                          "#debugWidgetManager * {"
                                          "    background: rgba(255, 255, 255, 0.7);"
+                                         "    color: black;"
                                          "}");
     _controllerManager->setStyleSheet("#controllerManager {" + _bgImageStyle
                                       + "}"
                                         "#controllerManager * {"
                                         "    background: rgba(255, 255, 255, 0.7);"
+                                        "    color: black;"
                                         "}");
     _serialManager->setStyleSheet("#serialManager {" + _bgImageStyle
                                   + "}"
                                     "#serialManager * {"
                                     "    background: rgba(255, 255, 255, 0.7);"
+                                    "    color: black;"
                                     "}");
 }
 
