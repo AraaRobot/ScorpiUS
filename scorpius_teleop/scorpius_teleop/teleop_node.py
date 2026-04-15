@@ -5,6 +5,7 @@ import math
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import Joy
 from scorpius_main.msg import Step
+from scorpius_main.srv import ControllerState
 
 from .Vector2 import Vector2
 from .HexapodAngles import HexapodAngles
@@ -47,6 +48,15 @@ class TeleopNode(Node):
         self.speed = self.MIN_SPEED # speed in positions / second
         self.step = self.MAX_STEP / 2 # step of the hexapod in mm
 
+        # client
+        self.state_controller_client = self.create_client(ControllerState, '/scorpius/state_controller')
+        if not self.state_controller_client.wait_for_service(1):
+            self.get_logger().warning(f"State controller service is not online")
+
+        # client members
+        self.last_home_time = self.get_clock().now()
+        self.home_cooldown = 2.0
+
         # callbacks
         self.OUTPUT_RATE = 160 # rate of the output callback in Hz
         self.input_timer = self.create_timer(0.5, self.input_callback) # dummy timer to set the period of the subscriber callback
@@ -82,6 +92,16 @@ class TeleopNode(Node):
             self.step = self.MIN_STEP
         if self.step > self.MAX_STEP:
             self.step = self.MAX_STEP
+
+        if data.joy_data[Joy.HOME]:
+            now = self.get_clock().now()
+            if (now - self.last_home_time) > self.home_cooldown:
+                self.last_home_time = now
+                request = ControllerState.Request()
+                request.state = ControllerState.Request.HOME
+                self.state_controller_client.call_async(request)
+                
+                
 
         # debug
         # self.get_logger().debug(f"Received : {data.joy_data[Joy.JOYSTICK_LEFT_HORIZ]} "
