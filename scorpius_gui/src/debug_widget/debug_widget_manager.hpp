@@ -46,13 +46,18 @@ class DebugWidgetManager : public QWidget
     DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWidget* parent = nullptr);
     ~DebugWidgetManager();
 
+  signals:
+    void CB_subStepSignal(const scorpius_main::msg::Step& msg_);
+
+  private slots:
+    void CB_subStepSlot(const scorpius_main::msg::Step& msg_);
+
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
     void CB_subStep(const scorpius_main::msg::Step& msg_);
 
     QGridLayout* _grid;
     QLabel* _stepLabel{nullptr};
-   // QLabel* _tailLabel{nullptr};
 
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Subscription<scorpius_main::msg::ServoAngles>::SharedPtr _sub_teleop;

@@ -11,6 +11,14 @@ enum class eStates : uint8_t
     eLast
 };
 
+enum class eDebugStates : uint8_t
+{
+    JOG_SERVO = 1U,
+    JOG_MULTIPLE,
+    VALID_DEMO
+};
+
 extern eStates controllerStateMachine;
+extern eDebugStates debugStateMachine;
 
 #endif  // STATE_MACHINE_H

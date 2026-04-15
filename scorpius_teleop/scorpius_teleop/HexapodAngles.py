@@ -64,21 +64,20 @@ class HexapodAngles:
         self.legF.vAngle = max(minVertAngle, min(maxVertAngle, self.legF.vAngle))
         self.legF.hAngle = max(minHorizAngle, min(maxHorizAngle, self.legF.hAngle))
 
-    def to_servo_angles_msg(self) -> ServoAngles:
-        angles = ServoAngles()
-        angles.vert_a = float(self.legA.vAngle)
-        angles.vert_b = float(self.legB.vAngle)
-        angles.vert_c = float(self.legC.vAngle)
-        angles.vert_d = float(self.legD.vAngle)
-        angles.vert_e = float(self.legE.vAngle)
-        angles.vert_f = float(self.legF.vAngle)
-        angles.horiz_a = float(self.legA.hAngle)
-        angles.horiz_b = float(self.legB.hAngle)
-        angles.horiz_c = float(self.legC.hAngle)
-        angles.horiz_d = float(self.legD.hAngle)
-        angles.horiz_e = float(self.legE.hAngle)
-        angles.horiz_f = float(self.legF.hAngle)
-        return angles      
+    def to_servo_angles_msg(self, msg: ServoAngles) -> ServoAngles:
+        msg.vert_a = float(self.legA.vAngle)
+        msg.vert_b = float(self.legB.vAngle)
+        msg.vert_c = float(self.legC.vAngle)
+        msg.vert_d = float(self.legD.vAngle)
+        msg.vert_e = float(self.legE.vAngle)
+        msg.vert_f = float(self.legF.vAngle)
+        msg.horiz_a = float(self.legA.hAngle)
+        msg.horiz_b = float(self.legB.hAngle)
+        msg.horiz_c = float(self.legC.hAngle)
+        msg.horiz_d = float(self.legD.hAngle)
+        msg.horiz_e = float(self.legE.hAngle)
+        msg.horiz_f = float(self.legF.hAngle)
+        return msg 
     
     def interpolate(self, start, target, ratio:float):
         if not isinstance(start, HexapodAngles):
