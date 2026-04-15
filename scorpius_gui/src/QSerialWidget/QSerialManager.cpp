@@ -16,11 +16,11 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     _cbPorts->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
     _cbPorts->setFixedHeight(50);
 
-    _cbStates->addItem("Home");
+    _cbStates->addItem("Home", scorpius_main::srv::ControllerState::Request::HOME);
     _cbStates->setItemData(0, Qt::AlignCenter, Qt::TextAlignmentRole);
-    _cbStates->addItem("Running");
+    _cbStates->addItem("Running", scorpius_main::srv::ControllerState::Request::RUNNING);
     _cbStates->setItemData(1, Qt::AlignCenter, Qt::TextAlignmentRole);
-    _cbStates->addItem("Reboot");
+    _cbStates->addItem("Reboot", scorpius_main::srv::ControllerState::Request::REBOOT);
     _cbStates->setItemData(2, Qt::AlignCenter, Qt::TextAlignmentRole);
     _cbStates->setFixedHeight(50);
 
@@ -239,10 +239,19 @@ void QSerialManager::changeState(int idx_)
 {
     rclcpp::Client<scorpius_main::srv::ControllerState>::WeakPtr weakClient = _client_state;
     QPointer<QSerialManager> thisPtr = this;
-    idx_++;  // Bring back between 1 and 3
+
+    QVariant stateVariant = _cbStates->itemData(idx_, Qt::UserRole);
+    bool ok = false;
+    int stateValue = stateVariant.toInt(&ok);
+    if (!ok)
+    {
+        RCLCPP_ERROR(this->_node->get_logger(), "Failed to read controller state from combo box user data");
+        emit this->buttonFinishedSignal("Invalid state combo box user role\n");
+        return;
+    }
 
     _executor.addTask(
-        [weakClient, thisPtr, idx_]()
+        [weakClient, thisPtr, stateValue]()
         {
             rclcpp::Client<scorpius_main::srv::ControllerState>::SharedPtr client = weakClient.lock();
 
@@ -261,15 +270,15 @@ void QSerialManager::changeState(int idx_)
             std::shared_ptr<scorpius_main::srv::ControllerState::Request> request
                 = std::make_shared<scorpius_main::srv::ControllerState::Request>();
 
-            if (idx_ <= scorpius_main::srv::ControllerState::Request::FIRST
-                || idx_ >= scorpius_main::srv::ControllerState::Request::LAST)
+            if (stateValue <= scorpius_main::srv::ControllerState::Request::FIRST
+                || stateValue >= scorpius_main::srv::ControllerState::Request::LAST)
             {
                 RCLCPP_ERROR(thisPtr->_node->get_logger(), "Invalid controller state");
                 emit thisPtr->buttonFinishedSignal("Invalid controller state\n");
                 return;
             }
 
-            request->state = idx_;
+            request->state = static_cast<uint8_t>(stateValue);
 
             auto futureAndRequest = client->async_send_request(request);
 
@@ -284,7 +293,7 @@ void QSerialManager::changeState(int idx_)
 
                 if (response->success)
                 {
-                    RCLCPP_INFO(thisPtr->_node->get_logger(), "Change state successfull");
+                    RCLCPP_INFO(thisPtr->_node->get_logger(), "Change state successful");
                 }
                 else
                 {

@@ -7,6 +7,7 @@ HeartbeatBlinker::HeartbeatBlinker(QWidget* parent_):
 {
     connect(&_timer, &QTimer::timeout, this, &HeartbeatBlinker::toggleBlinkStep);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    setToolTip("Disconnected");
 }
 
 void HeartbeatBlinker::setPeriod(int period_)
@@ -29,16 +30,19 @@ void HeartbeatBlinker::toggleBlinkImplementation(eState state_)
     if (state_ == eState::ALIVE)
     {
         _timer.start(_blinkPeriod);
+        setToolTip("Alive");
     }
     else if (state_ == eState::DEAD)
     {
         _timer.stop();
         _blinkStep = false;
+        setToolTip("Dead");
     }
     else if (state_ == eState::DISCONNECTED)
     {
         _timer.stop();
         _blinkStep = false;
+        setToolTip("Disconnected");
     }
     this->update();
 }
