@@ -4,7 +4,12 @@ QControllerManager::QControllerManager(std::shared_ptr<rclcpp::Node> node_, QWid
     QWidget(parent_),
     _node(node_)
 {
+    setAttribute(Qt::WA_StyledBackground, true);
+    setAutoFillBackground(false);
+    setStyleSheet("QControllerManager { background: transparent; }");
+
     _widget = new QControllerWidget(node_, ps4Profile(), this);
+    _widget->setObjectName("controllerWidget");
     _client = _node->create_client<scorpius_main::srv::JoyConfig>(SERVICE_NAME);
 
     this->setupUI();
