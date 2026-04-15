@@ -74,10 +74,8 @@ int GuiWindow::addTab(QWidget* page, const QString& label)
 
 void GuiWindow::setBackground()
 {
-    _tabs->setStyleSheet(
-        "QTabWidget::pane { background: transparent; }"
-        "QTabBar::tab { background: transparent; }"
-    );
+    _tabs->setStyleSheet("QTabWidget::pane { background: transparent; }"
+                         "QTabBar::tab { background: transparent; }");
 
     QString _bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert.png) 0 0 0 0 round round;";
     if (std::rand() % 10 == 1)
@@ -91,30 +89,21 @@ void GuiWindow::setBackground()
     _serialManager->setObjectName("serialManager");
     _serialManager->setAttribute(Qt::WA_StyledBackground, true);
 
-    _debugWidgetManager->setStyleSheet(
-        "#debugWidgetManager {"
-        + _bgImageStyle +
-        "}"
-        "#debugWidgetManager * {"
-        "    background: rgba(255, 255, 255, 0.7);"
-        "}"
-    );
-    _controllerManager->setStyleSheet(
-        "#controllerManager {"
-        + _bgImageStyle +
-        "}"
-        "#controllerManager * {"
-        "    background: rgba(255, 255, 255, 0.7);"
-        "}"
-    );
-    _serialManager->setStyleSheet(
-        "#serialManager {"
-        + _bgImageStyle +
-        "}"
-        "#serialManager * {"
-        "    background: rgba(255, 255, 255, 0.7);"
-        "}"
-    );
+    _debugWidgetManager->setStyleSheet("#debugWidgetManager {" + _bgImageStyle
+                                       + "}"
+                                         "#debugWidgetManager * {"
+                                         "    background: rgba(255, 255, 255, 0.7);"
+                                         "}");
+    _controllerManager->setStyleSheet("#controllerManager {" + _bgImageStyle
+                                      + "}"
+                                        "#controllerManager * {"
+                                        "    background: rgba(255, 255, 255, 0.7);"
+                                        "}");
+    _serialManager->setStyleSheet("#serialManager {" + _bgImageStyle
+                                  + "}"
+                                    "#serialManager * {"
+                                    "    background: rgba(255, 255, 255, 0.7);"
+                                    "}");
 }
 
 void GuiWindow::onCurrentTabChanged(int index)
