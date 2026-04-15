@@ -1,3 +1,9 @@
+uint8 FIRST = 0
+uint8 HOME = 1
+uint8 RUNNING = 2
+uint8 REBOOT = 3
+uint8 LAST = 4
+
 uint8 state
 
 ---
