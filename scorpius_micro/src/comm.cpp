@@ -16,7 +16,6 @@ static const uint8_t HEAD = 0xAA;
 static const uint8_t TAIL = 0xBB;
 
 static HardwareSerial* commSerial = &Serial;
-// static HardwareSerial* debugSerial = &Serial2;
 static volatile int len = 0;
 static uint8_t dataBuf[COMMAND_EXPECTED_LEN];
 static uint8_t packet[COMMAND_EXPECTED_LEN];
@@ -302,7 +301,6 @@ void commHeartbeat(void)
 void commInit(HardwareSerial& serial_)
 {
     commSerial = &serial_;
-    // debugSerial = &serial2_;
 }
 
 void commDebug_impl(const char* msg_)
@@ -311,7 +309,6 @@ void commDebug_impl(const char* msg_)
     {
         return;
     }
-    // debugSerial->println(msg_);
     commSerial->println(msg_);
 }
 void commDebug_impl(int v_)
@@ -320,6 +317,5 @@ void commDebug_impl(int v_)
     {
         return;
     }
-    // debugSerial->println(v_);
     commSerial->println(v_);
 }
