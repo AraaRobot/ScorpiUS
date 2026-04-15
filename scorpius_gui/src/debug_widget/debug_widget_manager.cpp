@@ -42,8 +42,10 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
                                                                      10,
                                                                      [this](const scorpius_main::msg::Step& msg_)
                                                                      {
-                                                                         this->CB_subStep(msg_);
+                                                                         emit this->CB_subStepSignal(msg_);
                                                                      });
+
+    connect(this, &DebugWidgetManager::CB_subStepSignal, this, &DebugWidgetManager::CB_subStepSlot, Qt::QueuedConnection);
 }
 
 DebugWidgetManager::~DebugWidgetManager()
@@ -68,7 +70,7 @@ void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg
     emit _debugWidgets[letterToIndex('F')]->setAngleVerticalSignal(msg_.vert_f);
 }
 
-void DebugWidgetManager::CB_subStep(const scorpius_main::msg::Step& msg_)
+void DebugWidgetManager::CB_subStepSlot(const scorpius_main::msg::Step& msg_)
 {
     _stepLabel->setText(QStringLiteral("Step:    ") + QString::number(msg_.step) + QStringLiteral("    mm"));
 }
