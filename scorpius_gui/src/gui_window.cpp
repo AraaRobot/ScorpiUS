@@ -1,5 +1,6 @@
 #include "gui_window.hpp"
 
+#include <cstdlib>
 #include <rclcpp/qos.hpp>
 #include <rclcpp/duration.hpp>
 
