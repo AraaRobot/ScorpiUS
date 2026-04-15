@@ -11,19 +11,29 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _layout = new QVBoxLayout(_central);
     _tabs = new QTabWidget(_central);
 
-    _debugTab = new QWidget(_tabs);
-    _debugTabLayout = new QVBoxLayout(_debugTab);
-    _controllerTab = new QWidget(_tabs);
-    _controllerTabLayout = new QVBoxLayout(_controllerTab);
-    _serialTab = new QWidget(_tabs);
-    _serialTabLayout = new QVBoxLayout(_serialTab);
-
     _debugWidgetManager = new DebugWidgetManager(node_, _central);
     _controllerManager = new QControllerManager(node_, _central);
     _controllerManager->update();
     _serialManager = new QSerialManager(node_, _central);
 
+    _debugTab = new QWidget(_tabs);
+    _debugTab->setObjectName("debugTab");
+    _debugTab->setAttribute(Qt::WA_StyledBackground, true);
+    _debugTabLayout = new QVBoxLayout(_debugTab);
+
+    _controllerTab = new QWidget(_tabs);
+    _controllerTab->setObjectName("controllerTab");
+    _controllerTab->setAttribute(Qt::WA_StyledBackground, true);
+    _controllerTabLayout = new QVBoxLayout(_controllerTab);
+
+    _serialTab = new QWidget(_tabs);
+    _serialTab->setObjectName("serialTab");
+    _serialTab->setAttribute(Qt::WA_StyledBackground, true);
+    _serialTabLayout = new QVBoxLayout(_serialTab);
+
     _dashboard = new QWidget(_tabs);
+    _dashboard->setObjectName("dashboardTab");
+    _dashboard->setAttribute(Qt::WA_StyledBackground, true);
     _dashboardLayout = new QGridLayout(_dashboard);
 
     _debugTabLayout->setContentsMargins(0, 0, 0, 0);
@@ -83,30 +93,43 @@ void GuiWindow::setBackground()
         _bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert_easter_egg.png) 0 0 0 0 round round;";
     }
     _debugWidgetManager->setObjectName("debugWidgetManager");
-    _debugWidgetManager->setAttribute(Qt::WA_StyledBackground, true);
     _controllerManager->setObjectName("controllerManager");
-    _controllerManager->setAttribute(Qt::WA_StyledBackground, true);
     _serialManager->setObjectName("serialManager");
-    _serialManager->setAttribute(Qt::WA_StyledBackground, true);
 
-    _debugWidgetManager->setStyleSheet("#debugWidgetManager {" + _bgImageStyle
-                                       + "}"
-                                         "#debugWidgetManager * {"
-                                         "    background: rgba(255, 255, 255, 0.7);"
-                                         "    color: black;"
-                                         "}");
-    _controllerManager->setStyleSheet("#controllerManager {" + _bgImageStyle
-                                      + "}"
-                                        "#controllerManager * {"
-                                        "    background: rgba(255, 255, 255, 0.7);"
-                                        "    color: black;"
-                                        "}");
-    _serialManager->setStyleSheet("#serialManager {" + _bgImageStyle
-                                  + "}"
-                                    "#serialManager * {"
-                                    "    background: rgba(255, 255, 255, 0.7);"
-                                    "    color: black;"
-                                    "}");
+    _debugTab->setStyleSheet("#debugTab {" + _bgImageStyle + "}"
+                             "#debugWidgetManager, #debugWidgetManager * {"
+                             "    background-color: rgba(255, 255, 255, 0.8);"
+                             "    color: black;"
+                             "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                             "}");
+    _controllerTab->setStyleSheet("#controllerTab {" + _bgImageStyle + "}"
+                                  "#controllerManager, #controllerManager * {"
+                                  "    background-color: rgba(255, 255, 255, 0.8);"
+                                  "    color: black;"
+                                  "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                                  "}");
+    _serialTab->setStyleSheet("#serialTab {" + _bgImageStyle + "}"
+                               "#serialManager, #serialManager * {"
+                               "    background-color: rgba(255, 255, 255, 0.8);"
+                               "    color: black;"
+                               "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                               "}");
+    _dashboard->setStyleSheet("#dashboardTab {" + _bgImageStyle + "}"
+                              "#debugWidgetManager, #debugWidgetManager * {"
+                              "    background-color: rgba(255, 255, 255, 0.8);"
+                              "    color: black;"
+                              "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                              "}"
+                              "#controllerManager, #controllerManager * {"
+                              "    background-color: rgba(255, 255, 255, 0.8);"
+                              "    color: black;"
+                              "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                              "}"
+                              "#serialManager, #serialManager * {"
+                              "    background-color: rgba(255, 255, 255, 0.8);"
+                              "    color: black;"
+                              "    border: 1px solid rgba(0, 0, 0, 0.12);"
+                              "}");
 }
 
 void GuiWindow::onCurrentTabChanged(int index)
