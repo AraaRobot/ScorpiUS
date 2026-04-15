@@ -52,6 +52,7 @@ class DebugWidgetManager : public QWidget
 
     QGridLayout* _grid;
     QLabel* _stepLabel{nullptr};
+   // QLabel* _tailLabel{nullptr};
 
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Subscription<scorpius_main::msg::ServoAngles>::SharedPtr _sub_teleop;

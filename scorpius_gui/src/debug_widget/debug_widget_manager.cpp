@@ -19,16 +19,28 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
     }
 
     _stepLabel = new QLabel(this);
+    // _tailLabel = new QLabel(this);
+
     _stepLabel->setAlignment(Qt::AlignHCenter);
     _stepLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
     _stepLabel->setText(QStringLiteral("Step:    ?    mm"));
+
+    // _tailLabel->setAlignment(Qt::AlignHCenter);
+    // _tailLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
+    // _tailLabel->setText(QStringLiteral("Tail Angle:    ?    deg"));
     
-    QFont labelFont = _stepLabel->font();
-    labelFont.setPointSize(LABEL_FONT_SIZE);
-    _stepLabel->setFont(labelFont);
+    QFont stepLabelFont = _stepLabel->font();
+    stepLabelFont.setPointSize(LABEL_FONT_SIZE);
+    _stepLabel->setFont(stepLabelFont);
+
+    // QFont tailLabelFont = _tailLabel->font();
+    // tailLabelFont.setPointSize(LABEL_FONT_SIZE);
+    // _tailLabel->setFont(tailLabelFont);
+
 
     _grid->setRowStretch(4, 8);
     _grid->addWidget(_stepLabel, 4, 0, 1, 2);
+    // _grid->addWidget(_tailLabel, 4, 4, 1, 2);
 
     setLayout(_grid);
 
@@ -66,6 +78,7 @@ void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg
     emit _debugWidgets[letterToIndex('E')]->setAngleVerticalSignal(msg_.vert_e);
     emit _debugWidgets[letterToIndex('F')]->setAngleHorizontalSignal(msg_.horiz_f);
     emit _debugWidgets[letterToIndex('F')]->setAngleVerticalSignal(msg_.vert_f);
+   // _tailLabel->setText(QStringLiteral("Tail Angle:    ") + QString::number(msg_.))
 }
 
 void DebugWidgetManager::CB_subStep(const scorpius_main::msg::Step& msg_)
