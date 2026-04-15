@@ -68,7 +68,7 @@ class CommNode(Node):
             depth=1,
             history=HistoryPolicy.KEEP_LAST,
             reliability=ReliabilityPolicy.RELIABLE,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
             deadline=Duration(seconds=1.0),
             lifespan=Duration(seconds=1.5),
             liveliness=LivelinessPolicy.AUTOMATIC,
@@ -102,7 +102,7 @@ class CommNode(Node):
                 self.ser.flush()
                 self.ser.reset_output_buffer()
             except Exception as e:
-                self.get_logger().warning(f"Serial flush failed: {e}")        
+                self.get_logger().warning(f"Serial flush failed: {e}")
         self.heartbeat_ok = False
         self.publish_heartbeat(False)
         self.rx_buffer.clear()
@@ -223,7 +223,7 @@ class CommNode(Node):
                 self.ser.close()
                 response.result = True
                 response.response = "Closed port"
-                self._disable_heartbeat_and_flush();
+                self._disable_heartbeat_and_flush()
             else:
                 response.result = False
                 response.response = "Port was already closed"
@@ -364,6 +364,9 @@ class CommNode(Node):
             self.publish_heartbeat(False)
         else:
             self.heartbeat_ok = False
+
+        if self.heartbeat_pub.get_subscription_count() == 0:
+            self.get_logger().warning("No subscribers to heartbeat!", throttle_duration_sec=30)
 
 
 def main(args=None):

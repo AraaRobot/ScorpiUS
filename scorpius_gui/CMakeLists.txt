@@ -33,6 +33,7 @@ add_executable(gui src/gui.cpp
   src/gui_window.cpp
   src/debug_widget/debug_widget.cpp
   src/debug_widget/debug_widget_manager.cpp
+  src/QHeartbeat/QHeartbeatBlinker.cpp
   src/QControllerWidget/QControllerManager.cpp
   src/QControllerWidget/QControllerWidget.cpp
   src/QControllerWidget/QControllerProfile.cpp
