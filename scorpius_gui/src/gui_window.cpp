@@ -1,7 +1,11 @@
 #include "gui_window.hpp"
 
+#include <rclcpp/qos.hpp>
+#include <rclcpp/duration.hpp>
+
 GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
-    QMainWindow(parent_)
+    QMainWindow(parent_),
+    _node(node_)
 {
     _central = new QWidget(this);
     _layout = new QVBoxLayout(_central);
@@ -37,9 +41,14 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     _dashboardLayout->setContentsMargins(0, 0, 0, 0);
     _dashboardLayout->setSpacing(0);
     _dashboard->setLayout(_dashboardLayout);
+    _blinker = new HeartbeatBlinker(this);
+    _blinker->setFixedSize(12, 12);
+    connect(this, &GuiWindow::toggleBlink, _blinker, &HeartbeatBlinker::toggleBlinkImplementation, Qt::QueuedConnection);
+    _blinker->update();
 
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
+    _layout->addWidget(_blinker);
     _layout->addWidget(_tabs);
 
     _central->setLayout(_layout);
@@ -53,6 +62,7 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     onCurrentTabChanged(_tabs->currentIndex());
 
     QApplication::instance()->installEventFilter(this);
+    this->setupSubHeartbeat();
 }
 
 int GuiWindow::addTab(QWidget* page, const QString& label)
@@ -125,4 +135,59 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
         }
     }
     return QMainWindow::eventFilter(obj, event);
+}
+
+void GuiWindow::setupSubHeartbeat()
+{
+    rclcpp::QoS heartbeatQoS = rclcpp::QoS(1)
+                                   .history(rclcpp::HistoryPolicy::KeepLast)
+                                   .reliability(rclcpp::ReliabilityPolicy::Reliable)
+                                   .durability(rclcpp::DurabilityPolicy::Volatile)
+                                   .deadline(rclcpp::Duration::from_seconds(HEARTBEAT_DEADLINE_S))
+                                   .lifespan(rclcpp::Duration::from_seconds(HEARTBEAT_LIFESPAN))
+                                   .liveliness(rclcpp::LivelinessPolicy::Automatic)
+                                   .liveliness_lease_duration(rclcpp::Duration::from_seconds(HEARTBEAT_LEASE_DURATION));
+
+    rclcpp::SubscriptionOptions options = rclcpp::SubscriptionOptions();
+
+    options.event_callbacks.deadline_callback = [this](rclcpp::QOSDeadlineRequestedInfo& /*info_*/)
+    {
+        emit toggleBlink(HeartbeatBlinker::eState::DISCONNECTED);
+    };
+
+    options.event_callbacks.liveliness_callback = [this](rclcpp::QOSLivelinessChangedInfo& info_)
+    {
+        if (info_.alive_count == 0)
+        {
+            RCLCPP_WARN(_node->get_logger(), "Publisher lost liveliness");
+            emit toggleBlink(HeartbeatBlinker::eState::DISCONNECTED);
+        }
+    };
+
+    options.event_callbacks.incompatible_qos_callback = [this](rclcpp::QOSRequestedIncompatibleQoSInfo& event_)
+    {
+        RCLCPP_FATAL(_node->get_logger(), "Incompatible QoS detected! Last policy kind: %d", event_.last_policy_kind);
+    };
+
+    options.event_callbacks.message_lost_callback = [this](rclcpp::QOSMessageLostInfo& info_)
+    {
+        RCLCPP_ERROR(_node->get_logger(),
+                     "Heartbeat messages lost! total=%ld delta=%ld",
+                     info_.total_count,
+                     info_.total_count_change);
+    };
+
+    _sub_heartbeat = _node->create_subscription<scorpius_main::msg::SerialHeartbeat>(
+        HEARTBEAT_TOPIC_NAME,
+        heartbeatQoS,
+        [this](const scorpius_main::msg::SerialHeartbeat& msg_)
+        {
+            emit this->toggleBlink(msg_.alive ? HeartbeatBlinker::eState::ALIVE : HeartbeatBlinker::eState::DEAD);
+        },
+        options);
+
+    if (_sub_heartbeat->get_publisher_count() == 0)
+    {
+        RCLCPP_WARN(_node->get_logger(), "No publishers on heartbeat topic");
+    }
 }

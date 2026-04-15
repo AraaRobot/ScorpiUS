@@ -4,6 +4,8 @@
 #include "debug_widget/debug_widget_manager.hpp"
 #include "QControllerWidget/QControllerManager.hpp"
 #include "QSerialWidget/QSerialManager.hpp"
+#include "QHeartbeat/QHeartbeatBlinker.hpp"
+#include "scorpius_main/msg/serial_heartbeat.hpp"
 
 #include <QApplication>
 #include <QGridLayout>
@@ -19,7 +21,13 @@
 class GuiWindow : public QMainWindow
 {
     Q_OBJECT
+
   private:
+    static constexpr const char* HEARTBEAT_TOPIC_NAME = "/scorpius/serial_heartbeat";
+    static constexpr double HEARTBEAT_DEADLINE_S = 1.0;
+    static constexpr double HEARTBEAT_LIFESPAN = 1.5;
+    static constexpr double HEARTBEAT_LEASE_DURATION = 1.5;
+
     enum class eTabs : int
     {
         DEBUG,
@@ -33,11 +41,15 @@ class GuiWindow : public QMainWindow
 
     int addTab(QWidget* page, const QString& label);
 
+  signals:
+    void toggleBlink(HeartbeatBlinker::eState state_);
+
   private slots:
     void onCurrentTabChanged(int index);
 
   private:
     bool eventFilter(QObject* obj, QEvent* event);
+    void setupSubHeartbeat();
 
     QWidget* _central{nullptr};
     QVBoxLayout* _layout{nullptr};
@@ -51,8 +63,12 @@ class GuiWindow : public QMainWindow
     DebugWidgetManager* _debugWidgetManager{nullptr};
     QControllerManager* _controllerManager{nullptr};
     QSerialManager* _serialManager{nullptr};
+    HeartbeatBlinker* _blinker{nullptr};
     QWidget* _dashboard{nullptr};
     QGridLayout* _dashboardLayout{nullptr};
+
+    rclcpp::Subscription<scorpius_main::msg::SerialHeartbeat>::SharedPtr _sub_heartbeat{nullptr};
+    rclcpp::Node::SharedPtr _node;
 };
 
 #endif  // define GUI_WINDOW_HPP
