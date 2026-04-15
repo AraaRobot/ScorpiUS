@@ -18,7 +18,6 @@
 
 #include <utility>
 
-
 class GuiWindow : public QMainWindow
 {
     Q_OBJECT
