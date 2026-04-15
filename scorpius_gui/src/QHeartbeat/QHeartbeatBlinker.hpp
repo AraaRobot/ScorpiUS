@@ -12,9 +12,9 @@ class HeartbeatBlinker : public QWidget
     HeartbeatBlinker(QWidget* parent_ = nullptr);
     void setPeriod(int period_);
 
-    enum class eState
+    enum class eState : uint8_t
     {
-        ALIVE,
+        ALIVE = 0U,
         DEAD,
         DISCONNECTED
     };
