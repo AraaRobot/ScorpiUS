@@ -39,17 +39,75 @@ enum class eServo2 : uint8_t
     NUM_SERVOS = 7U
 };
 
+/**
+ * @brief Initializes servo drivers and moves the robot to the home position.
+ *
+ * Must be called once during startup before sending movement commands.
+ */
 void controlInit();
+
+/**
+ * @brief Stores the latest target angles received from communication.
+ *
+ * These angles are later consumed by updatePosition() to drive the servos.
+ *
+ * @param angles_ Target angles for all controlled joints.
+ */
 void processAngles(const sAngles& angles_);
+
+/**
+ * @brief Advances the controller update state machine and applies servo outputs.
+ *
+ * The function alternates updates between both PWM driver boards and enforces
+ * an internal delay between successive board updates.
+ */
 void updatePosition();
-// Forces immediate position updates by stepping the internal update state machine
-// without waiting for the normal time-based gating. Each step updates one driver
-// board (BOARD1 or BOARD2), alternating between them, so use 2 steps to update
-// both boards.
+
+/**
+ * @brief Forces immediate position updates by stepping the internal update state machine
+ * without waiting for the normal time-based gating. Each step updates one driver
+ * board (BOARD1 or BOARD2), alternating between them, so use 2 steps to update
+ * both boards.
+ *
+ * @param steps_ Number of state-machine steps to force.
+ */
 void updatePositionForce(uint8_t steps_);
+
+/**
+ * @brief Commands a servo on PWM driver board 1 to a target angle.
+ *
+ * The angle is constrained according to the servo axis limits before conversion
+ * to a PWM pulse value.
+ *
+ * @param servoId_ Servo identifier on board 1.
+ * @param angle_ Requested target angle in degrees.
+ */
 void servoGoTo1(eServo1 servoId_, int angle_);
+
+/**
+ * @brief Commands a servo on PWM driver board 2 to a target angle.
+ *
+ * The angle is constrained according to the servo axis limits before conversion
+ * to a PWM pulse value.
+ *
+ * @param servoId_ Servo identifier on board 2.
+ * @param angle_ Requested target angle in degrees.
+ */
 void servoGoTo2(eServo2 servoId_, int angle_);
+
+/**
+ * @brief Moves all configured servos to the home angle.
+ *
+ * Board 1 servos are updated first, followed by board 2, with a short delay
+ * between groups.
+ */
 void goHome();
+
+/**
+ * @brief Resets both PWM driver modules.
+ *
+ * Intended for reset/reboot handling to put the drivers into a known state.
+ */
 void controlReset();
 
 #endif  // CONTROL_H
