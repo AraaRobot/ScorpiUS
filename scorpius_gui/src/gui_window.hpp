@@ -50,7 +50,7 @@ class GuiWindow : public QMainWindow
 
   private:
     bool eventFilter(QObject* obj, QEvent* event);
-    void setupSubHeartBeat();
+    void setupSubHeartbeat();
 
     QWidget* _central{nullptr};
     QVBoxLayout* _layout{nullptr};

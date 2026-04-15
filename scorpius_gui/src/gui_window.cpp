@@ -59,7 +59,7 @@ GuiWindow::GuiWindow(std::shared_ptr<rclcpp::Node> node_, QWidget* parent_):
     onCurrentTabChanged(_tabs->currentIndex());
 
     QApplication::instance()->installEventFilter(this);
-    this->setupSubHeartBeat();
+    this->setupSubHeartbeat();
 }
 
 int GuiWindow::addTab(QWidget* page, const QString& label)
@@ -134,7 +134,7 @@ bool GuiWindow::eventFilter(QObject* obj, QEvent* event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-void GuiWindow::setupSubHeartBeat()
+void GuiWindow::setupSubHeartbeat()
 {
     rclcpp::QoS heartbeatQoS = rclcpp::QoS(1)
                                    .history(rclcpp::HistoryPolicy::KeepLast)
