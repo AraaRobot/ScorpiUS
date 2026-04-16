@@ -44,7 +44,8 @@ static eParserState serialStateMachine = WAIT_HEAD;
 
 void commProcess()
 {
-    while (commSerial->available())
+    uint8_t processedPackets = 0;
+    while (commSerial->available() && processedPackets < MAX_PROCESSED_PER_LOOP)
     {
         uint8_t b = (uint8_t)commSerial->read();
 
@@ -131,6 +132,7 @@ void commProcess()
                 dataPos = 0;
                 checksum = 0;
                 len = 0;
+                ++processedPackets;
                 break;
 
             default:

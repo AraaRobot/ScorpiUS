@@ -46,6 +46,7 @@ void loop()
     manual();
 #else
     commProcess();
+    commSendDequeueAll();
 
     int processed = 0;
     while (processed < MAX_PROCESSED_PER_LOOP && commPacketReady())
