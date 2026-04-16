@@ -13,6 +13,7 @@
 #define COMM_DEBUG(x) ((void)0)
 #endif
 
+#define MAX_PROCESSED_PER_LOOP 3
 struct sAngles
 {
     int8_t vert_a = 0;
@@ -59,6 +60,7 @@ enum class eInfoCode : uint8_t
 
 void commInit(HardwareSerial& serial_);
 void commProcess();
+bool commPacketReady();
 eSerialMsgType commConsume(sAngles& angles_);
 bool commSend(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
 void commHeartbeat(void);

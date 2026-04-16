@@ -46,25 +46,32 @@ void loop()
     manual();
 #else
     commProcess();
-    sAngles angles;
-    eSerialMsgType type = commConsume(angles);
 
-    if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
+    int processed = 0;
+    while (processed < MAX_PROCESSED_PER_LOOP && commPacketReady())
     {
-        processAngles(angles);
-    }
-    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
-    {
-        goHome();
-    }
-    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
-    {
-        resetArduino();
-    }
+        sAngles angles;
+        eSerialMsgType type = commConsume(angles);
 
-    if (controllerStateMachine == eStates::RUNNING)
-    {
-        updatePosition();
+        if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
+        {
+            processAngles(angles);
+        }
+        else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
+        {
+            goHome();
+        }
+        else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
+        {
+            resetArduino();
+        }
+
+        if (controllerStateMachine == eStates::RUNNING)
+        {
+            updatePosition();
+        }
+
+        ++processed;
     }
 
     static unsigned long lastHeartbeat = 0;

@@ -9,6 +9,7 @@ TAIL 0xBB
 #include "comm.h"
 #include "state_machine.h"
 
+#define PACKET_MAX_LEN 16
 #define COMMAND_EXPECTED_LEN 13
 #define STATE_EXPECTED_LEN 2
 
@@ -17,12 +18,16 @@ static const uint8_t TAIL = 0xBB;
 
 static HardwareSerial* commSerial = &Serial;
 static volatile int len = 0;
-static uint8_t dataBuf[COMMAND_EXPECTED_LEN];
-static uint8_t packet[COMMAND_EXPECTED_LEN];
+static uint8_t dataBuf[PACKET_MAX_LEN];
 static uint8_t dataPos = 0;
 static int checksum = 0;
-static volatile bool packetReady = false;
-static volatile int packetLen = 0;
+
+static const uint8_t PACKET_QUEUE_CAPACITY = 4;
+static uint8_t packetQueue[PACKET_QUEUE_CAPACITY][PACKET_MAX_LEN];
+static uint8_t packetQueueLen[PACKET_QUEUE_CAPACITY];
+static volatile uint8_t packetQueueHead = 0;
+static volatile uint8_t packetQueueTail = 0;
+static volatile uint8_t packetQueueCount = 0;
 
 enum eParserState
 {
@@ -54,7 +59,7 @@ void commProcess()
 
             case READ_LEN:
                 len = b;
-                if (len == 0 || len > COMMAND_EXPECTED_LEN)
+                if (len == 0 || len > PACKET_MAX_LEN)
                 {
                     COMM_DEBUG("Invalid packet length: ");
                     COMM_DEBUG(len);
@@ -105,16 +110,19 @@ void commProcess()
             case READ_TAIL:
                 if (b == 0xBB)
                 {
-                    if (packetReady)
+                    if (packetQueueCount >= PACKET_QUEUE_CAPACITY)
                     {
                         COMM_DEBUG("Dropped a packet");
-
                         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::PACKET_DROPPED)};
                         commSend(eSerialMsgType::ERROR, errPayload, 1);
                     }
-                    memcpy(packet, dataBuf, size_t(len));
-                    packetLen = len;
-                    packetReady = true;
+                    else
+                    {
+                        memcpy(packetQueue[packetQueueTail], dataBuf, size_t(len));
+                        packetQueueLen[packetQueueTail] = static_cast<uint8_t>(len);
+                        packetQueueTail = (packetQueueTail + 1) % PACKET_QUEUE_CAPACITY;
+                        packetQueueCount++;
+                    }
                 }
 
                 serialStateMachine = WAIT_HEAD;
@@ -134,64 +142,70 @@ void commProcess()
 
 eSerialMsgType commConsume(sAngles& angles_)
 {
-    if (!packetReady)
+    if (packetQueueCount == 0)
     {
         return eSerialMsgType::UNKNOWN;
     }
+
+    uint8_t processedPackets = 0;
+
+    uint8_t currentIndex = packetQueueHead;
+    uint8_t currentLen = packetQueueLen[currentIndex];
+    uint8_t packetData[PACKET_MAX_LEN];
+    memcpy(packetData, packetQueue[currentIndex], currentLen);
+    packetQueueHead = (packetQueueHead + 1) % PACKET_QUEUE_CAPACITY;
+    packetQueueCount--;
 
     size_t index = 0;
 
     eSerialMsgType type = eSerialMsgType::UNKNOWN;
 
-    switch ((eSerialMsgType)packet[index++])
+    switch ((eSerialMsgType)packetData[index++])
     {
         case eSerialMsgType::COMMAND:
-            if (packetLen != COMMAND_EXPECTED_LEN)
+            if (currentLen != COMMAND_EXPECTED_LEN)
             {
                 COMM_DEBUG("commConsume: bad len=");
-                COMM_DEBUG(packetLen);
+                COMM_DEBUG(currentLen);
                 static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
                 commSend(eSerialMsgType::ERROR, errPayload, 1);
-                packetReady = false;
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
 
-            angles_.vert_a = (int8_t)packet[index++];
-            angles_.vert_b = (int8_t)packet[index++];
-            angles_.vert_c = (int8_t)packet[index++];
-            angles_.vert_d = (int8_t)packet[index++];
-            angles_.vert_e = (int8_t)packet[index++];
-            angles_.vert_f = (int8_t)packet[index++];
-            angles_.hori_a = (int8_t)packet[index++];
-            angles_.hori_b = (int8_t)packet[index++];
-            angles_.hori_c = (int8_t)packet[index++];
-            angles_.hori_d = (int8_t)packet[index++];
-            angles_.hori_e = (int8_t)packet[index++];
-            angles_.hori_f = (int8_t)packet[index++];
+            angles_.vert_a = (int8_t)packetData[index++];
+            angles_.vert_b = (int8_t)packetData[index++];
+            angles_.vert_c = (int8_t)packetData[index++];
+            angles_.vert_d = (int8_t)packetData[index++];
+            angles_.vert_e = (int8_t)packetData[index++];
+            angles_.vert_f = (int8_t)packetData[index++];
+            angles_.hori_a = (int8_t)packetData[index++];
+            angles_.hori_b = (int8_t)packetData[index++];
+            angles_.hori_c = (int8_t)packetData[index++];
+            angles_.hori_d = (int8_t)packetData[index++];
+            angles_.hori_e = (int8_t)packetData[index++];
+            angles_.hori_f = (int8_t)packetData[index++];
             type = eSerialMsgType::COMMAND;
             break;
 
         case eSerialMsgType::STATE:
         {
-            if (packetLen != STATE_EXPECTED_LEN)
+            if (currentLen != STATE_EXPECTED_LEN)
             {
-                COMM_DEBUG(packetLen);
+                COMM_DEBUG(currentLen);
                 static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
                 commSend(eSerialMsgType::ERROR, errPayload, 1);
-                packetReady = false;
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
 
-            uint8_t uState = packet[index++];
+            uint8_t uState = packetData[index++];
             if (uState < static_cast<uint8_t>(eStates::HOME) || uState >= static_cast<uint8_t>(eStates::eLast))
             {
                 COMM_DEBUG("Invalid state received");
                 COMM_DEBUG(uState);
                 static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_STATE_RECEIVED)};
                 commSend(eSerialMsgType::ERROR, errPayload, 1);
-                packetReady = false;
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
@@ -212,13 +226,11 @@ eSerialMsgType commConsume(sAngles& angles_)
             COMM_DEBUG("Unsupported serial msg type");
             static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_MSG_TYPE_RECEIVED)};
             commSend(eSerialMsgType::ERROR, errPayload, 1);
-            packetReady = false;
             serialStateMachine = WAIT_HEAD;
             len = 0;
             return type;
     }
 
-    packetReady = false;
     serialStateMachine = WAIT_HEAD;
     len = 0;
     if (type == eSerialMsgType::COMMAND)
@@ -296,6 +308,11 @@ bool commSend(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t conte
 void commHeartbeat(void)
 {
     commSend(eSerialMsgType::HEARTBEAT, nullptr, 0);
+}
+
+bool commPacketReady()
+{
+    return packetQueueCount != 0;
 }
 
 void commInit(HardwareSerial& serial_)
