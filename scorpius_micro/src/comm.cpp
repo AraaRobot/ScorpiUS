@@ -186,6 +186,7 @@ eSerialMsgType commConsume(sAngles& angles_)
             angles_.hori_d = (int8_t)packetData[index++];
             angles_.hori_e = (int8_t)packetData[index++];
             angles_.hori_f = (int8_t)packetData[index++];
+            angles_.tail = (int8_t)packetData[index++];
             type = eSerialMsgType::COMMAND;
             break;
 
