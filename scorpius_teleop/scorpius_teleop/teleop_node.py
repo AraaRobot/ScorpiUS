@@ -29,11 +29,6 @@ class TeleopNode(Node):
         self.subscriber_input = self.create_subscription(
             Joy, '/scorpius/joy', self.subscriber_callback, 10)
 
-        # subscribe members
-        self.input_vector = Vector2(0, 0)
-        self.speed = self.MIN_SPEED  # speed in positions / second
-        self.step = self.MAX_STEP / 2  # step of the hexapod in mm
-
         # client
         self.state_controller_client = self.create_client(
             ControllerState, '/scorpius/state_controller')
@@ -82,6 +77,7 @@ class TeleopNode(Node):
         self.HEIGHT_CHANGE: float = 120 # height angle change per input callback, degrees / second
         self.TAIL_UP_ANGLE: float = 45 # maximum tail angle, degrees
         self.TAIL_DOWN_ANGLE: float = -45 # minimum tail angle, degrees
+        self.TAIL_CHANGE: float = 50 # tail angle change per input callback, degrees / second
 
         # subscribe members
         self.input_vector: Vector2 = Vector2(0, 0)
@@ -89,6 +85,7 @@ class TeleopNode(Node):
         self.step: float = self.MAX_STEP / 2 # step of the hexapod in mm
         self.left_height: float = 1 # multiplier for the left servo vertical angles
         self.right_height: float = 1 # multiplier for the right servo vertical angles
+        self.tail_target_angle: float = self.TAIL_UP_ANGLE # target angle of the tail servo, degrees
         self.tail_angle: float = 0 # angle of the tail servo, degrees
 
     def subscriber_callback(self, msg: Joy) -> None:
@@ -154,14 +151,14 @@ class TeleopNode(Node):
                 if self.right_height < 0:
                     self.right_height = 0
 
-        # update tail angle
+        # update tail target angle
         if data.joy_data[Joy.L2] >= 1:
-            self.tail_angle = self.TAIL_DOWN_ANGLE
+            self.tail_target_angle = self.TAIL_DOWN_ANGLE
         elif data.joy_data[Joy.L2] <= 0:
-            self.tail_angle = self.TAIL_UP_ANGLE
+            self.tail_target_angle = self.TAIL_UP_ANGLE
         else:
-            self.tail_angle = (1 - data.joy_data[Joy.L2]) * (self.TAIL_UP_ANGLE - self.TAIL_DOWN_ANGLE) + self.TAIL_DOWN_ANGLE
-        
+            self.tail_target_angle = (1 - data.joy_data[Joy.L2]) * (self.TAIL_UP_ANGLE - self.TAIL_DOWN_ANGLE) + self.TAIL_DOWN_ANGLE
+
         # state changes
         if data.joy_data[Joy.HOME]: # Home takes priority
             now = self.get_clock().now()
@@ -211,6 +208,17 @@ class TeleopNode(Node):
         msg.vert_f *= self.right_height
 
         # add tail angle
+        # modify tail angle towards target angle
+        if not math.isclose(self.tail_angle, self.tail_target_angle, abs_tol=1e-2):
+            angle_change = self.TAIL_CHANGE / self.OUTPUT_RATE
+            if self.tail_angle < self.tail_target_angle:
+                self.tail_angle += angle_change
+                if self.tail_angle > self.tail_target_angle:
+                    self.tail_angle = self.tail_target_angle
+            else:
+                self.tail_angle -= angle_change
+                if self.tail_angle < self.tail_target_angle:
+                    self.tail_angle = self.tail_target_angle
         msg.tail_angle = float(self.tail_angle)
 
         # publish servo angles msg
