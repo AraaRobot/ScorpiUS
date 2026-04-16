@@ -174,7 +174,7 @@ class CommNode(Node):
             msg.horiz_d,
             msg.horiz_e,
             msg.horiz_f,
-            msg.tail
+            msg.tail_angle
         ]
 
         data = bytes(self.angle_to_uint8(v) for v in angles)

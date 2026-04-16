@@ -75,8 +75,8 @@ class TeleopNode(Node):
         self.MIN_STEP: float = 5 # mm
         self.STEP_CHANGE: float = 5 # mm
         self.HEIGHT_CHANGE: float = 120 # height angle change per input callback, degrees / second
-        self.TAIL_UP_ANGLE: float = 45 # maximum tail angle, degrees
-        self.TAIL_DOWN_ANGLE: float = -45 # minimum tail angle, degrees
+        self.TAIL_UP_ANGLE: float = -45 # maximum tail angle, degrees
+        self.TAIL_DOWN_ANGLE: float = 45 # minimum tail angle, degrees
         self.TAIL_CHANGE: float = 50 # tail angle change per input callback, degrees / second
 
         # subscribe members
