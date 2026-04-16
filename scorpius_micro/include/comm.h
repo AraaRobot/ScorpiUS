@@ -15,7 +15,7 @@
 
 #define MAX_PROCESSED_PER_LOOP 3
 #define PACKET_MAX_LEN 16
-#define COMMAND_EXPECTED_LEN 13
+#define COMMAND_EXPECTED_LEN 14
 #define STATE_EXPECTED_LEN 2
 struct sAngles
 {
@@ -31,6 +31,7 @@ struct sAngles
     int8_t hori_d = 0;
     int8_t hori_e = 0;
     int8_t hori_f = 0;
+    int8_t tail = 0;
 };
 
 enum class eSerialMsgType : uint8_t
