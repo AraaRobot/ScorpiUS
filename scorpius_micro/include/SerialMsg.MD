@@ -15,7 +15,7 @@ TAIL 0xBB
 COMMAND 0x00
     From: Pi
     To: Arduino
-    Content: 12 bytes representing servo angles
+    Content: 12 bytes representing servo angles, 1 byte representing tail angle
 
 INFO 0x01
     From: Arduino

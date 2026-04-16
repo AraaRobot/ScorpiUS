@@ -93,8 +93,8 @@ static int8_t getAngleForServo2(sAngles& angles_, eServo2 servoId_)
             return angles_.hori_e;
         case eServo2::HORIZ_C:
             return angles_.hori_c;
-        // case eServo2::TAIL:
-        //     return angles_.tail;
+        case eServo2::TAIL:
+            return angles_.tail;
         default:
             return angles_.vert_a;
     }
