@@ -105,7 +105,7 @@ void commProcess()
                     COMM_DEBUG((int)expected);
 
                     static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::CHECKSUM_MISMATCH)};
-                    commSendNow(eSerialMsgType::ERROR, errPayload, 1);
+                    commSendEnqueue(eSerialMsgType::ERROR, errPayload, 1);
                     serialStateMachine = WAIT_HEAD;
                 }
                 break;
@@ -117,7 +117,7 @@ void commProcess()
                     {
                         COMM_DEBUG("Dropped a packet");
                         static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::PACKET_DROPPED)};
-                        commSendNow(eSerialMsgType::ERROR, errPayload, 1);
+                        commSendEnqueue(eSerialMsgType::ERROR, errPayload, 1);
                     }
                     else
                     {
@@ -170,7 +170,7 @@ eSerialMsgType commConsume(sAngles& angles_)
                 COMM_DEBUG("commConsume: bad len=");
                 COMM_DEBUG(currentLen);
                 static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
-                commSendEnqueue(eSerialMsgType::ERROR, errPayload, 1);
+                commSendNow(eSerialMsgType::ERROR, errPayload, 1);
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
@@ -196,7 +196,7 @@ eSerialMsgType commConsume(sAngles& angles_)
             {
                 COMM_DEBUG(currentLen);
                 static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_LENGTH_RECEIVED)};
-                commSendEnqueue(eSerialMsgType::ERROR, errPayload, 1);
+                commSendNow(eSerialMsgType::ERROR, errPayload, 1);
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
@@ -207,7 +207,7 @@ eSerialMsgType commConsume(sAngles& angles_)
                 COMM_DEBUG("Invalid state received");
                 COMM_DEBUG(uState);
                 static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_STATE_RECEIVED)};
-                commSendEnqueue(eSerialMsgType::ERROR, errPayload, 1);
+                commSendNow(eSerialMsgType::ERROR, errPayload, 1);
                 serialStateMachine = WAIT_HEAD;
                 return type;
             }
@@ -227,7 +227,7 @@ eSerialMsgType commConsume(sAngles& angles_)
         default:
             COMM_DEBUG("Unsupported serial msg type");
             static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_MSG_TYPE_RECEIVED)};
-            commSendEnqueue(eSerialMsgType::ERROR, errPayload, 1);
+            commSendNow(eSerialMsgType::ERROR, errPayload, 1);
             serialStateMachine = WAIT_HEAD;
             len = 0;
             return type;
