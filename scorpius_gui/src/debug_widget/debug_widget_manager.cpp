@@ -87,7 +87,7 @@ void DebugWidgetManager::CB_subStepSlot(const scorpius_main::msg::Step& msg_)
     _stepLabel->setText(QStringLiteral("Step: ") + QString::number(msg_.step, 'f', 1) + QStringLiteral(" mm"));
 }
 
-void DebugWidgetManager::CB_subTailSlot(float tail_angle_)
+void DebugWidgetManager::CB_subTailSlot(float tailAngle_)
 {
-    _tailLabel->setText(QStringLiteral("Tail : ") + QString::number(tail_angle_, 'f', 1) + QStringLiteral("°"));
+    _tailLabel->setText(QStringLiteral("Tail : ") + QString::number(tailAngle_, 'f', 1) + QStringLiteral("°"));
 }

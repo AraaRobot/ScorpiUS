@@ -69,7 +69,6 @@ struct sPacketOut
 };
 
 void commInit(HardwareSerial& serial_);
-// void commInit(HardwareSerial& serial_, HardwareSerial& serial2_);
 void commProcess();
 bool commPacketReady();
 eSerialMsgType commConsume(sAngles& angles_);

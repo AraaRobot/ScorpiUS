@@ -48,11 +48,11 @@ class DebugWidgetManager : public QWidget
 
   signals:
     void CB_subStepSignal(const scorpius_main::msg::Step& msg_);
-    void CB_subTailSignal(float tail_angle_);
+    void CB_subTailSignal(float tailAngle_);
 
   private slots:
     void CB_subStepSlot(const scorpius_main::msg::Step& msg_);
-    void CB_subTailSlot(float tail_angle_);
+    void CB_subTailSlot(float tailAngle_);
 
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
