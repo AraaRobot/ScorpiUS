@@ -52,7 +52,7 @@ void commProcess()
         switch (serialStateMachine)
         {
             case WAIT_HEAD:
-                if (b == 0xAA)
+                if (b == HEAD)
                 {
                     serialStateMachine = READ_LEN;
                     dataPos = 0;
@@ -111,7 +111,7 @@ void commProcess()
                 break;
             }
             case READ_TAIL:
-                if (b == 0xBB)
+                if (b == TAIL)
                 {
                     if (packetQueueCount >= PACKET_QUEUE_CAPACITY)
                     {
