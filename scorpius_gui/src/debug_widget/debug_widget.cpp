@@ -12,15 +12,15 @@ DebugWidget::DebugWidget(QWidget* parent_, char id_):
 
 void DebugWidget::setPawNumber(char id_)
 {
-    _ui.PatteNumber->setText(QStringLiteral("Patte ") + QString(id_));
+    _ui.PatteNumber->setText(QStringLiteral("Paw ") + QString(id_));
 }
 
 void DebugWidget::setAngleHorizontalSlot(float angle_)
 {
-    _ui.angle_horizontal->setText(QString::number(angle_) + QStringLiteral(" deg"));
+    _ui.angle_horizontal->setText(QString::number(angle_, 'f', 1) + QStringLiteral("°"));
 }
 
 void DebugWidget::setAngleVerticalSlot(float angle_)
 {
-    _ui.angle_vertical->setText(QString::number(angle_) + QStringLiteral(" deg"));
+    _ui.angle_vertical->setText(QString::number(angle_, 'f', 1) + QStringLiteral("°"));
 }

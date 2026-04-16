@@ -78,10 +78,11 @@ void GuiWindow::setBackground()
     _tabs->setStyleSheet("QTabWidget::pane { background: transparent; }"
                          "QTabBar::tab { background: transparent; }");
 
-    QString bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert.png) 0 0 0 0 round round;";
+    QString bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert.png) 0 0 0 0 stretch stretch;";
+
     if (std::rand() % 10 == 1)
     {
-        bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert_easter_egg.png) 0 0 0 0 round round;";
+        bgImageStyle = "border-image: url(:/images/images/gui_wallpaper_vert_easter_egg.png) 0 0 0 0 stretch stretch;";
     }
     _debugWidgetManager->setObjectName("debugWidgetManager");
     _controllerManager->setObjectName("controllerManager");
@@ -128,11 +129,11 @@ void GuiWindow::onCurrentTabChanged(int index)
     _controllerManager->hide();
     _serialManager->hide();
 
-    _controllerTabLayout->removeWidget(_controllerManager);
-    _serialTabLayout->removeWidget(_serialManager);
     _dashboardLayout->removeWidget(_debugWidgetManager);
     _dashboardLayout->removeWidget(_controllerManager);
     _dashboardLayout->removeWidget(_serialManager);
+    _controllerTabLayout->removeWidget(_controllerManager);
+    _serialTabLayout->removeWidget(_serialManager);
 
     switch (index)
     {

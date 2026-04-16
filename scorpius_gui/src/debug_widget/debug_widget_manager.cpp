@@ -84,10 +84,10 @@ void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg
 
 void DebugWidgetManager::CB_subStepSlot(const scorpius_main::msg::Step& msg_)
 {
-    _stepLabel->setText(QStringLiteral("Step:    ") + QString::number(msg_.step) + QStringLiteral("    mm"));
+    _stepLabel->setText(QStringLiteral("Step: ") + QString::number(msg_.step, 'f', 1) + QStringLiteral(" mm"));
 }
 
 void DebugWidgetManager::CB_subTailSlot(float tail_angle_)
 {
-    _tailLabel->setText(QStringLiteral("Tail Angle:    ") + QString::number(tail_angle_) + QStringLiteral("    deg"));
+    _tailLabel->setText(QStringLiteral("Tail : ") + QString::number(tail_angle_, 'f', 1) + QStringLiteral("°"));
 }
