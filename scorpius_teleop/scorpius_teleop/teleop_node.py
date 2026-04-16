@@ -41,7 +41,6 @@ class TeleopNode(Node):
 
         # callbacks
         self.OUTPUT_RATE: int = 160  # rate of the output callback in Hz
-        # dummy timer to set the period of the subscriber callback
         self.INPUT_RATE: int = 20 # rate of the read input callback in Hz
         self.input_timer = self.create_timer(1/self.INPUT_RATE, self.input_callback)
         self.output_timer = self.create_timer(
@@ -58,7 +57,7 @@ class TeleopNode(Node):
         self.leg_angle_offset: float = 30 # angle offset for the legs, degrees
         self.position_count: int = 32 # amount of positions in one whole movement
         self.leg_reach: float = 100 # leg reach, mm
-        self.front_angle: float = 90 # front degrees in witch the hexapod goes directly in the wanted direction
+        self.front_angle: float = 90 # front degrees in which the hexapod goes directly in the wanted direction
         self.movement_state: int = 0 # 0 -> idle, 1 -> forward, 2 -> backward, 3 -> turn right, 4 -> turn left
         self.position_state: int = 0 # 0 -> neutral, 1 -> left neutral, 2 -> right down, 3 -> right neutral, 4 -> left down
         self.output_counter: int = 0 # counter for the output callback
@@ -83,7 +82,7 @@ class TeleopNode(Node):
         self.input_vector: Vector2 = Vector2(0, 0)
         self.speed: float = self.MIN_SPEED # speed in positions / second
         self.step: float = self.MAX_STEP / 2 # step of the hexapod in mm
-        self.left_height: float = 1 # multiplier for the left servovertical angles
+        self.left_height: float = 1 # multiplier for the left servo vertical angles
         self.right_height: float = 1 # multiplier for the right servo vertical angles
         self.tail_angle: float = 0 # angle of the tail servo, degrees
 
