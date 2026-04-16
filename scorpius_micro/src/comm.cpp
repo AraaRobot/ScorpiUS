@@ -358,7 +358,6 @@ void commSendDequeueAll()
     packetQueueOutCount = 0;
 }
 
-
 void commHeartbeat(void)
 {
     commSendNow(eSerialMsgType::HEARTBEAT, nullptr, 0);

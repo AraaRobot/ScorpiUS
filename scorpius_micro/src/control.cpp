@@ -241,7 +241,7 @@ void goHome()
     {
         servoGoTo1(s, HOME_ANGLE);
     }
-    
+
     for (eServo2 s : _servosBoard2)
     {
         servoGoTo2(s, HOME_ANGLE);
