@@ -66,13 +66,12 @@ void loop()
         {
             resetArduino();
         }
-
-        if (controllerStateMachine == eStates::RUNNING)
-        {
-            updatePosition();
-        }
-
         ++processed;
+    }
+
+    if (controllerStateMachine == eStates::RUNNING)
+    {
+        updatePosition();
     }
 
     static unsigned long lastHeartbeat = 0;
