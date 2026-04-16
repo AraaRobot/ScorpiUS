@@ -162,6 +162,23 @@ class TeleopNode(Node):
         else:
             self.tail_angle = (1 - data.joy_data[Joy.L2]) * (self.TAIL_UP_ANGLE - self.TAIL_DOWN_ANGLE) + self.TAIL_DOWN_ANGLE
         
+        # state changes
+        if data.joy_data[Joy.HOME]: # Home takes priority
+            now = self.get_clock().now()
+            if (now - self.last_state_change_time) > self.state_change_cooldown:
+                self.last_state_change_time = now
+                self.send_state_change_request(ControllerState.Request.HOME)
+        elif data.joy_data[Joy.OPTS]: # Running priority 2
+            now = self.get_clock().now()
+            if (now - self.last_state_change_time) > self.state_change_cooldown:
+                self.last_state_change_time = now
+                self.send_state_change_request(ControllerState.Request.RUNNING)
+        elif data.joy_data[Joy.SHARE]:
+            now = self.get_clock().now()
+            if (now - self.last_state_change_time) > self.state_change_cooldown:
+                self.last_state_change_time = now
+                self.send_state_change_request(ControllerState.Request.REBOOT)
+
     def input_callback(self):
         # update movement method
         self.update_movement_state()
