@@ -18,7 +18,7 @@ class DebugWidgetManager : public QWidget
     static constexpr int ROWS = 3;
     static constexpr int COLS = 2;
 
-    static constexpr int LABEL_FONT_SIZE = 24;
+    static constexpr int LABEL_FONT_SIZE = 20;
 
     static constexpr std::array<char, ROWS * COLS> aNumberToLetter = {'A', 'F', 'B', 'E', 'C', 'D'};
 
@@ -48,15 +48,18 @@ class DebugWidgetManager : public QWidget
 
   signals:
     void CB_subStepSignal(const scorpius_main::msg::Step& msg_);
+    void CB_subTailSignal(float tailAngle_);
 
   private slots:
     void CB_subStepSlot(const scorpius_main::msg::Step& msg_);
+    void CB_subTailSlot(float tailAngle_);
 
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
 
     QGridLayout* _grid;
     QLabel* _stepLabel{nullptr};
+    QLabel* _tailLabel{nullptr};
 
     std::shared_ptr<rclcpp::Node> _node;
     rclcpp::Subscription<scorpius_main::msg::ServoAngles>::SharedPtr _sub_teleop;

@@ -27,7 +27,7 @@ border-radius: 5px;</string>
    <item>
     <widget class="QLabel" name="PatteNumber">
      <property name="text">
-      <string>Patte #</string>
+      <string>Paw #</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -42,14 +42,14 @@ border-radius: 5px;</string>
      <item>
       <widget class="QLabel" name="label_horizontal">
        <property name="text">
-        <string>Angle servo horizontale</string>
+        <string>Horizontal</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="angle_horizontal">
        <property name="text">
-        <string>0 deg</string>
+        <string>0°</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -63,14 +63,14 @@ border-radius: 5px;</string>
      <item>
       <widget class="QLabel" name="label_vertical">
        <property name="text">
-        <string>Angle servo verticale</string>
+        <string>Vertical</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="angle_vertical">
        <property name="text">
-        <string>0 deg</string>
+        <string>0°</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

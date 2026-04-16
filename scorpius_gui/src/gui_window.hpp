@@ -30,10 +30,9 @@ class GuiWindow : public QMainWindow
 
     enum class eTabs : int
     {
-        DEBUG,
+        DASHBOARD,
         CONTROLLER,
         SERIAL,
-        DASHBOARD
     };
 
   public:
@@ -55,8 +54,6 @@ class GuiWindow : public QMainWindow
     QWidget* _central{nullptr};
     QVBoxLayout* _layout{nullptr};
     QTabWidget* _tabs{nullptr};
-    QWidget* _debugTab{nullptr};
-    QVBoxLayout* _debugTabLayout{nullptr};
     QWidget* _controllerTab{nullptr};
     QVBoxLayout* _controllerTabLayout{nullptr};
     QWidget* _serialTab{nullptr};

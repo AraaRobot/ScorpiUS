@@ -19,16 +19,26 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
     }
 
     _stepLabel = new QLabel(this);
+    _tailLabel = new QLabel(this);
+
     _stepLabel->setAlignment(Qt::AlignHCenter);
     _stepLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
-    _stepLabel->setText(QStringLiteral("Step:    ?    mm"));
+    _stepLabel->setText(QStringLiteral("Step:  ?  mm"));
+
+    _tailLabel->setAlignment(Qt::AlignHCenter);
+    _tailLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
+    _tailLabel->setText(QStringLiteral("Tail Angle:  ?  °"));
 
     QFont labelFont = _stepLabel->font();
     labelFont.setPointSize(LABEL_FONT_SIZE);
     _stepLabel->setFont(labelFont);
 
-    _grid->setRowStretch(4, 8);
-    _grid->addWidget(_stepLabel, 4, 0, 1, 2);
+    QFont tailLabelFont = _tailLabel->font();
+    tailLabelFont.setPointSize(LABEL_FONT_SIZE);
+    _tailLabel->setFont(tailLabelFont);
+
+    _grid->addWidget(_stepLabel, 4, 0, 1, 1);
+    _grid->addWidget(_tailLabel, 4, 1, 1, 1);
 
     setLayout(_grid);
 
@@ -37,6 +47,7 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
                                                                               [this](const scorpius_main::msg::ServoAngles& msg_)
                                                                               {
                                                                                   this->CB_subTeleop(msg_);
+                                                                                  emit this->CB_subTailSignal(msg_.tail_angle);
                                                                               });
     _sub_step = _node->create_subscription<scorpius_main::msg::Step>("/scorpius/teleop/step",
                                                                      10,
@@ -46,6 +57,7 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
                                                                      });
 
     connect(this, &DebugWidgetManager::CB_subStepSignal, this, &DebugWidgetManager::CB_subStepSlot, Qt::QueuedConnection);
+    connect(this, &DebugWidgetManager::CB_subTailSignal, this, &DebugWidgetManager::CB_subTailSlot, Qt::QueuedConnection);
 }
 
 DebugWidgetManager::~DebugWidgetManager()
@@ -72,5 +84,10 @@ void DebugWidgetManager::CB_subTeleop(const scorpius_main::msg::ServoAngles& msg
 
 void DebugWidgetManager::CB_subStepSlot(const scorpius_main::msg::Step& msg_)
 {
-    _stepLabel->setText(QStringLiteral("Step:    ") + QString::number(msg_.step) + QStringLiteral("    mm"));
+    _stepLabel->setText(QStringLiteral("Step: ") + QString::number(msg_.step, 'f', 1) + QStringLiteral(" mm"));
+}
+
+void DebugWidgetManager::CB_subTailSlot(float tailAngle_)
+{
+    _tailLabel->setText(QStringLiteral("Tail : ") + QString::number(tailAngle_, 'f', 1) + QStringLiteral("°"));
 }
