@@ -13,6 +13,10 @@
 #define COMM_DEBUG(x) ((void)0)
 #endif
 
+#define MAX_PROCESSED_PER_LOOP 3
+#define PACKET_MAX_LEN 16
+#define COMMAND_EXPECTED_LEN 13
+#define STATE_EXPECTED_LEN 2
 struct sAngles
 {
     int8_t vert_a = 0;
@@ -57,12 +61,22 @@ enum class eInfoCode : uint8_t
     SERVOS_HOMED = 0x02
 };
 
+struct sPacketOut
+{
+    eSerialMsgType type;
+    uint8_t len;
+    uint8_t data[PACKET_MAX_LEN];
+};
+
 void commInit(HardwareSerial& serial_);
 // void commInit(HardwareSerial& serial_, HardwareSerial& serial2_);
 void commProcess();
+bool commPacketReady();
 eSerialMsgType commConsume(sAngles& angles_);
-bool commSend(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
+bool commSendNow(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
 void commHeartbeat(void);
+void commSendEnqueue(eSerialMsgType msgType_, const uint8_t* msgContent_, uint8_t contentLength_);
+void commSendDequeueAll();
 
 void commDebug_impl(const char* msg_);
 void commDebug_impl(int v_);
