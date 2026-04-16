@@ -5,6 +5,7 @@
 #include "scorpius_main/srv/serial_config.hpp"
 #include "scorpius_main/msg/serial_heartbeat.hpp"
 #include "scorpius_main/msg/serial_status.hpp"
+#include "scorpius_main/msg/state_changed.hpp"
 #include "scorpius_main/srv/serial_ports.hpp"
 #include "scorpius_main/srv/controller_state.hpp"
 
@@ -46,6 +47,7 @@ class QSerialManager : public QWidget
     static constexpr const char* PORTS_SERVICE_NAME = "/scorpius/serial_ports";
     static constexpr const char* CONFIG_SERVICE_NAME = "/scorpius/serial_config";
     static constexpr const char* CONTROLLER_STATE_SERVICE_NAME = "/scorpius/state_controller";
+    static constexpr const char* CONTROLLER_STATE_TOPIC_NAME = "/scorpius/state_changed";
 
     void CB_subStatus(const scorpius_main::msg::SerialStatus& msg_);
 
@@ -67,6 +69,7 @@ class QSerialManager : public QWidget
     rclcpp::Subscription<scorpius_main::msg::SerialStatus>::SharedPtr _sub_status;
     rclcpp::Publisher<scorpius_main::msg::SerialHeartbeat>::SharedPtr _pub_heartbeat;
     rclcpp::Publisher<scorpius_main::msg::SerialStatus>::SharedPtr _pub_status;
+    rclcpp::Subscription<scorpius_main::msg::StateChanged>::SharedPtr _sub_state;
     rclcpp::Client<scorpius_main::srv::SerialConfig>::SharedPtr _client_config;
     rclcpp::Client<scorpius_main::srv::ControllerState>::SharedPtr _client_state;
 
@@ -74,6 +77,7 @@ class QSerialManager : public QWidget
     void serialPortsSignal(const QStringList& port_name_);
     void serialStatusSignal(const scorpius_main::msg::SerialStatus& message_);
     void buttonFinishedSignal(const QString& message_);
+    void stateChangedSignal(uint8_t state_);
 
   private slots:
     void serialPortsSlot(const QStringList& portName_);
@@ -81,6 +85,7 @@ class QSerialManager : public QWidget
     void connectButtonClicked();
     void refreshButtonClicked();
     void changeState(int index_);
+    void stateChangedSlot(uint8_t state_);
 };
 
 #endif

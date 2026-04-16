@@ -54,7 +54,7 @@ class TeleopNode(Node):
         self.publisher_step = self.create_publisher(
             Step, '/scorpius/teleop/step', 10)
         self.publisher_state = self.create_publisher(
-            StateChanged, '/scropius/state_changed', 1
+            StateChanged, '/scorpius/state_changed', 1
         )
         self.subscriber_input = self.create_subscription(
             Joy, '/scorpius/joy', self.subscriber_callback, 10)
