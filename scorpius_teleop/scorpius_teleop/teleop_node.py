@@ -24,7 +24,7 @@ class TeleopNode(Node):
         self.leg_angle_offset = 30  # angle offset for the legs, degrees
         self.position_count = 40  # amount of positions in one whole movement
         self.leg_reach = 100  # leg reach, mm
-        # front degrees in witch the hexapod goes directly in the wanted direction
+        # front degrees in which the hexapod goes directly in the wanted direction
         self.front_angle = 90
         # 0 -> idle, 1 -> forward, 2 -> backward, 3 -> turn right, 4 -> turn left
         self.movement_state = 0

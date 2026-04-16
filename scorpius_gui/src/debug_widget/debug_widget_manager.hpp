@@ -56,7 +56,6 @@ class DebugWidgetManager : public QWidget
 
   private:
     void CB_subTeleop(const scorpius_main::msg::ServoAngles& msg_);
-    void CB_subStep(const scorpius_main::msg::Step& msg_);
 
     QGridLayout* _grid;
     QLabel* _stepLabel{nullptr};

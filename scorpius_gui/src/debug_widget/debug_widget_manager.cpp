@@ -23,11 +23,11 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
 
     _stepLabel->setAlignment(Qt::AlignHCenter);
     _stepLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
-    _stepLabel->setText(QStringLiteral("Step:    ?    mm"));
+    _stepLabel->setText(QStringLiteral("Step:  ?  mm"));
 
     _tailLabel->setAlignment(Qt::AlignHCenter);
     _tailLabel->setMaximumHeight(LABEL_FONT_SIZE * 2);
-    _tailLabel->setText(QStringLiteral("Tail Angle:    ?    deg"));
+    _tailLabel->setText(QStringLiteral("Tail Angle:  ?  °"));
 
     QFont labelFont = _stepLabel->font();
     labelFont.setPointSize(LABEL_FONT_SIZE);
@@ -38,7 +38,7 @@ DebugWidgetManager::DebugWidgetManager(std::shared_ptr<rclcpp::Node> node_, QWid
     _tailLabel->setFont(tailLabelFont);
 
     _grid->addWidget(_stepLabel, 4, 0, 1, 1);
-    _grid->addWidget(_tailLabel, 4, 1, 1, 2);
+    _grid->addWidget(_tailLabel, 4, 1, 1, 1);
 
     setLayout(_grid);
 
