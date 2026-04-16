@@ -198,7 +198,7 @@ void servoGoTo1(eServo1 servoId_, int angle_)
         default:
             COMM_DEBUG("Invalid servo ID");
             static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_SERVO_ID)};
-            commSend(eSerialMsgType::ERROR, errPayload, 1);
+            commSendNow(eSerialMsgType::ERROR, errPayload, 1);
             break;
     }
 }
@@ -230,7 +230,7 @@ void servoGoTo2(eServo2 servoId_, int angle_)
         default:
             COMM_DEBUG("Invalid servo ID");
             static const uint8_t errPayload[1] = {static_cast<uint8_t>(eErrorCode::INVALID_SERVO_ID)};
-            commSend(eSerialMsgType::ERROR, errPayload, 1);
+            commSendNow(eSerialMsgType::ERROR, errPayload, 1);
             break;
     }
 }
@@ -250,5 +250,5 @@ void goHome()
     }
 
     static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::SERVOS_HOMED)};
-    commSend(eSerialMsgType::INFO, infoPayload, 1);
+    commSendNow(eSerialMsgType::INFO, infoPayload, 1);
 }

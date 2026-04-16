@@ -37,7 +37,7 @@ void setup()
     COMM_DEBUG("Initialization complete. Entering main loop.");
 
     static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::INIT_COMPLETE)};
-    commSend(eSerialMsgType::INFO, infoPayload, 1);
+    commSendNow(eSerialMsgType::INFO, infoPayload, 1);
 }
 
 void loop()
