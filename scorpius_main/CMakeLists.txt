@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ServoAngles.msg"
   "msg/SerialHeartbeat.msg"
   "msg/SerialStatus.msg"
+  "msg/StateChanged"
   "msg/Joy.msg"
   "msg/Step.msg"
 
