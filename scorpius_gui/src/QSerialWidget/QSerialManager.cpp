@@ -76,6 +76,7 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
     connect(_pbConnect, &QPushButton::clicked, this, &QSerialManager::connectButtonClicked);
     connect(_pbRefresh, &QPushButton::clicked, this, &QSerialManager::refreshButtonClicked);
     connect(this, &QSerialManager::buttonFinishedSignal, this, &QSerialManager::writeMessage, Qt::QueuedConnection);
+    connect(this, &QSerialManager::stateChangedSignal, this, &QSerialManager::stateChangedSlot, Qt::QueuedConnection);
     connect(_cbStates, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QSerialManager::changeState);
 
     _sub_status
@@ -85,6 +86,13 @@ QSerialManager::QSerialManager(std::shared_ptr<rclcpp::Node> node_, QWidget* par
                                                                        {
                                                                            this->CB_subStatus(msg_);
                                                                        });
+
+    _sub_state = _node->create_subscription<scorpius_main::msg::StateChanged>(CONTROLLER_STATE_TOPIC_NAME,
+                                                                              1,
+                                                                              [this](const scorpius_main::msg::StateChanged& msg_)
+                                                                              {
+                                                                                  emit this->stateChangedSignal(msg_.state);
+                                                                              });
 
     _client_ports = _node->create_client<scorpius_main::srv::SerialPorts>(PORTS_SERVICE_NAME);
     _client_config = _node->create_client<scorpius_main::srv::SerialConfig>(CONFIG_SERVICE_NAME);
@@ -306,4 +314,13 @@ void QSerialManager::changeState(int idx_)
                 RCLCPP_ERROR(thisPtr->_node->get_logger(), "The controller state server did not respond in time");
             }
         });
+}
+
+void QSerialManager::stateChangedSlot(uint8_t state_)
+{
+    int idx = _cbStates->findData(state_, Qt::UserRole);
+    if (idx >= 0)
+    {
+        _cbStates->setCurrentIndex(idx);
+    }
 }

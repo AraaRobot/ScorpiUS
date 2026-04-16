@@ -1,4 +1,5 @@
 import rclpy
+from functools import partial
 from rclpy.node import Node
 from rclpy.duration import Duration
 import math
@@ -6,6 +7,7 @@ import math
 from scorpius_main.msg import ServoAngles
 from scorpius_main.msg import Joy
 from scorpius_main.msg import Step
+from scorpius_main.msg import StateChanged
 from scorpius_main.srv import ControllerState
 
 from .Vector2 import Vector2
@@ -21,6 +23,9 @@ class TeleopNode(Node):
             ServoAngles, '/scorpius/teleop', 10)
         self.publisher_step = self.create_publisher(
             Step, '/scorpius/teleop/step', 10)
+        self.publisher_state = self.create_publisher(
+            StateChanged, '/scorpius/state_changed', 1
+        )
         self.subscriber_input = self.create_subscription(
             Joy, '/scorpius/joy', self.subscriber_callback, 10)
 
@@ -36,8 +41,8 @@ class TeleopNode(Node):
             self.get_logger().warning("State controller service is not online")
 
         # client members
-        self.last_home_time = self.get_clock().now()
-        self.home_cooldown = Duration(seconds=2.0)
+        self.last_state_change_time = self.get_clock().now()
+        self.state_change_cooldown = Duration(seconds=2.0)
 
         # callbacks
         self.OUTPUT_RATE: int = 160  # rate of the output callback in Hz
@@ -206,6 +211,34 @@ class TeleopNode(Node):
         #     f"F :    {msg.vert_f:8.3f}      {msg.horiz_f:8.3f}\n"
         #     f"=============================================="
         # )
+
+    def send_state_change_request(self, requested_state: int) -> None:
+        if not self.state_controller_client.service_is_ready():
+            self.get_logger().warn(
+                "State controller service was unavailable, ignoring state change request",
+                throttle_duration_sec=30)
+            return
+
+        request = ControllerState.Request()
+        request.state = requested_state
+        future = self.state_controller_client.call_async(request)
+        future.add_done_callback(partial(self.state_change_response_callback, requested_state))
+
+    def state_change_response_callback(self, requested_state: int, future) -> None:
+        try:
+            response = future.result()
+        except Exception as exc:
+            self.get_logger().error(f"State controller service call failed: {exc}")
+            return
+
+        if response.success:
+            msg = StateChanged()
+            msg.state = requested_state
+            self.publisher_state.publish(msg)
+            self.get_logger().info(f"Published successful state change: {requested_state}")
+        else:
+            self.get_logger().warn(
+                f"State controller rejected state change {requested_state}: {response.message}")
 
     def angles_calculations(self):
         # update target angles based on movement state
