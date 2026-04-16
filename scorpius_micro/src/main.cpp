@@ -37,7 +37,7 @@ void setup()
     COMM_DEBUG("Initialization complete. Entering main loop.");
 
     static const uint8_t infoPayload[1] = {static_cast<uint8_t>(eInfoCode::INIT_COMPLETE)};
-    commSend(eSerialMsgType::INFO, infoPayload, 1);
+    commSendNow(eSerialMsgType::INFO, infoPayload, 1);
 }
 
 void loop()
@@ -46,20 +46,27 @@ void loop()
     manual();
 #else
     commProcess();
-    sAngles angles;
-    eSerialMsgType type = commConsume(angles);
+    commSendDequeueAll();
 
-    if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
+    int processed = 0;
+    while (processed < MAX_PROCESSED_PER_LOOP && commPacketReady())
     {
-        processAngles(angles);
-    }
-    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
-    {
-        goHome();
-    }
-    else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
-    {
-        resetArduino();
+        sAngles angles;
+        eSerialMsgType type = commConsume(angles);
+
+        if (type == eSerialMsgType::COMMAND && controllerStateMachine == eStates::RUNNING)
+        {
+            processAngles(angles);
+        }
+        else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::HOME)
+        {
+            goHome();
+        }
+        else if (type == eSerialMsgType::STATE && controllerStateMachine == eStates::REBOOT)
+        {
+            resetArduino();
+        }
+        ++processed;
     }
 
     if (controllerStateMachine == eStates::RUNNING)
