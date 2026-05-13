@@ -18,18 +18,16 @@ https://github.com/user-attachments/assets/c64f2d33-26dd-4a40-a55b-be4d576cbebf
 ## Big Hero 6
 The Big hero 6 team is made of six members, separated in different subteams according to interest : mechanical design, electrical design and programming.
 
-TODO: Good picture of the whole team with the robot
-
-<img width="1112" height="258" alt="image" src="https://github.com/user-attachments/assets/3edc611c-b083-4dec-8fe3-0e0ed34b8ddf" />
+<img width="2048" height="1536" alt="image" src="https://github.com/user-attachments/assets/a1f8aeaf-0a49-49ca-be6e-8b03ea3dda0c" />
 
 
 From left to right:
-* Charles-Éloi Lafond : Member of the programming subteam
 * Olivier Rathé : Mechanical subteam coordinator
-* Étienne Bélanger : Team leader, member of the mechanical design and programming subteams
 * Javier Morin : Member of the mechanical design subteam
-* Simon Pearson : Member of the programming subteam
 * Anibal Arango : Assistant team leader, electrical and programming subteams coordinator
+* Étienne Bélanger : Team leader, member of the mechanical design and programming subteams
+* Charles-Éloi Lafond : Member of the programming subteam
+* Simon Pearson : Member of the programming subteam
 
 ### Coordinates:
 LinkedIn:
