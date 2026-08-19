@@ -29,7 +29,7 @@ From left to right:
 * Charles-Éloi Lafond : Member of the programming subteam
 * Simon Pearson : Member of the programming subteam
 
-### Coordinates:
+### Contact information:
 LinkedIn:
   
   [Anibal](www.linkedin.com/in/anibal-arango-a510b1251)
